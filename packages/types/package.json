@@ -1,0 +1,11 @@
+{
+  "name": "@linkedout/types",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Types package placeholder'",
+    "lint": "echo 'Lint placeholder'",
+    "test": "echo 'Test placeholder'",
+    "typecheck": "echo 'Typecheck placeholder'"
+  }
+}

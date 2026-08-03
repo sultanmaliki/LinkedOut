@@ -1,0 +1,11 @@
+{
+  "name": "@linkedout/ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'UI package placeholder'",
+    "lint": "echo 'Lint placeholder'",
+    "test": "echo 'Test placeholder'",
+    "typecheck": "echo 'Typecheck placeholder'"
+  }
+}

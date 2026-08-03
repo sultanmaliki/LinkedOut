@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: linkedout
+      POSTGRES_USER: linkedout
+      POSTGRES_PASSWORD: linkedout
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  valkey:
+    image: valkey/valkey:7.2
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: linkedout
+      MINIO_ROOT_PASSWORD: linkedout123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.10
+    environment:
+      MEILI_MASTER_KEY: linkedout-master-key
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili-data:/meili_data
+
+volumes:
+  postgres-data:
+  minio-data:
+  meili-data:

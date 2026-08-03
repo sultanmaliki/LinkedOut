@@ -1,0 +1,31 @@
+{
+  "name": "linkedout-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.9.6",
+    "turbo": "^2.0.0",
+    "typescript": "^5.7.3"
+  }
+}

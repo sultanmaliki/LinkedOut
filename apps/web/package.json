@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "lint": "echo 'Lint placeholder'",
-    "test": "echo 'Test placeholder'",
+    "lint": "echo \"Lint will be configured in Sprint 2\"",
+    "test": "echo \"Testing will be configured in Sprint 3\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -15,8 +15,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.3",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.3"
   }
 }

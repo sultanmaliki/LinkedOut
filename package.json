@@ -13,6 +13,12 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:ps": "docker compose ps",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -22,10 +28,10 @@
     "@typescript-eslint/parser": "^8.17.0",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^10.0.0",
-    "husky": "^9.1.0",
+    "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "prettier": "^3.9.6",
-    "turbo": "^2.0.0",
+    "turbo": "2.10.8",
     "typescript": "^5.7.3"
   }
 }

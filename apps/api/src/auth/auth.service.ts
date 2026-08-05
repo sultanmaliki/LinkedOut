@@ -4,10 +4,12 @@ import * as jwt from 'jsonwebtoken';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { UserRepository } from './user.repository';
+import { UserRepository, UserRecord } from './user.repository';
 
 @Injectable()
 export class AuthService {
+  private readonly jwtSecret = process.env.JWT_SECRET || 'dev-secret';
+
   constructor(private readonly userRepository: UserRepository) {}
 
   async register(dto: RegisterDto) {
@@ -24,11 +26,7 @@ export class AuthService {
       role: 'user',
     });
 
-    const tokens = this.issueTokens(user.id, user.email, user.role);
-    return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      ...tokens,
-    };
+    return this.buildAuthResponse(user);
   }
 
   async login(dto: LoginDto) {
@@ -37,15 +35,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = this.issueTokens(user.id, user.email, user.role);
-    return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      ...tokens,
-    };
+    return this.buildAuthResponse(user);
   }
 
   async refresh(dto: RefreshDto) {
-    const payload = jwt.verify(dto.refreshToken, process.env.JWT_SECRET || 'dev-secret') as {
+    const payload = jwt.verify(dto.refreshToken, this.jwtSecret) as {
       sub: string;
       email: string;
       role: string;
@@ -56,6 +50,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    return this.buildAuthResponse(user);
+  }
+
+  private buildAuthResponse(user: UserRecord) {
     const tokens = this.issueTokens(user.id, user.email, user.role);
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
@@ -64,20 +62,12 @@ export class AuthService {
   }
 
   private issueTokens(userId: string, email: string, role: string) {
-    const accessToken = jwt.sign(
-      { sub: userId, email, role },
-      process.env.JWT_SECRET || 'dev-secret',
-      {
-        expiresIn: '15m',
-      },
-    );
-    const refreshToken = jwt.sign(
-      { sub: userId, email, role, type: 'refresh' },
-      process.env.JWT_SECRET || 'dev-secret',
-      {
-        expiresIn: '7d',
-      },
-    );
+    const accessToken = jwt.sign({ sub: userId, email, role }, this.jwtSecret, {
+      expiresIn: '15m',
+    });
+    const refreshToken = jwt.sign({ sub: userId, email, role, type: 'refresh' }, this.jwtSecret, {
+      expiresIn: '7d',
+    });
 
     return { accessToken, refreshToken };
   }

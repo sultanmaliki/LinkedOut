@@ -84,6 +84,7 @@ const jwt = __importStar(require('jsonwebtoken'));
 const user_repository_1 = require('./user.repository');
 let AuthService = class AuthService {
   userRepository;
+  jwtSecret = process.env.JWT_SECRET || 'dev-secret';
   constructor(userRepository) {
     this.userRepository = userRepository;
   }
@@ -99,29 +100,24 @@ let AuthService = class AuthService {
       name: dto.name,
       role: 'user',
     });
-    const tokens = this.issueTokens(user.id, user.email, user.role);
-    return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      ...tokens,
-    };
+    return this.buildAuthResponse(user);
   }
   async login(dto) {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new common_1.UnauthorizedException('Invalid credentials');
     }
-    const tokens = this.issueTokens(user.id, user.email, user.role);
-    return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      ...tokens,
-    };
+    return this.buildAuthResponse(user);
   }
   async refresh(dto) {
-    const payload = jwt.verify(dto.refreshToken, process.env.JWT_SECRET || 'dev-secret');
+    const payload = jwt.verify(dto.refreshToken, this.jwtSecret);
     const user = await this.userRepository.findById(payload.sub);
     if (!user) {
       throw new common_1.UnauthorizedException('Invalid refresh token');
     }
+    return this.buildAuthResponse(user);
+  }
+  buildAuthResponse(user) {
     const tokens = this.issueTokens(user.id, user.email, user.role);
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
@@ -129,20 +125,12 @@ let AuthService = class AuthService {
     };
   }
   issueTokens(userId, email, role) {
-    const accessToken = jwt.sign(
-      { sub: userId, email, role },
-      process.env.JWT_SECRET || 'dev-secret',
-      {
-        expiresIn: '15m',
-      },
-    );
-    const refreshToken = jwt.sign(
-      { sub: userId, email, role, type: 'refresh' },
-      process.env.JWT_SECRET || 'dev-secret',
-      {
-        expiresIn: '7d',
-      },
-    );
+    const accessToken = jwt.sign({ sub: userId, email, role }, this.jwtSecret, {
+      expiresIn: '15m',
+    });
+    const refreshToken = jwt.sign({ sub: userId, email, role, type: 'refresh' }, this.jwtSecret, {
+      expiresIn: '7d',
+    });
     return { accessToken, refreshToken };
   }
 };

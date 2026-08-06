@@ -4,6 +4,7 @@ import { RefreshDto } from './dto/refresh.dto';
 import { UserRepository } from './user.repository';
 export declare class AuthService {
   private readonly userRepository;
+  private readonly jwtSecret;
   constructor(userRepository: UserRepository);
   register(dto: RegisterDto): Promise<{
     accessToken: string;
@@ -35,5 +36,6 @@ export declare class AuthService {
       role: string;
     };
   }>;
+  private buildAuthResponse;
   private issueTokens;
 }

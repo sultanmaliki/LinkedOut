@@ -98,7 +98,7 @@ let AuthService = class AuthService {
       email: dto.email,
       passwordHash,
       name: dto.name,
-      role: 'user',
+      role: 'PROFESSIONAL',
     });
     return this.buildAuthResponse(user);
   }
@@ -107,31 +107,71 @@ let AuthService = class AuthService {
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new common_1.UnauthorizedException('Invalid credentials');
     }
+    this.ensureAccountActive(user);
     return this.buildAuthResponse(user);
   }
   async refresh(dto) {
-    const payload = jwt.verify(dto.refreshToken, this.jwtSecret);
+    let payload;
+    try {
+      payload = jwt.verify(dto.refreshToken, this.jwtSecret);
+    } catch {
+      throw new common_1.UnauthorizedException('Invalid refresh token');
+    }
+    if (payload.type !== 'refresh') {
+      throw new common_1.UnauthorizedException('Invalid refresh token');
+    }
     const user = await this.userRepository.findById(payload.sub);
     if (!user) {
       throw new common_1.UnauthorizedException('Invalid refresh token');
     }
+    this.ensureAccountActive(user);
     return this.buildAuthResponse(user);
+  }
+  ensureAccountActive(user) {
+    if (user.status !== 'ACTIVE') {
+      throw new common_1.UnauthorizedException('Account is not active');
+    }
   }
   buildAuthResponse(user) {
     const tokens = this.issueTokens(user.id, user.email, user.role);
     return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       ...tokens,
     };
   }
   issueTokens(userId, email, role) {
-    const accessToken = jwt.sign({ sub: userId, email, role }, this.jwtSecret, {
-      expiresIn: '15m',
-    });
-    const refreshToken = jwt.sign({ sub: userId, email, role, type: 'refresh' }, this.jwtSecret, {
-      expiresIn: '7d',
-    });
-    return { accessToken, refreshToken };
+    const accessToken = jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+      },
+      this.jwtSecret,
+      {
+        expiresIn: '15m',
+      },
+    );
+    const refreshToken = jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+        type: 'refresh',
+      },
+      this.jwtSecret,
+      {
+        expiresIn: '7d',
+      },
+    );
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 };
 exports.AuthService = AuthService;

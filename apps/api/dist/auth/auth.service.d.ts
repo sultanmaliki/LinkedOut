@@ -36,6 +36,7 @@ export declare class AuthService {
       role: string;
     };
   }>;
+  private ensureAccountActive;
   private buildAuthResponse;
   private issueTokens;
 }

@@ -19,6 +19,7 @@
     "migrate": "drizzle-kit migrate",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
+    "seed": "tsx src/seed/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
     "lint": "eslint src"
@@ -31,6 +32,7 @@
     "@types/pg": "^8.20.4",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.5",
     "typescript": "^5.9.3"
   }
 }

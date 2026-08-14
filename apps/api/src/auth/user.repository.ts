@@ -1,5 +1,17 @@
+import { eq } from 'drizzle-orm';
+
+import { db, professionalProfiles, users } from '@linkedout/database';
+
 export interface UserRecord {
   id: string;
+  email: string;
+  passwordHash: string;
+  name: string;
+  role: string;
+  status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
+}
+
+export interface CreateUserData {
   email: string;
   passwordHash: string;
   name: string;
@@ -7,22 +19,109 @@ export interface UserRecord {
 }
 
 export class UserRepository {
-  private readonly users: UserRecord[] = [];
-
   async findByEmail(email: string): Promise<UserRecord | undefined> {
-    return this.users.find((user) => user.email === email);
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        role: users.role,
+        status: users.status,
+        name: professionalProfiles.fullName,
+      })
+      .from(users)
+      .leftJoin(professionalProfiles, eq(professionalProfiles.userId, users.id))
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (!user || user.name === null) {
+      return undefined;
+    }
+
+    const { name } = user;
+
+    return {
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      role: user.role,
+      status: user.status,
+      name,
+    };
   }
 
   async findById(id: string): Promise<UserRecord | undefined> {
-    return this.users.find((user) => user.id === id);
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        role: users.role,
+        status: users.status,
+        name: professionalProfiles.fullName,
+      })
+      .from(users)
+      .leftJoin(professionalProfiles, eq(professionalProfiles.userId, users.id))
+      .where(eq(users.id, id))
+      .limit(1);
+
+    if (!user || user.name === null) {
+      return undefined;
+    }
+
+    const { name } = user;
+
+    return {
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      role: user.role,
+      status: user.status,
+      name,
+    };
   }
 
-  async create(data: Omit<UserRecord, 'id'>): Promise<UserRecord> {
-    const user: UserRecord = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      ...data,
-    };
-    this.users.push(user);
-    return user;
+  async create(data: CreateUserData): Promise<UserRecord> {
+    return db.transaction(async (tx) => {
+      const [user] = await tx
+        .insert(users)
+        .values({
+          email: data.email,
+          passwordHash: data.passwordHash,
+          role: 'PROFESSIONAL',
+          emailVerified: false,
+          status: 'ACTIVE',
+        })
+        .returning({
+          id: users.id,
+          email: users.email,
+          passwordHash: users.passwordHash,
+          role: users.role,
+          status: users.status,
+        });
+
+      if (!user) {
+        throw new Error('Failed to create user');
+      }
+
+      const [profile] = await tx
+        .insert(professionalProfiles)
+        .values({
+          userId: user.id,
+          fullName: data.name,
+        })
+        .returning({
+          fullName: professionalProfiles.fullName,
+        });
+
+      if (!profile) {
+        throw new Error('Failed to create professional profile');
+      }
+
+      return {
+        ...user,
+        name: profile.fullName,
+      };
+    });
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -14,16 +15,18 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const existing = await this.userRepository.findByEmail(dto.email);
+
     if (existing) {
       throw new ConflictException('Email already registered');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
+
     const user = await this.userRepository.create({
       email: dto.email,
       passwordHash,
       name: dto.name,
-      role: 'user',
+      role: 'PROFESSIONAL',
     });
 
     return this.buildAuthResponse(user);
@@ -31,44 +34,99 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.userRepository.findByEmail(dto.email);
+
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    this.ensureAccountActive(user);
 
     return this.buildAuthResponse(user);
   }
 
   async refresh(dto: RefreshDto) {
-    const payload = jwt.verify(dto.refreshToken, this.jwtSecret) as {
+    let payload: {
       sub: string;
       email: string;
       role: string;
+      type?: string;
     };
 
+    try {
+      payload = jwt.verify(dto.refreshToken, this.jwtSecret) as {
+        sub: string;
+        email: string;
+        role: string;
+        type?: string;
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    if (payload.type !== 'refresh') {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
     const user = await this.userRepository.findById(payload.sub);
+
     if (!user) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    this.ensureAccountActive(user);
+
     return this.buildAuthResponse(user);
+  }
+
+  private ensureAccountActive(user: UserRecord) {
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('Account is not active');
+    }
   }
 
   private buildAuthResponse(user: UserRecord) {
     const tokens = this.issueTokens(user.id, user.email, user.role);
+
     return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       ...tokens,
     };
   }
 
   private issueTokens(userId: string, email: string, role: string) {
-    const accessToken = jwt.sign({ sub: userId, email, role }, this.jwtSecret, {
-      expiresIn: '15m',
-    });
-    const refreshToken = jwt.sign({ sub: userId, email, role, type: 'refresh' }, this.jwtSecret, {
-      expiresIn: '7d',
-    });
+    const accessToken = jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+      },
+      this.jwtSecret,
+      {
+        expiresIn: '15m',
+      },
+    );
 
-    return { accessToken, refreshToken };
+    const refreshToken = jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+        type: 'refresh',
+      },
+      this.jwtSecret,
+      {
+        expiresIn: '7d',
+      },
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }

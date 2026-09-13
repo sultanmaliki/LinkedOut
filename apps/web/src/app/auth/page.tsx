@@ -1,86 +1,149 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { Suspense, useState, type FormEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { AlertCircle } from 'lucide-react';
 
-export default function AuthPage() {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+import { ApiError } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input, Label } from '@/components/ui/input';
+
+function AuthForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, register } = useAuth();
+
+  const [mode, setMode] = useState<'login' | 'register'>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login',
+  );
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage('Authentication request submitted');
+    setError(null);
+    setIsSubmitting(true);
 
-    const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-    const body = mode === 'login' ? { email, password } : { name, email, password };
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (response.ok) {
-      setMessage(`${mode === 'login' ? 'Logged in' : 'Registered'} successfully`);
-    } else {
-      setMessage('Authentication failed');
+    try {
+      if (mode === 'login') {
+        await login(email, password);
+      } else {
+        await register(name, email, password);
+      }
+      router.push('/me');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <main
-      style={{
-        maxWidth: 480,
-        margin: '3rem auto',
-        padding: '2rem',
-        border: '1px solid #ddd',
-        borderRadius: 12,
-      }}
-    >
-      <h1>LinkedOut Auth</h1>
-      <p>Authentication UI placeholder wired to the auth API.</p>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <button type="button" onClick={() => setMode('login')}>
-          Login
-        </button>
-        <button type="button" onClick={() => setMode('register')}>
-          Register
-        </button>
+    <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-6 py-16">
+      <div className="mb-8 text-center">
+        <h1 className="font-display text-[28px] font-medium tracking-[-0.01em] text-fg">
+          {mode === 'login' ? 'Welcome back' : 'Build your profile'}
+        </h1>
+        <p className="mt-2 text-[14.5px] text-fg-muted">
+          {mode === 'login'
+            ? 'Sign in to review your opportunities.'
+            : 'Companies discover you. You decide who to talk to.'}
+        </p>
       </div>
-      <form onSubmit={handleSubmit}>
-        {mode === 'register' && (
-          <div style={{ marginBottom: '0.75rem' }}>
-            <label>Name</label>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              style={{ display: 'block', width: '100%' }}
+
+      <Card className="p-6">
+        <div className="mb-6 flex rounded-xl border border-line bg-canvas p-1">
+          {(['login', 'register'] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => {
+                setMode(tab);
+                setError(null);
+              }}
+              className={`flex-1 rounded-lg py-2 text-[13.5px] font-medium transition-colors ${
+                mode === tab ? 'bg-surface text-fg shadow-[var(--shadow-card)]' : 'text-fg-muted'
+              }`}
+            >
+              {tab === 'login' ? 'Sign in' : 'Sign up'}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === 'register' && (
+            <div>
+              <Label htmlFor="name">Full name</Label>
+              <Input
+                id="name"
+                required
+                minLength={2}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Ada Lovelace"
+              />
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
             />
           </div>
-        )}
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            style={{ display: 'block', width: '100%' }}
-          />
-        </div>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            style={{ display: 'block', width: '100%' }}
-          />
-        </div>
-        <button type="submit">{mode === 'login' ? 'Login' : 'Register'}</button>
-      </form>
-      {message && <p>{message}</p>}
+
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="At least 8 characters"
+            />
+          </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-xl bg-rose-100 px-3.5 py-3 text-[13.5px] text-rose-600 dark:bg-rose-600/10 dark:text-rose-500">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+          </Button>
+        </form>
+      </Card>
+
+      <p className="mt-6 text-center text-[13.5px] text-fg-faint">
+        By continuing you agree this is a demo build of{' '}
+        <Link href="/" className="underline underline-offset-2 hover:text-fg-muted">
+          LinkedOut
+        </Link>
+        .
+      </p>
     </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthForm />
+    </Suspense>
   );
 }

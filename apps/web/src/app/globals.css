@@ -1,0 +1,98 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* raw palette */
+  --color-ink-950: #0b0c0e;
+  --color-ink-900: #131417;
+  --color-ink-800: #1c1e22;
+  --color-ink-700: #2a2d33;
+  --color-ink-600: #43474f;
+  --color-ink-500: #64686f;
+  --color-ink-400: #8b8f96;
+  --color-ink-300: #b4b7bd;
+  --color-ink-200: #dcdde0;
+  --color-ink-100: #edeeef;
+  --color-ink-50: #f6f6f5;
+
+  --color-paper: #faf9f6;
+  --color-paper-raised: #ffffff;
+
+  --color-emerald-600: #0e7d5a;
+  --color-emerald-500: #0e9f6e;
+  --color-emerald-400: #34b884;
+  --color-emerald-100: #dcf5e9;
+  --color-emerald-50: #f0faf5;
+
+  --color-gold-600: #b45309;
+  --color-gold-500: #d97706;
+  --color-gold-400: #f0a83e;
+  --color-gold-100: #fdecd2;
+
+  --color-rose-600: #b3364a;
+  --color-rose-500: #d64560;
+  --color-rose-100: #fbe2e7;
+
+  /* semantic tokens (react to theme below) */
+  --color-canvas: var(--color-paper);
+  --color-surface: var(--color-paper-raised);
+  --color-fg: var(--color-ink-900);
+  --color-fg-muted: var(--color-ink-500);
+  --color-fg-faint: var(--color-ink-400);
+  --color-line: var(--color-ink-200);
+  --color-line-strong: var(--color-ink-300);
+
+  --shadow-card: 0 1px 1px rgba(11, 12, 14, 0.03), 0 2px 8px rgba(11, 12, 14, 0.05);
+  --shadow-lifted: 0 12px 32px -12px rgba(11, 12, 14, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: var(--color-ink-950);
+    --color-surface: var(--color-ink-900);
+    --color-fg: var(--color-ink-50);
+    --color-fg-muted: var(--color-ink-400);
+    --color-fg-faint: var(--color-ink-500);
+    --color-line: var(--color-ink-700);
+    --color-line-strong: var(--color-ink-600);
+  }
+}
+
+:root.dark {
+  --color-canvas: var(--color-ink-950);
+  --color-surface: var(--color-ink-900);
+  --color-fg: var(--color-ink-50);
+  --color-fg-muted: var(--color-ink-400);
+  --color-fg-faint: var(--color-ink-500);
+  --color-line: var(--color-ink-700);
+  --color-line-strong: var(--color-ink-600);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-emerald-100);
+  color: var(--color-emerald-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background: var(--color-emerald-600);
+    color: var(--color-emerald-50);
+  }
+}

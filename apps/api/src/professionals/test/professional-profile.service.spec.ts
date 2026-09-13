@@ -4,6 +4,7 @@ import { ProfessionalProfileService } from '../professional-profile.service';
 
 describe('ProfessionalProfileService', () => {
   const repository = {
+    findById: jest.fn(),
     findByUserId: jest.fn(),
     updateByUserId: jest.fn(),
   };

@@ -27,6 +27,28 @@ export interface UpdateProfessionalProfileData {
 }
 
 export class ProfessionalProfileRepository {
+  async findById(id: string): Promise<ProfessionalProfileRecord | undefined> {
+    const [profile] = await db
+      .select({
+        id: professionalProfiles.id,
+        userId: professionalProfiles.userId,
+        fullName: professionalProfiles.fullName,
+        headline: professionalProfiles.headline,
+        bio: professionalProfiles.bio,
+        profilePhotoUrl: professionalProfiles.profilePhotoUrl,
+        bannerPhotoUrl: professionalProfiles.bannerPhotoUrl,
+        currentLocation: professionalProfiles.currentLocation,
+        personalWebsite: professionalProfiles.personalWebsite,
+        createdAt: professionalProfiles.createdAt,
+        updatedAt: professionalProfiles.updatedAt,
+      })
+      .from(professionalProfiles)
+      .where(eq(professionalProfiles.id, id))
+      .limit(1);
+
+    return profile;
+  }
+
   async findByUserId(userId: string): Promise<ProfessionalProfileRecord | undefined> {
     const [profile] = await db
       .select({

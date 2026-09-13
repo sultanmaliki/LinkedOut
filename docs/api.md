@@ -1,7 +1,9 @@
 # API Design
 
 ## Overview
-The API is a RESTful NestJS service exposing versioned endpoints for authentication, profiles, companies, reviews, applications, search, notifications, and admin operations.
+The API is a RESTful NestJS service exposing versioned endpoints for authentication, profiles, companies, hiring, reviews, search, notifications, and admin operations.
+
+Note: LinkedOut reverses traditional hiring — companies discover professionals and send opportunities; professionals do not submit applications (see [decisions.md](decisions.md), D-001). The endpoint list below reflects that model.
 
 ## Versioning
 - Base path: /api/v1
@@ -9,18 +11,18 @@ The API is a RESTful NestJS service exposing versioned endpoints for authenticat
 - Deprecate gradually with compatibility windows
 
 ## Core Endpoints
+
 ### Authentication
 - POST /api/v1/auth/register
 - POST /api/v1/auth/login
-- POST /api/v1/auth/logout
 - POST /api/v1/auth/refresh
 - GET /api/v1/auth/me
 
-### Users
-- GET /api/v1/users/me
-- PATCH /api/v1/users/me
-- GET /api/v1/users/:id
-- GET /api/v1/users/:id/companies
+### Professionals
+- GET /api/v1/professionals/:id
+- PATCH /api/v1/professionals/me
+- GET /api/v1/professionals/me
+- GET /api/v1/professionals/:id/reviews
 
 ### Companies
 - GET /api/v1/companies
@@ -28,25 +30,28 @@ The API is a RESTful NestJS service exposing versioned endpoints for authenticat
 - GET /api/v1/companies/:id
 - PATCH /api/v1/companies/:id
 - GET /api/v1/companies/:id/reviews
-- POST /api/v1/companies/:id/apply
+- GET /api/v1/companies/:id/jobs
+
+### Jobs and Opportunities
+- GET /api/v1/companies/:id/jobs
+- POST /api/v1/companies/:id/jobs
+- POST /api/v1/jobs/:id/opportunities — company sends an opportunity to a professional
+- GET /api/v1/opportunities — opportunities for the current professional
+- POST /api/v1/opportunities/:id/respond — professional accepts or declines
+- GET /api/v1/opportunities/:id/pipeline — hiring pipeline stage history (append-only)
 
 ### Reviews
-- POST /api/v1/reviews
+- POST /api/v1/reviews — requires a verified EmploymentHistory
 - GET /api/v1/reviews/:id
-- PATCH /api/v1/reviews/:id
-- DELETE /api/v1/reviews/:id
+- PATCH /api/v1/reviews/:id — subject to edit cooldown; companies cannot edit or delete
+- POST /api/v1/reviews/:id/reply — one company reply per review
 - POST /api/v1/reviews/:id/vote
-
-### Applications
-- GET /api/v1/applications
-- GET /api/v1/applications/:id
-- POST /api/v1/applications/:id/decide
 
 ### Notifications
 - GET /api/v1/notifications
 - PATCH /api/v1/notifications/:id/read
 
-### Admin
+### Admin / Moderation
 - GET /api/v1/admin/moderation
 - PATCH /api/v1/admin/moderation/:id
 - GET /api/v1/admin/analytics

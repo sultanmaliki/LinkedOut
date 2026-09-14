@@ -106,6 +106,110 @@ describe('Auth HTTP (e2e)', () => {
   it('POST /auth/refresh returns 400 when refreshToken is missing', async () => {
     await request(app.getHttpServer()).post('/auth/refresh').send({}).expect(400);
   });
+
+  it('POST /auth/register returns an unverified user with a dev verification token', async () => {
+    const email = `e2e-verify-${Date.now()}@example.com`;
+
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Verify User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    expect(response.body.user.emailVerified).toBe(false);
+    expect(response.body.devVerificationToken).toBeTruthy();
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/verify-email verifies the account and is reflected on next login', async () => {
+    const email = `e2e-verify-flow-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Verify Flow User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/verify-email')
+      .send({ token: registerResponse.body.devVerificationToken })
+      .expect(201);
+
+    const loginResponse = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password: 'supersecret1' })
+      .expect(201);
+
+    expect(loginResponse.body.user.emailVerified).toBe(true);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/verify-email returns 401 for an invalid token', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/verify-email')
+      .send({ token: 'not-a-real-token' })
+      .expect(401);
+  });
+
+  it('POST /auth/resend-verification sends a new token for the authenticated user', async () => {
+    const email = `e2e-resend-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Resend User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    const resendResponse = await request(app.getHttpServer())
+      .post('/auth/resend-verification')
+      .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+      .expect(201);
+
+    expect(resendResponse.body.sent).toBe(true);
+    expect(resendResponse.body.devVerificationToken).toBeTruthy();
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/resend-verification returns 401 without an access token', async () => {
+    await request(app.getHttpServer()).post('/auth/resend-verification').expect(401);
+  });
+
+  it('POST /auth/resend-verification returns 409 once already verified', async () => {
+    const email = `e2e-resend-verified-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Already Verified User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/verify-email')
+      .send({ token: registerResponse.body.devVerificationToken })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/resend-verification')
+      .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+      .expect(409);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
   it('GET /professionals/me returns the authenticated professional profile', async () => {
     const email = `e2e-profile-${Date.now()}@example.com`;
 

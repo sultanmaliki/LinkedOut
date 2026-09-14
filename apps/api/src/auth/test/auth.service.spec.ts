@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { client, db, professionalProfiles, users } from '@linkedout/database';
 
 import { AuthService } from '../auth.service';
+import { MailerService } from '../mailer.service';
 import { UserRepository } from '../user.repository';
 
 const TEST_EMAIL = 'ada@example.com';
@@ -19,7 +20,7 @@ describe('AuthService', () => {
 
   it('registers a new user and persists the professional profile', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     const result = await service.register({
       name: 'Ada',
@@ -63,7 +64,7 @@ describe('AuthService', () => {
 
   it('rejects invalid login credentials', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     await expect(
       service.login({
@@ -75,7 +76,7 @@ describe('AuthService', () => {
 
   it('logs in with valid persisted credentials', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     await service.register({
       name: 'Ada',
@@ -97,7 +98,7 @@ describe('AuthService', () => {
 
   it('refreshes tokens with a valid refresh token', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     const registered = await service.register({
       name: 'Ada',
@@ -118,7 +119,7 @@ describe('AuthService', () => {
 
   it('rejects duplicate registration', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     await service.register({
       name: 'Ada',
@@ -137,7 +138,7 @@ describe('AuthService', () => {
 
   it('rejects an invalid refresh token', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     await expect(
       service.refresh({
@@ -148,7 +149,7 @@ describe('AuthService', () => {
 
   it('rejects a refresh token when the user no longer exists', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     const registered = await service.register({
       name: 'Ada',
@@ -169,7 +170,7 @@ describe('AuthService', () => {
     'rejects login for a %s account',
     async (status) => {
       const repository = new UserRepository();
-      const service = new AuthService(repository);
+      const service = new AuthService(repository, new MailerService());
 
       await service.register({
         name: 'Ada',
@@ -196,7 +197,7 @@ describe('AuthService', () => {
 
   it('allows login for an active account', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     await service.register({
       name: 'Ada',
@@ -224,7 +225,7 @@ describe('AuthService', () => {
 
   it('rejects refresh for a non-active account', async () => {
     const repository = new UserRepository();
-    const service = new AuthService(repository);
+    const service = new AuthService(repository, new MailerService());
 
     const registered = await service.register({
       name: 'Ada',
@@ -245,5 +246,97 @@ describe('AuthService', () => {
         refreshToken: registered.refreshToken,
       }),
     ).rejects.toThrow('Account is not active');
+  });
+
+  it('registers a new user as unverified and includes a dev verification token', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const result = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    expect(result.user.emailVerified).toBe(false);
+    expect(result.devVerificationToken).toBeTruthy();
+  });
+
+  it('verifies the email with a valid token', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    await expect(service.verifyEmail({ token: registered.devVerificationToken! })).resolves.toEqual(
+      { verified: true },
+    );
+
+    const result = await service.login({
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    expect(result.user.emailVerified).toBe(true);
+  });
+
+  it('rejects an invalid verification token', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    await expect(service.verifyEmail({ token: 'not-a-real-token' })).rejects.toThrow(
+      'Invalid or expired verification link',
+    );
+  });
+
+  it('rejects a refresh token used as a verification token', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    await expect(service.verifyEmail({ token: registered.refreshToken })).rejects.toThrow(
+      'Invalid or expired verification link',
+    );
+  });
+
+  it('resends a verification email for an unverified user', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    const result = await service.resendVerification(registered.user.id);
+    expect(result.sent).toBe(true);
+    expect(result.devVerificationToken).toBeTruthy();
+  });
+
+  it('rejects resending verification for an already-verified user', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    await service.verifyEmail({ token: registered.devVerificationToken! });
+
+    await expect(service.resendVerification(registered.user.id)).rejects.toThrow(
+      'Email is already verified',
+    );
   });
 });

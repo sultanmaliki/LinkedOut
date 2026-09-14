@@ -26,6 +26,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  markEmailVerified: () => void;
 }
 
 interface StoredSession {
@@ -120,9 +121,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persist],
   );
 
+  const markEmailVerified = useCallback(() => {
+    setUser((prevUser) => {
+      if (!prevUser || prevUser.emailVerified) return prevUser;
+
+      const updated = { ...prevUser, emailVerified: true };
+
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as StoredSession;
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, user: updated }));
+        }
+      } catch {
+        // ignore storage failures; in-memory state is still updated
+      }
+
+      return updated;
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ user, accessToken, isLoading, login, register, logout: clearSession }),
-    [user, accessToken, isLoading, login, register, clearSession],
+    () => ({
+      user,
+      accessToken,
+      isLoading,
+      login,
+      register,
+      logout: clearSession,
+      markEmailVerified,
+    }),
+    [user, accessToken, isLoading, login, register, clearSession, markEmailVerified],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,6 +2,7 @@ import { ConflictException, UnauthorizedException, ValidationPipe } from '@nestj
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
+import { AuthenticatedUser } from '../guards/auth.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -10,6 +11,8 @@ describe('AuthController', () => {
     register: jest.fn(),
     login: jest.fn(),
     refresh: jest.fn(),
+    verifyEmail: jest.fn(),
+    resendVerification: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -130,5 +133,37 @@ describe('AuthController', () => {
         password: 'wrongpass',
       }),
     ).rejects.toThrow('Invalid credentials');
+  });
+
+  it('verifies an email', async () => {
+    authService.verifyEmail.mockResolvedValue({ verified: true });
+
+    await expect(controller.verifyEmail({ token: 'a-token' })).resolves.toEqual({
+      verified: true,
+    });
+    expect(authService.verifyEmail).toHaveBeenCalledWith({ token: 'a-token' });
+  });
+
+  it('propagates verification errors', async () => {
+    authService.verifyEmail.mockRejectedValue(
+      new UnauthorizedException('Invalid or expired verification link'),
+    );
+
+    await expect(controller.verifyEmail({ token: 'bad-token' })).rejects.toThrow(
+      'Invalid or expired verification link',
+    );
+  });
+
+  it('resends a verification email for the authenticated user', async () => {
+    const user: AuthenticatedUser = {
+      id: 'user-1',
+      email: 'ada@example.com',
+      role: 'PROFESSIONAL',
+    };
+
+    authService.resendVerification.mockResolvedValue({ sent: true });
+
+    await expect(controller.resendVerification(user)).resolves.toEqual({ sent: true });
+    expect(authService.resendVerification).toHaveBeenCalledWith('user-1');
   });
 });

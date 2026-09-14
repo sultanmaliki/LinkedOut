@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
+import { VerifyEmailBanner } from '@/components/verify-email-banner';
 import { AuthProvider } from '@/lib/auth-context';
 
 import './globals.css';
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col">
         <AuthProvider>
           <Header />
+          <VerifyEmailBanner />
           <div className="flex-1">{children}</div>
           <Footer />
         </AuthProvider>

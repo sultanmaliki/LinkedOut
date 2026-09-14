@@ -9,6 +9,7 @@ export interface UserRecord {
   name: string;
   role: string;
   status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
+  emailVerified: boolean;
 }
 
 export interface SafeUserRecord {
@@ -34,6 +35,7 @@ export class UserRepository {
         passwordHash: users.passwordHash,
         role: users.role,
         status: users.status,
+        emailVerified: users.emailVerified,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -53,6 +55,7 @@ export class UserRepository {
       passwordHash: user.passwordHash,
       role: user.role,
       status: user.status,
+      emailVerified: user.emailVerified,
       name,
     };
   }
@@ -65,6 +68,7 @@ export class UserRepository {
         passwordHash: users.passwordHash,
         role: users.role,
         status: users.status,
+        emailVerified: users.emailVerified,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -84,6 +88,7 @@ export class UserRepository {
       passwordHash: user.passwordHash,
       role: user.role,
       status: user.status,
+      emailVerified: user.emailVerified,
       name,
     };
   }
@@ -106,6 +111,13 @@ export class UserRepository {
     return user;
   }
 
+  async markEmailVerified(id: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ emailVerified: true, updatedAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
   async create(data: CreateUserData): Promise<UserRecord> {
     return db.transaction(async (tx) => {
       const [user] = await tx
@@ -123,6 +135,7 @@ export class UserRepository {
           passwordHash: users.passwordHash,
           role: users.role,
           status: users.status,
+          emailVerified: users.emailVerified,
         });
 
       if (!user) {

@@ -90,6 +90,36 @@ export interface ReviewRating {
   score: number;
 }
 
+export interface Job {
+  id: string;
+  companyId: string;
+  title: string;
+  description: string;
+  employmentType: string;
+  workMode: string;
+  status: string;
+}
+
+export interface Opportunity {
+  id: string;
+  jobId: string;
+  professionalProfileId: string;
+  message: string | null;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'WITHDRAWN';
+  acceptedAt: string | null;
+  declinedAt: string | null;
+  withdrawnAt: string | null;
+  createdAt: string;
+}
+
+export interface HiringPipelineStage {
+  id: string;
+  opportunityId: string;
+  stage: string;
+  notes: string | null;
+  changedAt: string;
+}
+
 export interface Review {
   id: string;
   companyId: string;

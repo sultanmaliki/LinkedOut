@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
@@ -22,5 +22,10 @@ export class ProfessionalProfileController {
     @Body() dto: UpdateProfessionalProfileDto,
   ) {
     return this.profileService.updateMyProfile(user.id, dto);
+  }
+
+  @Get(':id')
+  async getProfile(@Param('id') id: string) {
+    return this.profileService.getProfile(id);
   }
 }

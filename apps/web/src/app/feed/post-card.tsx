@@ -1,0 +1,75 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Heart, MessageCircle } from 'lucide-react';
+
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
+import { cn } from '@/lib/cn';
+import type { Post } from '@/lib/types';
+import { AuthorBadge } from '@/components/author-badge';
+import { Card } from '@/components/ui/card';
+import { CommentThread } from './comment-thread';
+
+export function PostCard({ post }: { post: Post }) {
+  const { accessToken } = useAuth();
+  const [likeCount, setLikeCount] = useState<number | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    apiFetch<{ count: number }>(`/posts/${post.id}/like`).then((res) => setLikeCount(res.count));
+  }, [post.id]);
+
+  async function toggleLike() {
+    if (!accessToken) return;
+    const res = await apiFetch<{ liked: boolean }>(`/posts/${post.id}/like`, {
+      method: 'POST',
+      token: accessToken,
+      body: {},
+    });
+    setLiked(res.liked);
+    setLikeCount((count) => (count ?? 0) + (res.liked ? 1 : -1));
+  }
+
+  return (
+    <Card className="p-5">
+      <AuthorBadge professionalProfileId={post.professionalProfileId} companyId={post.companyId} />
+
+      <p className="mt-3 whitespace-pre-line text-[14.5px] leading-relaxed text-fg">
+        {post.content}
+      </p>
+
+      <p className="mt-3 text-[12px] text-fg-faint">
+        {new Date(post.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}
+      </p>
+
+      <div className="mt-3 flex items-center gap-4 border-t border-line pt-3">
+        <button
+          onClick={toggleLike}
+          disabled={!accessToken}
+          className={cn(
+            'inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors',
+            liked ? 'text-rose-600 dark:text-rose-500' : 'text-fg-muted hover:text-fg',
+          )}
+        >
+          <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+          {likeCount ?? '—'}
+        </button>
+        <button
+          onClick={() => setShowComments((v) => !v)}
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-muted hover:text-fg"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Comments
+        </button>
+      </div>
+
+      {showComments && <CommentThread postId={post.id} />}
+    </Card>
+  );
+}

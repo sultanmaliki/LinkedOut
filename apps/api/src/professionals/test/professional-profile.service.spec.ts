@@ -45,6 +45,27 @@ describe('ProfessionalProfileService', () => {
     );
   });
 
+  it('returns a profile by id for public lookup', async () => {
+    const profile = {
+      id: 'profile-1',
+      userId: 'user-1',
+      fullName: 'Ada Lovelace',
+    };
+
+    repository.findById.mockResolvedValue(profile);
+
+    await expect(service.getProfile('profile-1')).resolves.toEqual(profile);
+    expect(repository.findById).toHaveBeenCalledWith('profile-1');
+  });
+
+  it('throws when looking up a profile id that does not exist', async () => {
+    repository.findById.mockResolvedValue(undefined);
+
+    await expect(service.getProfile('missing')).rejects.toThrow(
+      new NotFoundException('Professional profile not found'),
+    );
+  });
+
   it('updates the current professional profile', async () => {
     const existingProfile = {
       id: 'profile-1',

@@ -11,6 +11,7 @@ describe('ProfessionalProfileController', () => {
   const profileService = {
     getMyProfile: jest.fn(),
     updateMyProfile: jest.fn(),
+    getProfile: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -104,5 +105,13 @@ describe('ProfessionalProfileController', () => {
 
     expect(profileService.updateMyProfile).toHaveBeenCalledTimes(1);
     expect(profileService.updateMyProfile).toHaveBeenCalledWith('user-42', dto);
+  });
+
+  it('gets a professional profile by id', async () => {
+    const profile = { id: 'profile-1', fullName: 'Ada Lovelace' };
+    profileService.getProfile.mockResolvedValue(profile);
+
+    await expect(controller.getProfile('profile-1')).resolves.toEqual(profile);
+    expect(profileService.getProfile).toHaveBeenCalledWith('profile-1');
   });
 });

@@ -20,6 +20,16 @@ export class ProfessionalProfileService {
     return profile;
   }
 
+  async getProfile(id: string): Promise<ProfessionalProfileRecord> {
+    const profile = await this.profileRepository.findById(id);
+
+    if (!profile) {
+      throw new NotFoundException('Professional profile not found');
+    }
+
+    return profile;
+  }
+
   async updateMyProfile(
     userId: string,
     dto: UpdateProfessionalProfileDto,

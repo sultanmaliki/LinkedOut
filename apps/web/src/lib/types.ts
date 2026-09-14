@@ -120,6 +120,28 @@ export interface HiringPipelineStage {
   changedAt: string;
 }
 
+export interface Post {
+  id: string;
+  professionalProfileId: string | null;
+  companyId: string | null;
+  content: string | null;
+  visibility: 'VISIBLE_NOW' | 'SCHEDULED' | 'ARCHIVED';
+  scheduledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  id: string;
+  postId: string;
+  professionalProfileId: string | null;
+  companyId: string | null;
+  parentCommentId: string | null;
+  content: string;
+  edited: boolean;
+  createdAt: string;
+}
+
 export interface Review {
   id: string;
   companyId: string;

@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { Button, buttonStyles } from '@/components/ui/button';
 
 const navItems = [
+  { href: '/feed', label: 'Feed' },
   { href: '/companies', label: 'Companies' },
   { href: '/opportunities', label: 'Opportunities' },
   { href: '/companies/mine', label: 'For companies' },

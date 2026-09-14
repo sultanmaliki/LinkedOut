@@ -26,6 +26,12 @@ export class EmploymentExpectationService {
     return expectation;
   }
 
+  async getForProfileId(profileId: string): Promise<EmploymentExpectationRecord | null> {
+    const expectation = await this.expectationRepository.findByProfile(profileId);
+
+    return expectation ?? null;
+  }
+
   async setMyExpectation(
     userId: string,
     dto: SetEmploymentExpectationDto,

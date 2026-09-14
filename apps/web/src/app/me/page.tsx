@@ -6,8 +6,16 @@ import { Globe, MapPin, Pencil } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import type { ProfessionalProfile } from '@/lib/types';
+import type {
+  EmploymentExpectation,
+  PortfolioLink,
+  ProfessionalProfile,
+  ProfessionalSkill,
+} from '@/lib/types';
+import { LookingForCard } from '@/components/looking-for-card';
+import { PortfolioLinksList } from '@/components/portfolio-links-list';
 import { ProfileNav } from '@/components/profile-nav';
+import { SkillsBadges } from '@/components/skills-badges';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Input, Label, Textarea } from '@/components/ui/input';
@@ -17,6 +25,9 @@ export default function MyProfilePage() {
   const { user, accessToken, isLoading: isAuthLoading } = useAuth();
 
   const [profile, setProfile] = useState<ProfessionalProfile | null>(null);
+  const [skills, setSkills] = useState<ProfessionalSkill[]>([]);
+  const [links, setLinks] = useState<PortfolioLink[]>([]);
+  const [expectation, setExpectation] = useState<EmploymentExpectation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +44,20 @@ export default function MyProfilePage() {
       .then(setProfile)
       .catch((err) => setError(err instanceof ApiError ? err.message : 'Failed to load profile'))
       .finally(() => setIsLoading(false));
+
+    apiFetch<ProfessionalSkill[]>('/professionals/me/skills', { token: accessToken })
+      .then(setSkills)
+      .catch(() => setSkills([]));
+
+    apiFetch<PortfolioLink[]>('/professionals/me/portfolio-links', { token: accessToken })
+      .then(setLinks)
+      .catch(() => setLinks([]));
+
+    apiFetch<EmploymentExpectation>('/professionals/me/employment-expectation', {
+      token: accessToken,
+    })
+      .then(setExpectation)
+      .catch(() => setExpectation(null));
   }, [accessToken, isAuthLoading, router]);
 
   if (isAuthLoading || isLoading) {
@@ -125,9 +150,24 @@ export default function MyProfilePage() {
                 No bio yet — add one so companies know what you&rsquo;re about.
               </p>
             )}
+
+            <SkillsBadges skills={skills} />
+            <PortfolioLinksList links={links} />
+
+            {skills.length === 0 && links.length === 0 && !expectation && (
+              <p className="mt-6 text-[13.5px] text-fg-faint">
+                Add your skills, portfolio, and what you&rsquo;re looking for from{' '}
+                <a href="/me/skills" className="font-medium text-fg hover:underline">
+                  Skills &amp; career
+                </a>
+                .
+              </p>
+            )}
           </CardBody>
         </Card>
       )}
+
+      {!isEditing && <LookingForCard expectation={expectation} />}
     </main>
   );
 }

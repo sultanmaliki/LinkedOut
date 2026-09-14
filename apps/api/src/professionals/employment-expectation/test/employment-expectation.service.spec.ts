@@ -53,6 +53,21 @@ describe('EmploymentExpectationService', () => {
     );
   });
 
+  it('returns the expectation for a profile id without resolving through a user', async () => {
+    const expectation = { professionalProfileId: 'profile-1', ...dto };
+    expectationRepository.findByProfile.mockResolvedValue(expectation);
+
+    await expect(service.getForProfileId('profile-1')).resolves.toEqual(expectation);
+    expect(expectationRepository.findByProfile).toHaveBeenCalledWith('profile-1');
+    expect(profileRepository.findByUserId).not.toHaveBeenCalled();
+  });
+
+  it('returns null for a profile id with no expectation set', async () => {
+    expectationRepository.findByProfile.mockResolvedValue(undefined);
+
+    await expect(service.getForProfileId('profile-1')).resolves.toBeNull();
+  });
+
   it('upserts the expectation for the authenticated user', async () => {
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
 

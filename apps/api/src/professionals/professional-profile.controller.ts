@@ -4,11 +4,19 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
 import { ListProfessionalsDto } from './dto/list-professionals.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
+import { EmploymentExpectationService } from './employment-expectation/employment-expectation.service';
+import { PortfolioLinkService } from './portfolio-links/portfolio-link.service';
 import { ProfessionalProfileService } from './professional-profile.service';
+import { SkillService } from './skills/skill.service';
 
 @Controller('professionals')
 export class ProfessionalProfileController {
-  constructor(private readonly profileService: ProfessionalProfileService) {}
+  constructor(
+    private readonly profileService: ProfessionalProfileService,
+    private readonly skillService: SkillService,
+    private readonly portfolioLinkService: PortfolioLinkService,
+    private readonly employmentExpectationService: EmploymentExpectationService,
+  ) {}
 
   @Get()
   async searchProfiles(@Query() query: ListProfessionalsDto) {
@@ -33,5 +41,20 @@ export class ProfessionalProfileController {
   @Get(':id')
   async getProfile(@Param('id') id: string) {
     return this.profileService.getProfile(id);
+  }
+
+  @Get(':id/skills')
+  async getProfileSkills(@Param('id') id: string) {
+    return this.skillService.listForProfileId(id);
+  }
+
+  @Get(':id/portfolio-links')
+  async getProfilePortfolioLinks(@Param('id') id: string) {
+    return this.portfolioLinkService.listForProfileId(id);
+  }
+
+  @Get(':id/employment-expectation')
+  async getProfileEmploymentExpectation(@Param('id') id: string) {
+    return this.employmentExpectationService.getForProfileId(id);
   }
 }

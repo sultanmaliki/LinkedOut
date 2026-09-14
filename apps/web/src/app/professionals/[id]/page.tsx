@@ -3,8 +3,16 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Globe, MapPin } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
-import type { ProfessionalProfile } from '@/lib/types';
+import type {
+  EmploymentExpectation,
+  PortfolioLink,
+  ProfessionalProfile,
+  ProfessionalSkill,
+} from '@/lib/types';
+import { LookingForCard } from '@/components/looking-for-card';
+import { PortfolioLinksList } from '@/components/portfolio-links-list';
 import { ReportButton } from '@/components/report-button';
+import { SkillsBadges } from '@/components/skills-badges';
 import { Card, CardBody } from '@/components/ui/card';
 
 async function getProfile(id: string): Promise<ProfessionalProfile | null> {
@@ -23,6 +31,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (!profile) {
     notFound();
   }
+
+  const [skills, links, expectation] = await Promise.all([
+    apiFetch<ProfessionalSkill[]>(`/professionals/${id}/skills`).catch(() => []),
+    apiFetch<PortfolioLink[]>(`/professionals/${id}/portfolio-links`).catch(() => []),
+    apiFetch<EmploymentExpectation | null>(`/professionals/${id}/employment-expectation`).catch(
+      () => null,
+    ),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -78,11 +94,16 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             </p>
           )}
 
+          <SkillsBadges skills={skills} />
+          <PortfolioLinksList links={links} />
+
           <div className="mt-6 border-t border-line pt-4">
             <ReportButton targetType="PROFESSIONAL" targetId={profile.id} />
           </div>
         </CardBody>
       </Card>
+
+      <LookingForCard expectation={expectation} />
     </main>
   );
 }

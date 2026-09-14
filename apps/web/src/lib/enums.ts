@@ -9,6 +9,17 @@ export const EMPLOYMENT_TYPES = [
 
 export const WORK_MODES = ['ONSITE', 'HYBRID', 'REMOTE'] as const;
 
+export const NOTICE_PERIODS = [
+  'IMMEDIATE',
+  '7_DAYS',
+  '15_DAYS',
+  '30_DAYS',
+  '45_DAYS',
+  '60_DAYS',
+  '90_DAYS',
+  'NEGOTIABLE',
+] as const;
+
 export const COMPANY_TYPES = [
   'STARTUP',
   'PRIVATE',

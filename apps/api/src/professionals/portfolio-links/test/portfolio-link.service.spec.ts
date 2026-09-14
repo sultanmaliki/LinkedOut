@@ -38,6 +38,15 @@ describe('PortfolioLinkService', () => {
     );
   });
 
+  it('lists links by profile id without resolving through a user', async () => {
+    const links = [{ id: 'link-1' }];
+    linkRepository.listByProfile.mockResolvedValue(links);
+
+    await expect(service.listForProfileId('profile-1')).resolves.toEqual(links);
+    expect(linkRepository.listByProfile).toHaveBeenCalledWith('profile-1');
+    expect(profileRepository.findByUserId).not.toHaveBeenCalled();
+  });
+
   it('creates a link for the authenticated user', async () => {
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
 

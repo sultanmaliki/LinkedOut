@@ -36,6 +36,15 @@ describe('SkillService', () => {
     );
   });
 
+  it('lists skills by profile id without resolving through a user', async () => {
+    const skillList = [{ skillId: 'skill-1', name: 'TypeScript', proficiency: 4 }];
+    skillRepository.listForProfile.mockResolvedValue(skillList);
+
+    await expect(service.listForProfileId('profile-1')).resolves.toEqual(skillList);
+    expect(skillRepository.listForProfile).toHaveBeenCalledWith('profile-1');
+    expect(profileRepository.findByUserId).not.toHaveBeenCalled();
+  });
+
   it('replaces skills for the authenticated user', async () => {
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
 

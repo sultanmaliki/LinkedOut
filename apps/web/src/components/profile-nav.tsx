@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 const tabs = [
   { href: '/me', label: 'Profile' },
   { href: '/me/employment', label: 'Employment' },
+  { href: '/me/skills', label: 'Skills & career' },
   { href: '/me/reviews/new', label: 'Write a review' },
 ];
 

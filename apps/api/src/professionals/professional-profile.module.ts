@@ -21,12 +21,15 @@ import { SkillService } from './skills/skill.service';
 
 @Module({
   controllers: [
-    ProfessionalProfileController,
+    // Literal-path controllers (professionals/me/...) must be registered before
+    // ProfessionalProfileController, whose :id/... routes would otherwise greedily
+    // match "me" as the id and shadow these.
     SkillController,
     PortfolioLinkController,
     EmploymentExpectationController,
     EmploymentHistoryController,
     EmploymentVerificationController,
+    ProfessionalProfileController,
   ],
   providers: [
     ProfessionalProfileRepository,

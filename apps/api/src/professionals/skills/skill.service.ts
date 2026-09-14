@@ -17,6 +17,10 @@ export class SkillService {
     return this.skillRepository.listForProfile(profileId);
   }
 
+  async listForProfileId(profileId: string): Promise<ProfessionalSkillRecord[]> {
+    return this.skillRepository.listForProfile(profileId);
+  }
+
   async setMySkills(
     userId: string,
     dto: SetProfessionalSkillsDto,

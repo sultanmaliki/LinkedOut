@@ -2,8 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AuthenticatedUser } from '../../auth/guards/auth.guard';
 import { UpdateProfessionalProfileDto } from '../dto/update-professional-profile.dto';
+import { EmploymentExpectationService } from '../employment-expectation/employment-expectation.service';
+import { PortfolioLinkService } from '../portfolio-links/portfolio-link.service';
 import { ProfessionalProfileController } from '../professional-profile.controller';
 import { ProfessionalProfileService } from '../professional-profile.service';
+import { SkillService } from '../skills/skill.service';
 
 describe('ProfessionalProfileController', () => {
   let controller: ProfessionalProfileController;
@@ -15,6 +18,18 @@ describe('ProfessionalProfileController', () => {
     searchProfiles: jest.fn(),
   };
 
+  const skillService = {
+    listForProfileId: jest.fn(),
+  };
+
+  const portfolioLinkService = {
+    listForProfileId: jest.fn(),
+  };
+
+  const employmentExpectationService = {
+    getForProfileId: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -24,6 +39,18 @@ describe('ProfessionalProfileController', () => {
         {
           provide: ProfessionalProfileService,
           useValue: profileService,
+        },
+        {
+          provide: SkillService,
+          useValue: skillService,
+        },
+        {
+          provide: PortfolioLinkService,
+          useValue: portfolioLinkService,
+        },
+        {
+          provide: EmploymentExpectationService,
+          useValue: employmentExpectationService,
         },
       ],
     }).compile();
@@ -123,5 +150,31 @@ describe('ProfessionalProfileController', () => {
 
     await expect(controller.searchProfiles(query)).resolves.toEqual(results);
     expect(profileService.searchProfiles).toHaveBeenCalledWith(query);
+  });
+
+  it('gets skills for a profile by id', async () => {
+    const skills = [{ skillId: 'skill-1', name: 'TypeScript' }];
+    skillService.listForProfileId.mockResolvedValue(skills);
+
+    await expect(controller.getProfileSkills('profile-1')).resolves.toEqual(skills);
+    expect(skillService.listForProfileId).toHaveBeenCalledWith('profile-1');
+  });
+
+  it('gets portfolio links for a profile by id', async () => {
+    const links = [{ id: 'link-1', title: 'GitHub', url: 'https://github.com/ada' }];
+    portfolioLinkService.listForProfileId.mockResolvedValue(links);
+
+    await expect(controller.getProfilePortfolioLinks('profile-1')).resolves.toEqual(links);
+    expect(portfolioLinkService.listForProfileId).toHaveBeenCalledWith('profile-1');
+  });
+
+  it('gets employment expectation for a profile by id', async () => {
+    const expectation = { desiredJobTitle: 'Senior Engineer' };
+    employmentExpectationService.getForProfileId.mockResolvedValue(expectation);
+
+    await expect(controller.getProfileEmploymentExpectation('profile-1')).resolves.toEqual(
+      expectation,
+    );
+    expect(employmentExpectationService.getForProfileId).toHaveBeenCalledWith('profile-1');
   });
 });

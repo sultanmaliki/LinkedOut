@@ -25,6 +25,40 @@ export interface ProfessionalProfile {
   updatedAt: string;
 }
 
+export interface ProfessionalSkill {
+  skillId: string;
+  name: string;
+  proficiency: number | null;
+  yearsOfExperience: number | null;
+}
+
+export interface PortfolioLink {
+  id: string;
+  professionalProfileId: string;
+  title: string;
+  url: string;
+  createdAt: string;
+}
+
+export type NoticePeriod =
+  'IMMEDIATE' | '7_DAYS' | '15_DAYS' | '30_DAYS' | '45_DAYS' | '60_DAYS' | '90_DAYS' | 'NEGOTIABLE';
+
+export interface EmploymentExpectation {
+  id: string;
+  professionalProfileId: string;
+  desiredJobTitle: string;
+  employmentType: string;
+  workMode: string;
+  expectedSalaryMin: number | null;
+  expectedSalaryMax: number | null;
+  currency: string;
+  noticePeriod: NoticePeriod;
+  openToRelocation: boolean;
+  activelyLooking: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EmploymentHistory {
   id: string;
   professionalProfileId: string;

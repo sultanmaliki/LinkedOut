@@ -18,6 +18,10 @@ export class PortfolioLinkService {
     return this.linkRepository.listByProfile(profileId);
   }
 
+  async listForProfileId(profileId: string): Promise<PortfolioLinkRecord[]> {
+    return this.linkRepository.listByProfile(profileId);
+  }
+
   async createLink(userId: string, dto: CreatePortfolioLinkDto): Promise<PortfolioLinkRecord> {
     const profileId = await this.requireProfileId(userId);
 

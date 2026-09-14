@@ -6,8 +6,9 @@ import { Heart, MessageCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/cn';
-import type { Post } from '@/lib/types';
+import type { Attachment, Post } from '@/lib/types';
 import { AuthorBadge } from '@/components/author-badge';
+import { PostAttachments } from '@/components/post-attachments';
 import { ReportButton } from '@/components/report-button';
 import { Card } from '@/components/ui/card';
 import { CommentThread } from './comment-thread';
@@ -17,9 +18,13 @@ export function PostCard({ post }: { post: Post }) {
   const [likeCount, setLikeCount] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     apiFetch<{ count: number }>(`/posts/${post.id}/like`).then((res) => setLikeCount(res.count));
+    apiFetch<Attachment[]>(`/posts/${post.id}/attachments`)
+      .then(setAttachments)
+      .catch(() => setAttachments([]));
   }, [post.id]);
 
   async function toggleLike() {
@@ -40,6 +45,8 @@ export function PostCard({ post }: { post: Post }) {
       <p className="mt-3 whitespace-pre-line text-[14.5px] leading-relaxed text-fg">
         {post.content}
       </p>
+
+      <PostAttachments attachments={attachments} />
 
       <p className="mt-3 text-[12px] text-fg-faint">
         {new Date(post.createdAt).toLocaleDateString('en-US', {

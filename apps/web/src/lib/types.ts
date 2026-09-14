@@ -165,6 +165,21 @@ export interface Post {
   updatedAt: string;
 }
 
+export type AttachmentType = 'IMAGE' | 'VIDEO' | 'PDF';
+
+export interface Attachment {
+  id: string;
+  postId: string | null;
+  type: AttachmentType;
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+  thumbnailUrl: string | null;
+  isPublic: boolean;
+  createdAt: string;
+}
+
 export interface Comment {
   id: string;
   postId: string;

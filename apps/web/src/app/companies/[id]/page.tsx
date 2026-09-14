@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
-import type { Company, CompanyBenefit, CompanyLocation, Review } from '@/lib/types';
+import type { Company, CompanyBenefit, CompanyLocation, CompanyReply, Review } from '@/lib/types';
+import { CompanyReplyPanel } from '@/components/company-reply-panel';
 import { ManageCompanyLink } from '@/components/manage-company-link';
 import { ReportButton } from '@/components/report-button';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +51,14 @@ async function getReviews(id: string): Promise<Review[]> {
   }
 }
 
+async function getReply(reviewId: string): Promise<CompanyReply | null> {
+  try {
+    return await apiFetch<CompanyReply | null>(`/reviews/${reviewId}/reply`);
+  } catch {
+    return null;
+  }
+}
+
 function averageScore(review: Review): number | null {
   if (review.ratings.length === 0) return null;
   const total = review.ratings.reduce((sum, rating) => sum + rating.score, 0);
@@ -68,6 +77,9 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   if (!company) {
     notFound();
   }
+
+  const replies = await Promise.all(reviews.map((review) => getReply(review.id)));
+  const replyByReviewId = new Map(reviews.map((review, i) => [review.id, replies[i] ?? null]));
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -234,6 +246,13 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
                       )}
                     </div>
                   )}
+
+                  <CompanyReplyPanel
+                    reviewId={review.id}
+                    companyId={company.id}
+                    companyName={company.displayName}
+                    initialReply={replyByReviewId.get(review.id) ?? null}
+                  />
 
                   <div className="mt-4 border-t border-line pt-3">
                     <ReportButton targetType="REVIEW" targetId={review.id} />

@@ -27,6 +27,19 @@ describe('CompanyReplyService', () => {
     jest.clearAllMocks();
   });
 
+  it('returns the reply for a review that has one', async () => {
+    const reply = { id: 'reply-1', reviewId: 'review-1', reply: 'Thanks!' };
+    replyRepository.findByReviewId.mockResolvedValue(reply);
+
+    await expect(service.getReply('review-1')).resolves.toEqual(reply);
+  });
+
+  it('returns null for a review with no reply', async () => {
+    replyRepository.findByReviewId.mockResolvedValue(undefined);
+
+    await expect(service.getReply('review-1')).resolves.toBeNull();
+  });
+
   it('creates a reply when the user manages the reviewed company', async () => {
     reviewRepository.findById.mockResolvedValue({ id: 'review-1', companyId: 'company-1' });
     companyRepository.isAdmin.mockResolvedValue(true);

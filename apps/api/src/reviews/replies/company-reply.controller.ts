@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
@@ -6,11 +6,16 @@ import { SubmitCompanyReplyDto } from './dto/submit-company-reply.dto';
 import { CompanyReplyService } from './company-reply.service';
 
 @Controller('reviews/:reviewId/reply')
-@UseGuards(AuthGuard)
 export class CompanyReplyController {
   constructor(private readonly replyService: CompanyReplyService) {}
 
+  @Get()
+  async getReply(@Param('reviewId') reviewId: string) {
+    return this.replyService.getReply(reviewId);
+  }
+
   @Post()
+  @UseGuards(AuthGuard)
   async createReply(
     @Param('reviewId') reviewId: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -20,6 +25,7 @@ export class CompanyReplyController {
   }
 
   @Put()
+  @UseGuards(AuthGuard)
   async updateReply(
     @Param('reviewId') reviewId: string,
     @CurrentUser() user: AuthenticatedUser,

@@ -8,6 +8,7 @@ describe('CompanyReplyController', () => {
   let controller: CompanyReplyController;
 
   const replyService = {
+    getReply: jest.fn(),
     createReply: jest.fn(),
     updateReply: jest.fn(),
   };
@@ -27,6 +28,14 @@ describe('CompanyReplyController', () => {
     }).compile();
 
     controller = module.get<CompanyReplyController>(CompanyReplyController);
+  });
+
+  it('gets the reply for a review', async () => {
+    const reply = { id: 'reply-1', reply: 'Thanks!' };
+    replyService.getReply.mockResolvedValue(reply);
+
+    await expect(controller.getReply('review-1')).resolves.toEqual(reply);
+    expect(replyService.getReply).toHaveBeenCalledWith('review-1');
   });
 
   it('creates a reply for the authenticated user', async () => {

@@ -263,6 +263,15 @@ export interface AuditLogEntry {
   createdAt: string;
 }
 
+export interface CompanyReply {
+  id: string;
+  reviewId: string;
+  reply: string;
+  edited: boolean;
+  repliedAt: string;
+  updatedAt: string;
+}
+
 export interface Review {
   id: string;
   companyId: string;

@@ -18,6 +18,12 @@ export class CompanyReplyService {
     private readonly companyRepository: CompanyRepository,
   ) {}
 
+  async getReply(reviewId: string): Promise<CompanyReplyRecord | null> {
+    const reply = await this.replyRepository.findByReviewId(reviewId);
+
+    return reply ?? null;
+  }
+
   async createReply(
     reviewId: string,
     userId: string,

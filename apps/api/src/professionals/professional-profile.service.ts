@@ -28,6 +28,7 @@ export class ProfessionalProfileService {
       headline: query.headline,
       location: query.location,
       skill: query.skill,
+      activelyLooking: query.activelyLooking,
     });
   }
 

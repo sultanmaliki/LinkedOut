@@ -78,6 +78,7 @@ describe('ProfessionalProfileService', () => {
       headline: undefined,
       location: undefined,
       skill: undefined,
+      activelyLooking: undefined,
     });
   });
 
@@ -92,6 +93,7 @@ describe('ProfessionalProfileService', () => {
         headline: 'Engineer',
         location: 'London',
         skill: 'Rust',
+        activelyLooking: true,
       }),
     ).resolves.toEqual(results);
 
@@ -101,6 +103,7 @@ describe('ProfessionalProfileService', () => {
       headline: 'Engineer',
       location: 'London',
       skill: 'Rust',
+      activelyLooking: true,
     });
   });
 

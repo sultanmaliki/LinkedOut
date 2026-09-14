@@ -12,6 +12,7 @@ import type {
 import { LookingForCard } from '@/components/looking-for-card';
 import { PortfolioLinksList } from '@/components/portfolio-links-list';
 import { ReportButton } from '@/components/report-button';
+import { SendOpportunityButton } from '@/components/send-opportunity-button';
 import { SkillsBadges } from '@/components/skills-badges';
 import { Card, CardBody } from '@/components/ui/card';
 
@@ -51,22 +52,26 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
       <Card>
         <CardBody className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
-              {profile.fullName
-                .split(' ')
-                .slice(0, 2)
-                .map((w) => w[0]?.toUpperCase())
-                .join('')}
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+                {profile.fullName
+                  .split(' ')
+                  .slice(0, 2)
+                  .map((w) => w[0]?.toUpperCase())
+                  .join('')}
+              </div>
+              <div>
+                <h1 className="font-display text-[22px] font-medium tracking-[-0.01em] text-fg">
+                  {profile.fullName}
+                </h1>
+                {profile.headline && (
+                  <p className="mt-0.5 text-[14px] text-fg-muted">{profile.headline}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <h1 className="font-display text-[22px] font-medium tracking-[-0.01em] text-fg">
-                {profile.fullName}
-              </h1>
-              {profile.headline && (
-                <p className="mt-0.5 text-[14px] text-fg-muted">{profile.headline}</p>
-              )}
-            </div>
+
+            <SendOpportunityButton professionalProfileId={profile.id} />
           </div>
 
           <div className="mt-5 flex flex-wrap gap-4 text-[13.5px] text-fg-muted">

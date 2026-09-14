@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class ListProfessionalsDto {
   @IsOptional()
@@ -29,4 +29,9 @@ export class ListProfessionalsDto {
   @IsString()
   @MaxLength(200)
   skill?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  activelyLooking?: boolean;
 }

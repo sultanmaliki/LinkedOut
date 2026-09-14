@@ -1,6 +1,12 @@
 import { and, eq, ilike, inArray } from 'drizzle-orm';
 
-import { db, professionalProfiles, professionalSkills, skills } from '@linkedout/database';
+import {
+  db,
+  employmentExpectations,
+  professionalProfiles,
+  professionalSkills,
+  skills,
+} from '@linkedout/database';
 
 export interface ProfessionalProfileRecord {
   id: string;
@@ -22,6 +28,7 @@ export interface SearchProfessionalProfilesFilters {
   headline?: string;
   location?: string;
   skill?: string;
+  activelyLooking?: boolean;
 }
 
 export interface UpdateProfessionalProfileData {
@@ -96,6 +103,21 @@ export class ProfessionalProfileRepository {
         .from(professionalSkills)
         .innerJoin(skills, eq(skills.id, professionalSkills.skillId))
         .where(ilike(skills.name, `%${filters.skill}%`));
+
+      const profileIds = [...new Set(matches.map((match) => match.profileId))];
+
+      if (profileIds.length === 0) {
+        return [];
+      }
+
+      conditions.push(inArray(professionalProfiles.id, profileIds));
+    }
+
+    if (filters.activelyLooking) {
+      const matches = await db
+        .select({ profileId: employmentExpectations.professionalProfileId })
+        .from(employmentExpectations)
+        .where(eq(employmentExpectations.activelyLooking, true));
 
       const profileIds = [...new Set(matches.map((match) => match.profileId))];
 

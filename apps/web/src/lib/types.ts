@@ -142,6 +142,15 @@ export interface Comment {
   createdAt: string;
 }
 
+export type UserRole = 'PROFESSIONAL' | 'COMPANY_ADMIN' | 'MODERATOR' | 'ADMIN';
+
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
+}
+
 export type ModerationTargetType = 'COMPANY' | 'PROFESSIONAL' | 'REVIEW' | 'POST' | 'OPPORTUNITY';
 
 export type ModerationReason =

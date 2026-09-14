@@ -6,12 +6,13 @@ import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/cn';
 import { Card, CardBody } from '@/components/ui/card';
+import { AdminPanel } from './admin-panel';
 import { AuditLogPanel } from './audit-log-panel';
 import { CasesPanel } from './cases-panel';
 import { TrustFlagsPanel } from './trust-flags-panel';
 
-const tabs = ['Cases', 'Trust flags', 'Audit log'] as const;
-type Tab = (typeof tabs)[number];
+const baseTabs = ['Cases', 'Trust flags', 'Audit log'] as const;
+type Tab = (typeof baseTabs)[number] | 'Admin';
 
 export default function ModerationPage() {
   const { user, accessToken, isLoading } = useAuth();
@@ -25,7 +26,9 @@ export default function ModerationPage() {
     );
   }
 
-  const canModerate = user?.role === 'MODERATOR' || user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'ADMIN';
+  const canModerate = user?.role === 'MODERATOR' || isAdmin;
+  const tabs: Tab[] = isAdmin ? [...baseTabs, 'Admin'] : [...baseTabs];
 
   if (!canModerate || !accessToken) {
     return (
@@ -67,6 +70,7 @@ export default function ModerationPage() {
       {activeTab === 'Cases' && <CasesPanel token={accessToken} />}
       {activeTab === 'Trust flags' && <TrustFlagsPanel token={accessToken} />}
       {activeTab === 'Audit log' && <AuditLogPanel token={accessToken} />}
+      {activeTab === 'Admin' && isAdmin && <AdminPanel token={accessToken} />}
     </main>
   );
 }

@@ -1,12 +1,19 @@
 import { eq } from 'drizzle-orm';
 
-import { db, professionalProfiles, users } from '@linkedout/database';
+import { db, professionalProfiles, users, type userRoleEnum } from '@linkedout/database';
 
 export interface UserRecord {
   id: string;
   email: string;
   passwordHash: string;
   name: string;
+  role: string;
+  status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
+}
+
+export interface SafeUserRecord {
+  id: string;
+  email: string;
   role: string;
   status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
 }
@@ -79,6 +86,24 @@ export class UserRepository {
       status: user.status,
       name,
     };
+  }
+
+  async updateRole(
+    id: string,
+    role: (typeof userRoleEnum.enumValues)[number],
+  ): Promise<SafeUserRecord | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        role: users.role,
+        status: users.status,
+      });
+
+    return user;
   }
 
   async create(data: CreateUserData): Promise<UserRecord> {

@@ -8,6 +8,7 @@ describe('PostService', () => {
     findById: jest.fn(),
     listVisible: jest.fn(),
     listByProfessional: jest.fn(),
+    listByCompany: jest.fn(),
     updateContent: jest.fn(),
     archive: jest.fn(),
     restore: jest.fn(),
@@ -140,5 +141,35 @@ describe('PostService', () => {
     postRepository.deleteById.mockResolvedValue(true);
 
     await expect(service.deletePost('post-1', 'user-1')).resolves.toBeUndefined();
+  });
+
+  it('lists posts for a company the user manages', async () => {
+    companyRepository.findById.mockResolvedValue({ id: 'company-1' });
+    companyRepository.isAdmin.mockResolvedValue(true);
+
+    const list = [{ id: 'post-1', companyId: 'company-1' }];
+    postRepository.listByCompany.mockResolvedValue(list);
+
+    await expect(service.listByCompanyId('company-1', 'user-1')).resolves.toEqual(list);
+    expect(postRepository.listByCompany).toHaveBeenCalledWith('company-1');
+  });
+
+  it('throws listing posts for a company that does not exist', async () => {
+    companyRepository.findById.mockResolvedValue(undefined);
+
+    await expect(service.listByCompanyId('missing', 'user-1')).rejects.toThrow(
+      new NotFoundException('Company not found'),
+    );
+  });
+
+  it('throws listing posts for a company the user does not manage', async () => {
+    companyRepository.findById.mockResolvedValue({ id: 'company-1' });
+    companyRepository.isAdmin.mockResolvedValue(false);
+
+    await expect(service.listByCompanyId('company-1', 'user-2')).rejects.toThrow(
+      new ForbiddenException('You do not manage this company'),
+    );
+
+    expect(postRepository.listByCompany).not.toHaveBeenCalled();
   });
 });

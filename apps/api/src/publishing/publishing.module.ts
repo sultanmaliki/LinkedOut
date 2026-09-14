@@ -13,6 +13,7 @@ import { PostCommentController } from './comments/post-comment.controller';
 import { LikeController } from './likes/like.controller';
 import { LikeRepository } from './likes/like.repository';
 import { LikeService } from './likes/like.service';
+import { CompanyPostController } from './posts/company-post.controller';
 import { MyPostController } from './posts/my-post.controller';
 import { PostController } from './posts/post.controller';
 import { PostRepository } from './posts/post.repository';
@@ -23,6 +24,7 @@ import { PostService } from './posts/post.service';
   controllers: [
     PostController,
     MyPostController,
+    CompanyPostController,
     PostAttachmentController,
     AttachmentController,
     PostCommentController,

@@ -47,6 +47,10 @@ export class PostRepository {
     return db.select().from(posts).where(eq(posts.professionalProfileId, professionalProfileId));
   }
 
+  async listByCompany(companyId: string): Promise<PostRecord[]> {
+    return db.select().from(posts).where(eq(posts.companyId, companyId));
+  }
+
   async updateContent(postId: string, content: string): Promise<PostRecord | undefined> {
     const [post] = await db
       .update(posts)

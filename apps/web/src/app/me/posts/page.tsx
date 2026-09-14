@@ -7,10 +7,10 @@ import { Archive, ArchiveRestore, Newspaper, Trash2 } from 'lucide-react';
 import { ApiError, apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import type { Post } from '@/lib/types';
+import { AttachmentManager } from '@/components/attachment-manager';
 import { ProfileNav } from '@/components/profile-nav';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardBody } from '@/components/ui/card';
-import { AttachmentManager } from './attachment-manager';
 
 function statusBadge(visibility: Post['visibility']) {
   if (visibility === 'ARCHIVED') return <Badge>Archived</Badge>;

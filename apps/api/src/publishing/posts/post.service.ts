@@ -59,6 +59,22 @@ export class PostService {
     return this.postRepository.listByProfessional(profile.id);
   }
 
+  async listByCompanyId(companyId: string, userId: string): Promise<PostRecord[]> {
+    const company = await this.companyRepository.findById(companyId);
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const isAdmin = await this.companyRepository.isAdmin(companyId, userId);
+
+    if (!isAdmin) {
+      throw new ForbiddenException('You do not manage this company');
+    }
+
+    return this.postRepository.listByCompany(companyId);
+  }
+
   async updatePost(postId: string, userId: string, dto: UpdatePostDto): Promise<PostRecord> {
     const post = await this.requireOwnership(postId, userId);
 

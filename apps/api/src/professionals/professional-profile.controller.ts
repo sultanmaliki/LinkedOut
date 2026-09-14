@@ -1,13 +1,19 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
+import { ListProfessionalsDto } from './dto/list-professionals.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
 import { ProfessionalProfileService } from './professional-profile.service';
 
 @Controller('professionals')
 export class ProfessionalProfileController {
   constructor(private readonly profileService: ProfessionalProfileService) {}
+
+  @Get()
+  async searchProfiles(@Query() query: ListProfessionalsDto) {
+    return this.profileService.searchProfiles(query);
+  }
 
   @Get('me')
   @UseGuards(AuthGuard)

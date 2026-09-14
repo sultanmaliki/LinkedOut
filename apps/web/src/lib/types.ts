@@ -142,6 +142,69 @@ export interface Comment {
   createdAt: string;
 }
 
+export type ModerationTargetType = 'COMPANY' | 'PROFESSIONAL' | 'REVIEW' | 'POST' | 'OPPORTUNITY';
+
+export type ModerationReason =
+  | 'SPAM'
+  | 'HARASSMENT'
+  | 'FAKE_PROFILE'
+  | 'FAKE_REVIEW'
+  | 'MISLEADING_JOB'
+  | 'IMPERSONATION'
+  | 'POLICY_VIOLATION'
+  | 'OTHER';
+
+export type ModerationStatus = 'OPEN' | 'UNDER_REVIEW' | 'ACTION_TAKEN' | 'DISMISSED';
+
+export type ModerationActionType =
+  | 'NO_ACTION'
+  | 'WARNING_ISSUED'
+  | 'CONTENT_REMOVED'
+  | 'ACCOUNT_SUSPENDED'
+  | 'ACCOUNT_BANNED'
+  | 'COMPANY_VERIFICATION_REVOKED';
+
+export interface ModerationCase {
+  id: string;
+  reporterId: string | null;
+  targetType: ModerationTargetType;
+  targetId: string;
+  reason: ModerationReason;
+  description: string | null;
+  status: ModerationStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ModerationAction {
+  id: string;
+  moderationCaseId: string;
+  moderatorId: string | null;
+  action: ModerationActionType;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface TrustFlag {
+  id: string;
+  userId: string | null;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  scoreImpact: number;
+  createdAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorId: string | null;
+  entityType: string;
+  entityId: string;
+  action: string;
+  metadata: unknown;
+  createdAt: string;
+}
+
 export interface Review {
   id: string;
   companyId: string;

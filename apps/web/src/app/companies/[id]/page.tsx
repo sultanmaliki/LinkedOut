@@ -13,6 +13,7 @@ import {
 import { ApiError, apiFetch } from '@/lib/api';
 import type { Company, CompanyBenefit, CompanyLocation, Review } from '@/lib/types';
 import { ManageCompanyLink } from '@/components/manage-company-link';
+import { ReportButton } from '@/components/report-button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
@@ -130,6 +131,10 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
+      <div className="mt-3">
+        <ReportButton targetType="COMPANY" targetId={company.id} />
+      </div>
+
       {company.description && (
         <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-fg-muted">
           {company.description}
@@ -229,6 +234,10 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
                       )}
                     </div>
                   )}
+
+                  <div className="mt-4 border-t border-line pt-3">
+                    <ReportButton targetType="REVIEW" targetId={review.id} />
+                  </div>
                 </Card>
               );
             })}

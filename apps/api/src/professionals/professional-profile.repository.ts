@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, ilike, inArray } from 'drizzle-orm';
 
-import { db, professionalProfiles } from '@linkedout/database';
+import { db, professionalProfiles, professionalSkills, skills } from '@linkedout/database';
 
 export interface ProfessionalProfileRecord {
   id: string;
@@ -14,6 +14,14 @@ export interface ProfessionalProfileRecord {
   personalWebsite: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface SearchProfessionalProfilesFilters {
+  limit: number;
+  offset: number;
+  headline?: string;
+  location?: string;
+  skill?: string;
 }
 
 export interface UpdateProfessionalProfileData {
@@ -69,6 +77,54 @@ export class ProfessionalProfileRepository {
       .limit(1);
 
     return profile;
+  }
+
+  async search(filters: SearchProfessionalProfilesFilters): Promise<ProfessionalProfileRecord[]> {
+    const conditions = [];
+
+    if (filters.headline) {
+      conditions.push(ilike(professionalProfiles.headline, `%${filters.headline}%`));
+    }
+
+    if (filters.location) {
+      conditions.push(ilike(professionalProfiles.currentLocation, `%${filters.location}%`));
+    }
+
+    if (filters.skill) {
+      const matches = await db
+        .select({ profileId: professionalSkills.professionalProfileId })
+        .from(professionalSkills)
+        .innerJoin(skills, eq(skills.id, professionalSkills.skillId))
+        .where(ilike(skills.name, `%${filters.skill}%`));
+
+      const profileIds = [...new Set(matches.map((match) => match.profileId))];
+
+      if (profileIds.length === 0) {
+        return [];
+      }
+
+      conditions.push(inArray(professionalProfiles.id, profileIds));
+    }
+
+    return db
+      .select({
+        id: professionalProfiles.id,
+        userId: professionalProfiles.userId,
+        fullName: professionalProfiles.fullName,
+        headline: professionalProfiles.headline,
+        bio: professionalProfiles.bio,
+        profilePhotoUrl: professionalProfiles.profilePhotoUrl,
+        bannerPhotoUrl: professionalProfiles.bannerPhotoUrl,
+        currentLocation: professionalProfiles.currentLocation,
+        personalWebsite: professionalProfiles.personalWebsite,
+        createdAt: professionalProfiles.createdAt,
+        updatedAt: professionalProfiles.updatedAt,
+      })
+      .from(professionalProfiles)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(professionalProfiles.createdAt)
+      .limit(filters.limit)
+      .offset(filters.offset);
   }
 
   async updateByUserId(

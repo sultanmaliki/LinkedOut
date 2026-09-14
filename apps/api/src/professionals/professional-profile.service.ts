@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { ListProfessionalsDto } from './dto/list-professionals.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
 import {
   ProfessionalProfileRecord,
@@ -18,6 +19,16 @@ export class ProfessionalProfileService {
     }
 
     return profile;
+  }
+
+  async searchProfiles(query: ListProfessionalsDto): Promise<ProfessionalProfileRecord[]> {
+    return this.profileRepository.search({
+      limit: query.limit ?? 20,
+      offset: query.offset ?? 0,
+      headline: query.headline,
+      location: query.location,
+      skill: query.skill,
+    });
   }
 
   async getProfile(id: string): Promise<ProfessionalProfileRecord> {

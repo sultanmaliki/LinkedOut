@@ -7,6 +7,7 @@ describe('ProfessionalProfileService', () => {
     findById: jest.fn(),
     findByUserId: jest.fn(),
     updateByUserId: jest.fn(),
+    search: jest.fn(),
   };
 
   const service = new ProfessionalProfileService(repository);
@@ -64,6 +65,43 @@ describe('ProfessionalProfileService', () => {
     await expect(service.getProfile('missing')).rejects.toThrow(
       new NotFoundException('Professional profile not found'),
     );
+  });
+
+  it('searches profiles with default pagination when no query is given', async () => {
+    repository.search.mockResolvedValue([]);
+
+    await expect(service.searchProfiles({})).resolves.toEqual([]);
+
+    expect(repository.search).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 0,
+      headline: undefined,
+      location: undefined,
+      skill: undefined,
+    });
+  });
+
+  it('searches profiles with the supplied filters and pagination', async () => {
+    const results = [{ id: 'profile-1', fullName: 'Ada Lovelace' }];
+    repository.search.mockResolvedValue(results);
+
+    await expect(
+      service.searchProfiles({
+        limit: 5,
+        offset: 10,
+        headline: 'Engineer',
+        location: 'London',
+        skill: 'Rust',
+      }),
+    ).resolves.toEqual(results);
+
+    expect(repository.search).toHaveBeenCalledWith({
+      limit: 5,
+      offset: 10,
+      headline: 'Engineer',
+      location: 'London',
+      skill: 'Rust',
+    });
   });
 
   it('updates the current professional profile', async () => {

@@ -4,6 +4,7 @@ import { ArrowLeft, Globe, MapPin } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import type { ProfessionalProfile } from '@/lib/types';
+import { ReportButton } from '@/components/report-button';
 import { Card, CardBody } from '@/components/ui/card';
 
 async function getProfile(id: string): Promise<ProfessionalProfile | null> {
@@ -76,6 +77,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
               {profile.bio}
             </p>
           )}
+
+          <div className="mt-6 border-t border-line pt-4">
+            <ReportButton targetType="PROFESSIONAL" targetId={profile.id} />
+          </div>
         </CardBody>
       </Card>
     </main>

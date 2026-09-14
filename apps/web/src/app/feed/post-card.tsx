@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/cn';
 import type { Post } from '@/lib/types';
 import { AuthorBadge } from '@/components/author-badge';
+import { ReportButton } from '@/components/report-button';
 import { Card } from '@/components/ui/card';
 import { CommentThread } from './comment-thread';
 
@@ -67,6 +68,10 @@ export function PostCard({ post }: { post: Post }) {
           <MessageCircle className="h-4 w-4" />
           Comments
         </button>
+
+        <div className="ml-auto">
+          <ReportButton targetType="POST" targetId={post.id} />
+        </div>
       </div>
 
       {showComments && <CommentThread postId={post.id} />}

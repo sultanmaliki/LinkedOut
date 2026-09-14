@@ -9,6 +9,7 @@ import { Button, buttonStyles } from '@/components/ui/button';
 
 const navItems = [
   { href: '/feed', label: 'Feed' },
+  { href: '/professionals', label: 'Professionals' },
   { href: '/companies', label: 'Companies' },
   { href: '/opportunities', label: 'Opportunities' },
   { href: '/companies/mine', label: 'For companies' },
@@ -17,6 +18,11 @@ const navItems = [
 export function Header() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuth();
+
+  const canModerate = user?.role === 'MODERATOR' || user?.role === 'ADMIN';
+  const items = canModerate
+    ? [...navItems, { href: '/moderation', label: 'Moderation' }]
+    : navItems;
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/80 backdrop-blur-md">
@@ -31,8 +37,8 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => {
-            const activeHref = navItems
+          {items.map((item) => {
+            const activeHref = items
               .map((candidate) => candidate.href)
               .filter((href) => pathname?.startsWith(href))
               .sort((a, b) => b.length - a.length)[0];

@@ -12,6 +12,7 @@ describe('ProfessionalProfileController', () => {
     getMyProfile: jest.fn(),
     updateMyProfile: jest.fn(),
     getProfile: jest.fn(),
+    searchProfiles: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -113,5 +114,14 @@ describe('ProfessionalProfileController', () => {
 
     await expect(controller.getProfile('profile-1')).resolves.toEqual(profile);
     expect(profileService.getProfile).toHaveBeenCalledWith('profile-1');
+  });
+
+  it('searches professional profiles', async () => {
+    const query = { headline: 'Engineer', location: 'London', skill: 'Rust' };
+    const results = [{ id: 'profile-1', fullName: 'Ada Lovelace' }];
+    profileService.searchProfiles.mockResolvedValue(results);
+
+    await expect(controller.searchProfiles(query)).resolves.toEqual(results);
+    expect(profileService.searchProfiles).toHaveBeenCalledWith(query);
   });
 });

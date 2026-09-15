@@ -339,4 +339,60 @@ describe('AuthService', () => {
       'Email is already verified',
     );
   });
+
+  it('rejects replaying the same verification token after the account is already verified', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    await expect(service.verifyEmail({ token: registered.devVerificationToken! })).resolves.toEqual(
+      { verified: true },
+    );
+
+    await expect(service.verifyEmail({ token: registered.devVerificationToken! })).rejects.toThrow(
+      'Invalid or expired verification link',
+    );
+  });
+
+  it('rejects a refresh token once it has been replaced by a newer one', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    const oldRefreshToken = registered.refreshToken;
+
+    // Rotates activeRefreshTokenId to a new jti.
+    await service.refresh({ refreshToken: oldRefreshToken });
+
+    await expect(service.refresh({ refreshToken: oldRefreshToken })).rejects.toThrow(
+      'Invalid refresh token',
+    );
+  });
+
+  it('rejects a refresh token after logout', async () => {
+    const repository = new UserRepository();
+    const service = new AuthService(repository, new MailerService());
+
+    const registered = await service.register({
+      name: 'Ada',
+      email: TEST_EMAIL,
+      password: 'supersecret1',
+    });
+
+    await service.logout(registered.user.id);
+
+    await expect(service.refresh({ refreshToken: registered.refreshToken })).rejects.toThrow(
+      'Invalid refresh token',
+    );
+  });
 });

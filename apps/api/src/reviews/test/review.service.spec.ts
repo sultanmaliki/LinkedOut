@@ -51,9 +51,17 @@ describe('ReviewService', () => {
 
   it('creates a review when employment is verified', async () => {
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1', fullName: 'Ada' });
-    historyRepository.findById.mockResolvedValue({ id: 'history-1', jobTitle: 'Engineer' });
+    historyRepository.findById.mockResolvedValue({
+      id: 'history-1',
+      jobTitle: 'Engineer',
+      companyName: 'Acme',
+    });
     verificationRepository.findByHistoryId.mockResolvedValue({ verificationStatus: 'VERIFIED' });
-    companyRepository.findById.mockResolvedValue({ id: 'company-1', displayName: 'Acme' });
+    companyRepository.findById.mockResolvedValue({
+      id: 'company-1',
+      legalName: 'Acme Inc',
+      displayName: 'Acme',
+    });
     reviewRepository.existsForEmploymentHistory.mockResolvedValue(false);
 
     const created = { id: 'review-1', ...dto };
@@ -96,14 +104,41 @@ describe('ReviewService', () => {
 
   it('throws when a review already exists for the employment history', async () => {
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
-    historyRepository.findById.mockResolvedValue({ id: 'history-1' });
+    historyRepository.findById.mockResolvedValue({ id: 'history-1', companyName: 'Acme' });
     verificationRepository.findByHistoryId.mockResolvedValue({ verificationStatus: 'VERIFIED' });
-    companyRepository.findById.mockResolvedValue({ id: 'company-1' });
+    companyRepository.findById.mockResolvedValue({
+      id: 'company-1',
+      legalName: 'Acme Inc',
+      displayName: 'Acme',
+    });
     reviewRepository.existsForEmploymentHistory.mockResolvedValue(true);
 
     await expect(service.createReview('user-1', dto)).rejects.toThrow(
       new ConflictException('A review already exists for this employment history'),
     );
+  });
+
+  it('throws when the verified employment history is at a different company than the one being reviewed', async () => {
+    profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1', fullName: 'Ada' });
+    historyRepository.findById.mockResolvedValue({
+      id: 'history-1',
+      jobTitle: 'Engineer',
+      companyName: 'SomeOtherCompany',
+    });
+    verificationRepository.findByHistoryId.mockResolvedValue({ verificationStatus: 'VERIFIED' });
+    companyRepository.findById.mockResolvedValue({
+      id: 'company-1',
+      legalName: 'Acme Inc',
+      displayName: 'Acme',
+    });
+
+    await expect(service.createReview('user-1', dto)).rejects.toThrow(
+      new ForbiddenException(
+        'This employment history is not associated with the company being reviewed',
+      ),
+    );
+
+    expect(reviewRepository.create).not.toHaveBeenCalled();
   });
 
   it('returns a review by id', async () => {

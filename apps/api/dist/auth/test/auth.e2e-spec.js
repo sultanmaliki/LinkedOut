@@ -9,6 +9,7 @@ const supertest_1 = __importDefault(require("supertest"));
 const drizzle_orm_1 = require("drizzle-orm");
 const database_1 = require("@linkedout/database");
 const app_module_1 = require("../../app.module");
+const postgres_exception_filter_1 = require("../../common/filters/postgres-exception.filter");
 describe('Auth HTTP (e2e)', () => {
     let app;
     beforeAll(async () => {
@@ -20,6 +21,7 @@ describe('Auth HTTP (e2e)', () => {
             whitelist: true,
             transform: true,
         }));
+        app.useGlobalFilters(new postgres_exception_filter_1.PostgresExceptionFilter());
         await app.init();
     });
     afterAll(async () => {
@@ -88,6 +90,88 @@ describe('Auth HTTP (e2e)', () => {
     });
     it('POST /auth/refresh returns 400 when refreshToken is missing', async () => {
         await (0, supertest_1.default)(app.getHttpServer()).post('/auth/refresh').send({}).expect(400);
+    });
+    it('POST /auth/register returns an unverified user with a dev verification token', async () => {
+        const email = `e2e-verify-${Date.now()}@example.com`;
+        const response = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Verify User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        expect(response.body.user.emailVerified).toBe(false);
+        expect(response.body.devVerificationToken).toBeTruthy();
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/verify-email verifies the account and is reflected on next login', async () => {
+        const email = `e2e-verify-flow-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Verify Flow User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/verify-email')
+            .send({ token: registerResponse.body.devVerificationToken })
+            .expect(201);
+        const loginResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email, password: 'supersecret1' })
+            .expect(201);
+        expect(loginResponse.body.user.emailVerified).toBe(true);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/verify-email returns 401 for an invalid token', async () => {
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/verify-email')
+            .send({ token: 'not-a-real-token' })
+            .expect(401);
+    });
+    it('POST /auth/resend-verification sends a new token for the authenticated user', async () => {
+        const email = `e2e-resend-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Resend User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        const resendResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/resend-verification')
+            .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+            .expect(201);
+        expect(resendResponse.body.sent).toBe(true);
+        expect(resendResponse.body.devVerificationToken).toBeTruthy();
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/resend-verification returns 401 without an access token', async () => {
+        await (0, supertest_1.default)(app.getHttpServer()).post('/auth/resend-verification').expect(401);
+    });
+    it('POST /auth/resend-verification returns 409 once already verified', async () => {
+        const email = `e2e-resend-verified-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Already Verified User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/verify-email')
+            .send({ token: registerResponse.body.devVerificationToken })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/resend-verification')
+            .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+            .expect(409);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
     });
     it('GET /professionals/me returns the authenticated professional profile', async () => {
         const email = `e2e-profile-${Date.now()}@example.com`;
@@ -233,6 +317,133 @@ describe('Auth HTTP (e2e)', () => {
         expect(response.body.headline).toBe('Security Engineer');
         expect(response.body.userId).not.toBe('attacker-user-id');
         expect(response.body.id).not.toBe('attacker-profile-id');
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/register treats a case-variant of an existing email as a duplicate', async () => {
+        const email = `e2e-case-${Date.now()}@example.com`;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Case User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Case Duplicate',
+            email: email.toUpperCase(),
+            password: 'supersecret1',
+        })
+            .expect(409);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/login matches an account regardless of email casing used at login', async () => {
+        const email = `e2e-case-login-${Date.now()}@example.com`;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Case Login User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/login')
+            .send({
+            email: email.toUpperCase(),
+            password: 'supersecret1',
+        })
+            .expect(201);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('GET /companies/:id returns 400 (not 500) for a non-UUID id', async () => {
+        const response = await (0, supertest_1.default)(app.getHttpServer()).get('/companies/not-a-uuid').expect(400);
+        expect(response.body.statusCode).toBe(400);
+    });
+    it('GET /professionals/me returns 401 once the account has been suspended', async () => {
+        const email = `e2e-suspend-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Suspend User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        const accessToken = registerResponse.body.accessToken;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .get('/professionals/me')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(200);
+        await database_1.db.update(database_1.users).set({ status: 'SUSPENDED' }).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+        // The access token issued before the suspension is still cryptographically
+        // valid and unexpired -- AuthGuard must reject it anyway by checking the
+        // account's current status on every request.
+        await (0, supertest_1.default)(app.getHttpServer())
+            .get('/professionals/me')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(401);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/refresh rejects a refresh token that has already been used', async () => {
+        const email = `e2e-refresh-reuse-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Refresh Reuse User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        const refreshToken = registerResponse.body.refreshToken;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/refresh')
+            .send({ refreshToken })
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/refresh')
+            .send({ refreshToken })
+            .expect(401);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('POST /auth/logout invalidates the current refresh token', async () => {
+        const email = `e2e-logout-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Logout User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        const { accessToken, refreshToken } = registerResponse.body;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/logout')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(201);
+        await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/refresh')
+            .send({ refreshToken })
+            .expect(401);
+        await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
+    });
+    it('GET /professionals/me rejects a valid email-verification token used as a bearer token', async () => {
+        const email = `e2e-token-purpose-${Date.now()}@example.com`;
+        const registerResponse = await (0, supertest_1.default)(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+            name: 'Token Purpose User',
+            email,
+            password: 'supersecret1',
+        })
+            .expect(201);
+        const verificationToken = registerResponse.body.devVerificationToken;
+        await (0, supertest_1.default)(app.getHttpServer())
+            .get('/professionals/me')
+            .set('Authorization', `Bearer ${verificationToken}`)
+            .expect(401);
         await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
     });
 });

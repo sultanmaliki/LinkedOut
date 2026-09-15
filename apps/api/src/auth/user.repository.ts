@@ -10,6 +10,7 @@ export interface UserRecord {
   role: string;
   status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
   emailVerified: boolean;
+  activeRefreshTokenId: string | null;
 }
 
 export interface SafeUserRecord {
@@ -36,6 +37,7 @@ export class UserRepository {
         role: users.role,
         status: users.status,
         emailVerified: users.emailVerified,
+        activeRefreshTokenId: users.activeRefreshTokenId,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -56,6 +58,7 @@ export class UserRepository {
       role: user.role,
       status: user.status,
       emailVerified: user.emailVerified,
+      activeRefreshTokenId: user.activeRefreshTokenId,
       name,
     };
   }
@@ -69,6 +72,7 @@ export class UserRepository {
         role: users.role,
         status: users.status,
         emailVerified: users.emailVerified,
+        activeRefreshTokenId: users.activeRefreshTokenId,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -89,8 +93,31 @@ export class UserRepository {
       role: user.role,
       status: user.status,
       emailVerified: user.emailVerified,
+      activeRefreshTokenId: user.activeRefreshTokenId,
       name,
     };
+  }
+
+  /**
+   * Lightweight status lookup used by AuthGuard on every authenticated
+   * request. Deliberately avoids the professionalProfiles join and
+   * passwordHash column that findById/findByEmail carry.
+   */
+  async findStatusById(id: string): Promise<{ status: UserRecord['status'] } | undefined> {
+    const [user] = await db
+      .select({ status: users.status })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return user;
+  }
+
+  async setActiveRefreshTokenId(id: string, tokenId: string | null): Promise<void> {
+    await db
+      .update(users)
+      .set({ activeRefreshTokenId: tokenId, updatedAt: new Date() })
+      .where(eq(users.id, id));
   }
 
   async updateRole(
@@ -136,6 +163,7 @@ export class UserRepository {
           role: users.role,
           status: users.status,
           emailVerified: users.emailVerified,
+          activeRefreshTokenId: users.activeRefreshTokenId,
         });
 
       if (!user) {

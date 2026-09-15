@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 
 import { client, db, professionalProfiles, users } from '@linkedout/database';
 import { AppModule } from '../../app.module';
+import { PostgresExceptionFilter } from '../../common/filters/postgres-exception.filter';
 
 describe('Auth HTTP (e2e)', () => {
   let app: INestApplication;
@@ -22,6 +23,7 @@ describe('Auth HTTP (e2e)', () => {
         transform: true,
       }),
     );
+    app.useGlobalFilters(new PostgresExceptionFilter());
 
     await app.init();
   });
@@ -385,6 +387,158 @@ describe('Auth HTTP (e2e)', () => {
     expect(response.body.headline).toBe('Security Engineer');
     expect(response.body.userId).not.toBe('attacker-user-id');
     expect(response.body.id).not.toBe('attacker-profile-id');
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/register treats a case-variant of an existing email as a duplicate', async () => {
+    const email = `e2e-case-${Date.now()}@example.com`;
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Case User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Case Duplicate',
+        email: email.toUpperCase(),
+        password: 'supersecret1',
+      })
+      .expect(409);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/login matches an account regardless of email casing used at login', async () => {
+    const email = `e2e-case-login-${Date.now()}@example.com`;
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Case Login User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: email.toUpperCase(),
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('GET /companies/:id returns 400 (not 500) for a non-UUID id', async () => {
+    const response = await request(app.getHttpServer()).get('/companies/not-a-uuid').expect(400);
+
+    expect(response.body.statusCode).toBe(400);
+  });
+
+  it('GET /professionals/me returns 401 once the account has been suspended', async () => {
+    const email = `e2e-suspend-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Suspend User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    const accessToken = registerResponse.body.accessToken;
+
+    await request(app.getHttpServer())
+      .get('/professionals/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    await db.update(users).set({ status: 'SUSPENDED' }).where(eq(users.email, email));
+
+    // The access token issued before the suspension is still cryptographically
+    // valid and unexpired -- AuthGuard must reject it anyway by checking the
+    // account's current status on every request.
+    await request(app.getHttpServer())
+      .get('/professionals/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(401);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/refresh rejects a refresh token that has already been used', async () => {
+    const email = `e2e-refresh-reuse-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Refresh Reuse User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    const refreshToken = registerResponse.body.refreshToken;
+
+    await request(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(201);
+
+    await request(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(401);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/logout invalidates the current refresh token', async () => {
+    const email = `e2e-logout-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Logout User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    const { accessToken, refreshToken } = registerResponse.body;
+
+    await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(201);
+
+    await request(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(401);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('GET /professionals/me rejects a valid email-verification token used as a bearer token', async () => {
+    const email = `e2e-token-purpose-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Token Purpose User',
+        email,
+        password: 'supersecret1',
+      })
+      .expect(201);
+
+    const verificationToken = registerResponse.body.devVerificationToken;
+
+    await request(app.getHttpServer())
+      .get('/professionals/me')
+      .set('Authorization', `Bearer ${verificationToken}`)
+      .expect(401);
 
     await db.delete(users).where(eq(users.email, email));
   });

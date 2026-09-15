@@ -5,12 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { getJwtSecret } from './jwt-secret';
 import { MailerService } from './mailer.service';
 import { UserRepository, UserRecord } from './user.repository';
 
@@ -20,9 +22,17 @@ interface EmailVerificationPayload {
   type: 'email-verification';
 }
 
+interface RefreshTokenPayload {
+  sub: string;
+  email: string;
+  role: string;
+  type?: string;
+  jti?: string;
+}
+
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret = process.env.JWT_SECRET || 'dev-secret';
+  private readonly jwtSecret = getJwtSecret();
 
   constructor(
     private readonly userRepository: UserRepository,
@@ -70,9 +80,16 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.emailVerified) {
-      await this.userRepository.markEmailVerified(user.id);
+    // Single-use enforcement: once an account is verified there is nothing
+    // left for any verification token (this one or an older leaked one) to
+    // do, so reject rather than silently succeeding again. Also reject if
+    // the token was issued for a different email than the account currently
+    // has, so a token can't outlive an email change.
+    if (user.emailVerified || payload.email !== user.email) {
+      throw new UnauthorizedException('Invalid or expired verification link');
     }
+
+    await this.userRepository.markEmailVerified(user.id);
 
     return { verified: true };
   }
@@ -110,20 +127,10 @@ export class AuthService {
   }
 
   async refresh(dto: RefreshDto) {
-    let payload: {
-      sub: string;
-      email: string;
-      role: string;
-      type?: string;
-    };
+    let payload: RefreshTokenPayload;
 
     try {
-      payload = jwt.verify(dto.refreshToken, this.jwtSecret) as {
-        sub: string;
-        email: string;
-        role: string;
-        type?: string;
-      };
+      payload = jwt.verify(dto.refreshToken, this.jwtSecret) as RefreshTokenPayload;
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -140,7 +147,19 @@ export class AuthService {
 
     this.ensureAccountActive(user);
 
+    // Refresh tokens are single-use: each successful refresh rotates
+    // activeRefreshTokenId to a new jti, so a token that has already been
+    // redeemed (or was superseded by a login/refresh elsewhere) fails here
+    // instead of being replayable for its full 7-day lifetime.
+    if (!payload.jti || payload.jti !== user.activeRefreshTokenId) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
     return this.buildAuthResponse(user);
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.userRepository.setActiveRefreshTokenId(userId, null);
   }
 
   private ensureAccountActive(user: UserRecord) {
@@ -149,8 +168,8 @@ export class AuthService {
     }
   }
 
-  private buildAuthResponse(user: UserRecord, devVerificationToken?: string) {
-    const tokens = this.issueTokens(user.id, user.email, user.role);
+  private async buildAuthResponse(user: UserRecord, devVerificationToken?: string) {
+    const tokens = await this.issueTokens(user.id, user.email, user.role);
 
     return {
       user: {
@@ -184,12 +203,13 @@ export class AuthService {
     );
   }
 
-  private issueTokens(userId: string, email: string, role: string) {
+  private async issueTokens(userId: string, email: string, role: string) {
     const accessToken = jwt.sign(
       {
         sub: userId,
         email,
         role,
+        type: 'access',
       },
       this.jwtSecret,
       {
@@ -197,18 +217,26 @@ export class AuthService {
       },
     );
 
+    const refreshTokenId = crypto.randomUUID();
+
     const refreshToken = jwt.sign(
       {
         sub: userId,
         email,
         role,
         type: 'refresh',
+        jti: refreshTokenId,
       },
       this.jwtSecret,
       {
         expiresIn: '7d',
       },
     );
+
+    // Rotating this on every issuance (register/login/refresh) is what makes
+    // the previous refresh token stop working the moment a new one is
+    // issued -- see the jti check in refresh() above.
+    await this.userRepository.setActiveRefreshTokenId(userId, refreshTokenId);
 
     return {
       accessToken,

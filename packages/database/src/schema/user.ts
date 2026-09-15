@@ -19,6 +19,11 @@ export const users = pgTable('users', {
 
   status: accountStatusEnum('status').default('ACTIVE').notNull(),
 
+  // Holds the jti of the single currently-valid refresh token for this user.
+  // Rotated on every successful login/refresh; cleared on logout. A refresh
+  // token whose jti doesn't match this value has already been used/revoked.
+  activeRefreshTokenId: text('active_refresh_token_id'),
+
   createdAt: timestamp('created_at', {
     withTimezone: true,
   })

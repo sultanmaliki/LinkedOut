@@ -48,6 +48,12 @@ export class ReviewService {
       throw new NotFoundException('Company not found');
     }
 
+    if (!this.employmentMatchesCompany(history.companyName, company)) {
+      throw new ForbiddenException(
+        'This employment history is not associated with the company being reviewed',
+      );
+    }
+
     const alreadyReviewed = await this.reviewRepository.existsForEmploymentHistory(
       dto.employmentHistoryId,
     );
@@ -141,6 +147,25 @@ export class ReviewService {
     if (!deleted) {
       throw new NotFoundException('Review not found');
     }
+  }
+
+  // employment_histories.companyName is free text (not a foreign key to
+  // companies), so createReview must not trust that a verified employment
+  // history was actually at the company being reviewed -- otherwise a
+  // verified employment at any company lets someone post a "verified"
+  // review against a completely unrelated company. Compares against both
+  // legalName and displayName since either is a reasonable name a
+  // professional might have typed for their employer.
+  private employmentMatchesCompany(
+    employmentCompanyName: string,
+    company: { legalName: string; displayName: string },
+  ): boolean {
+    const normalize = (value: string) => value.trim().toLowerCase();
+    const historyName = normalize(employmentCompanyName);
+
+    return (
+      historyName === normalize(company.legalName) || historyName === normalize(company.displayName)
+    );
   }
 
   private async requireOwnership(reviewId: string, userId: string): Promise<void> {

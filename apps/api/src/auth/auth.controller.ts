@@ -36,4 +36,11 @@ export class AuthController {
   async resendVerification(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.resendVerification(user.id);
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@CurrentUser() user: AuthenticatedUser) {
+    await this.authService.logout(user.id);
+    return { loggedOut: true };
+  }
 }

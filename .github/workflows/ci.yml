@@ -26,6 +26,9 @@ jobs:
 
     env:
       DATABASE_URL: postgres://linkedout:linkedout@localhost:5432/linkedout
+      # CI-only value. The app refuses to start without JWT_SECRET set;
+      # never reuse this value outside of CI.
+      JWT_SECRET: ci-test-secret-not-for-reuse
 
     steps:
       - uses: actions/checkout@v4

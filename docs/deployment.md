@@ -1,11 +1,15 @@
 # Deployment Design
 
+> **Status: Deferred, not implemented.** LinkedOut has never been deployed outside local Docker Compose (Postgres + API). There is no Caddy, Prometheus, Grafana, Kubernetes, or CI/CD deploy step today — CI runs lint/test/typecheck only. This is a target design for when the product is ready to launch, kept for reference — see [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+
 ## Target Environment
+
 - Self-hosted Ubuntu server
 - Docker Compose for initial deployments
 - Future compatibility with Kubernetes and cloud-managed services
 
 ## Runtime Services
+
 - Web frontend container
 - API container
 - PostgreSQL container
@@ -16,6 +20,7 @@
 - Prometheus and Grafana containers
 
 ## Deployment Topology
+
 ```mermaid
 flowchart TD
   Internet[Internet] --> Caddy[Caddy Reverse Proxy]
@@ -30,6 +35,7 @@ flowchart TD
 ```
 
 ## Release Strategy
+
 - Blue/green or rolling deployments for the API
 - Tagged releases for rollback safety
 - Environment separation between development, staging, and production

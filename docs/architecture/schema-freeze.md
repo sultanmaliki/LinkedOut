@@ -1,7 +1,7 @@
 # LinkedOut Schema Freeze
 
-> Status: Frozen (MVP v1)
-> Last Updated: August 2026
+> Status: Frozen (MVP v1) — 33 entities implemented in `packages/database/src/schema`
+> Last Updated: September 2026 (added `User.activeRefreshTokenId` for refresh-token rotation — see [security.md](../security.md))
 
 ---
 
@@ -31,16 +31,14 @@ No exceptions.
 
 # Database Principles
 
-- UUIDv7 primary keys
+- UUID primary keys (v4, via `gen_random_uuid()`)
 - Third Normal Form (3NF)
 - Privacy first
 - Historical accuracy
 - Immutable audit trails
 - No duplicated data
 - PostgreSQL is the source of truth
-- Meilisearch handles search
-- Valkey handles caching
-- MinIO stores files
+- Meilisearch, Valkey, and MinIO are provisioned but not yet wired into any application code — search, caching, and file storage all currently go through PostgreSQL/URL columns directly. See [database.md](../database.md).
 
 ---
 
@@ -179,7 +177,7 @@ No exceptions.
 
 ## Primary Keys
 
-UUIDv7 everywhere.
+UUID everywhere, via Drizzle's `.defaultRandom()` (Postgres `gen_random_uuid()` — UUIDv4, not UUIDv7 as earlier drafts of this document said).
 
 ---
 

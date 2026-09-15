@@ -1,26 +1,48 @@
 # Changelog
 
-## v0.1.0 - Foundation
+This changelog is maintained at a feature-area level, not commit-by-commit. See git history for full detail.
+
+## Unreleased — Security hardening
 
 ### Added
 
-- Turborepo monorepo
-- Next.js frontend
-- NestJS backend
-- Docker development stack
-- PostgreSQL
-- Valkey
-- Meilisearch
-- MinIO
-- ADR documentation
-- Project documentation
+- `POST /auth/logout`, refresh token rotation (`users.activeRefreshTokenId`), single-use email verification tokens
+- Global exception filter converting invalid-UUID input from `500` to `400`
+- Fail-fast `JWT_SECRET` validation (no insecure default)
 
-### Changed
+### Fixed
 
-- Improved Docker Compose configuration
-- Standardized backend development workflow
+- Reviews could be posted against a company unrelated to the reviewer's actual verified employer
+- Suspended/banned accounts kept working access tokens until natural expiry instead of losing access immediately
+- Refresh tokens could be replayed indefinitely instead of being single-use
+- Case-variant emails (`Ada@Example.com` vs `ada@example.com`) could register as separate accounts
+- `AuthGuard` accepted any correctly-signed token regardless of its intended purpose (denylist instead of allowlist)
 
-### Known Issues
+Full detail: [docs/security.md](docs/security.md).
 
-- Husky deprecation warning
-- Placeholder lint/test scripts
+## v0.2.0 — Core product
+
+### Added
+
+- Professional profiles: employment history + company-email verification, employment expectations, skills, portfolio links, "actively looking" toggle
+- Company profiles: locations, benefits, admin claim flow, verification, job postings
+- Hiring flow: company-initiated opportunities, accept/decline with required contact method, append-only hiring pipeline, "send opportunity" from a professional's profile
+- Posts feed: company- and professional-authored posts, scheduled publish/archive, comments (one reply level), likes, attachments
+- Reviews: verified-employment-gated submission, per-category ratings, one company reply per review
+- Moderation: moderation cases/actions, trust flags, audit logs, admin role management UI
+- Email verification (dev-mode token, no real mailer yet)
+
+## v0.1.0 — Foundation
+
+### Added
+
+- Turborepo monorepo, Next.js frontend, NestJS backend
+- Docker Compose local dev stack (Postgres; Valkey/MinIO/Meilisearch provisioned but unused)
+- Drizzle ORM schema (33 entities, frozen design) and migrations
+- ADR documentation, initial auth module (register/login/refresh)
+
+### Known Issues (carried forward, see [PROJECT_STATUS.md](PROJECT_STATUS.md))
+
+- Placeholder `lint`/`test` scripts in `apps/api`/`apps/web`
+- No database indexes beyond primary keys and one unique constraint
+- `drizzle-kit push` in CI instead of replayed migrations

@@ -1,67 +1,91 @@
 # API Design
 
 ## Overview
-The API is a RESTful NestJS service exposing versioned endpoints for authentication, profiles, companies, hiring, reviews, search, notifications, and admin operations.
 
-Note: LinkedOut reverses traditional hiring — companies discover professionals and send opportunities; professionals do not submit applications (see [decisions.md](decisions.md), D-001). The endpoint list below reflects that model.
+The API is a NestJS REST service. Routes are **unprefixed** — there is no `/api/v1` versioning, and no OpenAPI/Swagger generation is wired up. The list below was generated directly from the controller decorators in `apps/api/src`, so it reflects what's actually routable, not a plan.
 
-## Versioning
-- Base path: /api/v1
-- Use explicit versioning in route definitions and contract files
-- Deprecate gradually with compatibility windows
+Reminder: LinkedOut reverses traditional hiring — companies discover professionals and send opportunities; professionals do not submit applications ([decisions.md](decisions.md) D-001).
 
-## Core Endpoints
+## Auth — `/auth`
 
-### Authentication
-- POST /api/v1/auth/register
-- POST /api/v1/auth/login
-- POST /api/v1/auth/refresh
-- GET /api/v1/auth/me
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `POST /auth/verify-email`
+- `POST /auth/resend-verification`
 
-### Professionals
-- GET /api/v1/professionals/:id
-- PATCH /api/v1/professionals/me
-- GET /api/v1/professionals/me
-- GET /api/v1/professionals/:id/reviews
+## Users (admin) — `/users`
 
-### Companies
-- GET /api/v1/companies
-- POST /api/v1/companies
-- GET /api/v1/companies/:id
-- PATCH /api/v1/companies/:id
-- GET /api/v1/companies/:id/reviews
-- GET /api/v1/companies/:id/jobs
+- `GET /users/lookup`
+- `PATCH /users/:id/role`
 
-### Jobs and Opportunities
-- GET /api/v1/companies/:id/jobs
-- POST /api/v1/companies/:id/jobs
-- POST /api/v1/jobs/:id/opportunities — company sends an opportunity to a professional
-- GET /api/v1/opportunities — opportunities for the current professional
-- POST /api/v1/opportunities/:id/respond — professional accepts or declines
-- GET /api/v1/opportunities/:id/pipeline — hiring pipeline stage history (append-only)
+## Professionals — `/professionals`
 
-### Reviews
-- POST /api/v1/reviews — requires a verified EmploymentHistory
-- GET /api/v1/reviews/:id
-- PATCH /api/v1/reviews/:id — subject to edit cooldown; companies cannot edit or delete
-- POST /api/v1/reviews/:id/reply — one company reply per review
-- POST /api/v1/reviews/:id/vote
+- `GET /professionals` — search/discovery
+- `GET /professionals/me`
+- `PATCH /professionals/me`
+- `GET /professionals/:id`
+- `GET /professionals/:id/skills`
+- `GET /professionals/:id/portfolio-links`
+- `GET /professionals/:id/employment-expectation`
+- `GET/PUT /professionals/me/skills`
+- `GET/POST /professionals/me/portfolio-links`, `PATCH/DELETE /professionals/me/portfolio-links/:linkId`
+- `GET/PUT /professionals/me/employment-expectation`
+- `GET/POST /professionals/me/employment-history`, `PATCH/DELETE /professionals/me/employment-history/:historyId`
+- `GET/PUT /professionals/me/employment-history/:historyId/verification`
+- `GET /professionals/me/opportunities`, `POST /professionals/me/opportunities/:opportunityId/respond`, `POST /professionals/me/opportunities/:opportunityId/withdraw`
+- `GET /professionals/me/posts`
 
-### Notifications
-- GET /api/v1/notifications
-- PATCH /api/v1/notifications/:id/read
+## Companies — `/companies`
 
-### Admin / Moderation
-- GET /api/v1/admin/moderation
-- PATCH /api/v1/admin/moderation/:id
-- GET /api/v1/admin/analytics
+- `POST /companies`, `GET /companies`, `GET /companies/mine`, `GET /companies/:id`, `PATCH /companies/:id`
+- `GET/POST /companies/:companyId/locations`, `PATCH/DELETE /companies/:companyId/locations/:locationId`
+- `GET/PUT /companies/:companyId/benefits`
+- `GET/PUT /companies/:companyId/verification`
+- `GET/POST /companies/:companyId/jobs`, `PATCH /companies/:companyId/jobs/:jobId`
+- `GET /companies/:companyId/posts`
+- `GET /companies/:companyId/reviews`
 
-## OpenAPI Strategy
-- Generate OpenAPI from decorators and shared DTOs
-- Publish Swagger UI in non-production environments
-- Use contract tests to protect public API compatibility
+## Jobs & Opportunities (the reverse-hiring core)
+
+- `GET /jobs/:jobId`
+- `POST /jobs/:jobId/opportunities` — company sends an opportunity to a professional
+- `GET /jobs/:jobId/opportunities`
+- `GET /opportunities/:id`
+- `GET/POST /opportunities/:opportunityId/pipeline` — append-only hiring pipeline stage history
+
+## Posts — `/posts`
+
+- `POST /posts`, `GET /posts`, `GET /posts/:id`, `PATCH /posts/:id`, `DELETE /posts/:id`
+- `POST /posts/:id/archive`, `POST /posts/:id/restore`
+- `GET/POST /posts/:postId/comments`, `PATCH/DELETE /comments/:id`
+- `GET/POST /posts/:postId/like`
+- `GET/POST /posts/:postId/attachments`, `DELETE /posts/:postId/attachments/:attachmentId`
+- `POST /attachments`, `GET /attachments/:id`
+
+## Reviews — `/reviews`
+
+- `POST /reviews`, `GET /reviews/:id`, `PATCH /reviews/:id`, `DELETE /reviews/:id` — requires a verified `EmploymentHistory` whose company matches the one being reviewed
+- `GET/POST/PUT /reviews/:reviewId/reply` — one company reply per review
+
+## Moderation — `/moderation`
+
+- `POST/GET /moderation/cases`, `GET /moderation/cases/:id`, `PATCH /moderation/cases/:id/status`
+- `GET/POST /moderation/cases/:caseId/actions`
+- `POST /moderation/trust-flags`, `GET /moderation/trust-flags/user/:userId`
+- `GET /moderation/audit-logs`
+
+## Auth requirements
+
+Every route above except `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/verify-email`, and the public `GET` discovery/read endpoints requires a bearer access token via `AuthGuard`. Moderation write routes additionally require `ModeratorGuard`/`AdminGuard`. See [authentication.md](authentication.md).
+
+## Not implemented
+
+No OpenAPI/Swagger generation, no API versioning scheme, no notifications endpoints. These were part of an earlier speculative design — see [features.md](features.md) for what's deferred and why.
 
 ## Sequence Example
+
 ```mermaid
 sequenceDiagram
   participant Client
@@ -69,9 +93,9 @@ sequenceDiagram
   participant Auth
   participant DB
   Client->>API: POST /auth/login
-  API->>Auth: Validate credentials
-  Auth->>DB: Lookup user and session
-  DB-->>Auth: User data
-  Auth-->>API: JWT + refresh token
-  API-->>Client: Auth response
+  API->>Auth: validate credentials
+  Auth->>DB: lookup user
+  DB-->>Auth: user data
+  Auth-->>API: access + refresh tokens
+  API-->>Client: auth response
 ```

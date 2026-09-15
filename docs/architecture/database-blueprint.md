@@ -1,7 +1,7 @@
 # LinkedOut Database Blueprint
 
-> Status: Locked
-> Last Updated: August 2026
+> Status: Locked (entities/relationships) — **the Index Strategy, Search Strategy, Cache Strategy, and Storage Strategy sections below are target design, not implemented.** See the note in each section and [database.md](../database.md) for what's actually true today: no indexes beyond primary keys and one unique constraint, Postgres-only (no Meilisearch/Valkey/MinIO wiring), and file fields are plain URL columns.
+> Last Updated: August 2026 (entities/relationships); status note added September 2026
 > Version: MVP v1
 
 ---
@@ -89,7 +89,7 @@ Before writing any Drizzle schema or PostgreSQL migration, every entity, relatio
 
 Total Entities
 
-29
+29 at the time this list was drafted. The frozen schema in [schema-freeze.md](schema-freeze.md) — the authoritative, current count — has since grown to 33 (added Moderation-domain entities: ModerationCase, ModerationAction, TrustFlag, AuditLog).
 
 ---
 
@@ -501,6 +501,8 @@ employment_history_id
 
 # Index Strategy
 
+> **Not implemented.** No explicit indexes beyond primary keys and one unique constraint (`likes_post_professional_company_idx`) exist today. This section is the target design.
+
 Professional
 
 - skills
@@ -535,6 +537,8 @@ Review
 
 # Storage Strategy
 
+> **Not implemented.** MinIO has zero application code references. Photo/attachment fields are plain URL columns supplied by the client — there is no upload endpoint or object storage integration. This section is the target design.
+
 PostgreSQL
 
 Stores metadata only.
@@ -559,6 +563,8 @@ Database stores
 
 # Search Strategy
 
+> **Not implemented.** Meilisearch has zero application code references; professional search/discovery is direct PostgreSQL queries. This section is the target design.
+
 Search Engine
 
 Meilisearch
@@ -575,6 +581,8 @@ PostgreSQL remains source of truth.
 ---
 
 # Cache Strategy
+
+> **Not implemented.** Valkey has zero application code references — there is no caching layer today. This section is the target design.
 
 Valkey
 
@@ -635,22 +643,10 @@ Audit logs are immutable.
 
 # Architecture Rating
 
-Normalization
+The original version of this section self-rated every dimension 5/5 and "Production Ready" at project-init time, before any code existed. That assessment predates a completed security audit and live red-team review (see [security.md](../security.md)) and shouldn't be treated as current. Honest status as of the last audit:
 
-★★★★★
-
-Scalability
-
-★★★★★
-
-Privacy
-
-★★★★★
-
-Maintainability
-
-★★★★★
-
-Status
-
-Production Ready
+- **Normalization** — solid; 3NF, no JSON/array blobs for structured data, confirmed against the actual schema
+- **Privacy** — solid in design (contact info gated on opportunity acceptance, anonymous reviews) and holding up under live IDOR/cross-user testing
+- **Scalability** — untested at any real scale; no indexes beyond primary keys and one unique constraint
+- **Maintainability** — good (Drizzle's parameterized query builder throughout, no raw SQL, clear domain module boundaries)
+- **Status** — **not production ready.** Never deployed outside local Docker Compose; no production environment, no backups, no monitoring. See [PROJECT_STATUS.md](../../PROJECT_STATUS.md) "Known gaps."

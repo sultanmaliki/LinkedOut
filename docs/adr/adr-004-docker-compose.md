@@ -1,15 +1,18 @@
-# ADR-004: Use Docker Compose for initial self-hosted deployments
+# ADR-004: Use Docker Compose for local development
 
-- Status: Accepted
+- Status: Accepted — implemented for local development only; no production deployment exists yet
 - Date: 2026-08-03
 
 ## Context
-LinkedOut needs a pragmatic deployment path on self-hosted Ubuntu infrastructure while remaining compatible with future cloud migration.
+
+LinkedOut needs a pragmatic, reproducible local development environment, with a path to a real deployment later.
 
 ## Decision
-Use Docker and Docker Compose as the initial deployment model, with Caddy as the reverse proxy and containerized support services.
+
+Use Docker and Docker Compose for local development (`postgres`, `api`, and the provisioned-but-currently-unused `valkey`/`minio`/`meilisearch`). A reverse proxy (Caddy or otherwise) and a real deployment target are future decisions, not yet made — see [deployment.md](../deployment.md), marked deferred.
 
 ## Consequences
-- Fast local parity and production portability.
+
+- Fast local parity between developer machines.
 - Easier environment reproducibility.
-- Future cloud migration will require container orchestration and environment-specific hardening.
+- Production deployment strategy (reverse proxy, orchestration, environment-specific hardening) is still an open decision, not yet implemented.

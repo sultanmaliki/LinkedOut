@@ -1,26 +1,22 @@
-# Permissions and RBAC
+# Roles and Authorization
 
-## Roles
-- anonymous: can browse public content and view public company profiles
-- user: can create reviews, vote, and manage their own profile
-- company_rep: can manage company profile and respond to reviews
-- moderator: can review flagged content and manage moderation queues
-- admin: can manage roles, platform settings, and compliance actions
-- super_admin: can manage infrastructure settings and critical platform operations
+## Roles (actual `userRoleEnum` values)
 
-## Permission Model
-- `reviews:create`
-- `reviews:edit:own`
-- `reviews:delete:own`
-- `reviews:moderate`
-- `companies:manage:own`
-- `users:manage`
-- `notifications:read`
-- `admin:access`
-- `audit:read`
+- `PROFESSIONAL` — default role on registration. Manages their own profile, employment history, posts, and reviews (subject to verified-employment gating).
+- `COMPANY_ADMIN` — manages a company they've claimed/been added to: profile, locations, benefits, jobs, opportunities, review replies.
+- `MODERATOR` — access to moderation cases, actions, trust flags, and audit logs via `ModeratorGuard`.
+- `ADMIN` — everything `MODERATOR` can do, plus role management (`PATCH /users/:id/role`) via `AdminGuard`.
 
-## Enforcement Strategy
-- Guard-based checks on controllers and routes
-- Resource ownership checks for user-generated content
-- Policy-based evaluation for complex moderation and admin scenarios
-- Audit logs for role changes and privileged operations
+There is no `super_admin`, `company_rep`, or `anonymous`-as-a-role concept — unauthenticated requests simply have no `request.user` and hit `AuthGuard`'s `401` before any role check runs.
+
+## Enforcement
+
+- `AuthGuard` resolves `request.user` (`id`, `email`, `role`) from the verified access token
+- `ModeratorGuard`/`AdminGuard` stack on top via `@UseGuards(AuthGuard, ModeratorGuard)` etc., checking `request.user.role`
+- Resource ownership is checked explicitly per-service where it matters (e.g. a review's owning profile, a company's admin list) — there's no generic policy/permission-string system (`reviews:edit:own` etc. was an earlier design sketch, not what's implemented)
+- Role changes take effect on the user's next token issuance, since the role is read from the JWT claim, not re-queried from the database on every request
+
+## Not implemented
+
+- Fine-grained permission strings/policies — role-level checks only
+- Audit logging of role changes is not yet wired into every role-change path — verify before relying on it for compliance

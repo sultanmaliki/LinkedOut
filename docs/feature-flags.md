@@ -1,17 +1,22 @@
 # Feature Flag Strategy
 
+> **Status: Deferred, not implemented.** There is no feature flag system — features ship directly. This is a design sketch, kept for reference, not on the current [roadmap](roadmap.md).
+
 ## Goals
+
 - Launch features safely with low-risk rollout
 - Enable progressive exposure to internal users or cohorts
 - Support staged release and rollback without redeploying core services
 
 ## Rollout Model
+
 - `off`: disabled
 - `internal`: enabled for internal users only
 - `beta`: enabled for selected cohorts
 - `100%`: fully enabled
 
 ## Recommended Flag Categories
+
 - auth
 - reviews
 - search
@@ -21,6 +26,7 @@
 - admin-tools
 
 ## Implementation Approach
+
 - Store flags in the database with rollout metadata and owner information
 - Evaluate flags per request and per user context
 - Record flag evaluations in audit logs for major decisions

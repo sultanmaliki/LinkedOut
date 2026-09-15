@@ -1,6 +1,6 @@
 # LinkedOut Relationship Matrix
 
-> Status: Draft (Pending ER Diagram)
+> Status: Implemented — matches [er-diagram.md](er-diagram.md) and `packages/database/src/schema`
 > Version: MVP v1
 
 ---

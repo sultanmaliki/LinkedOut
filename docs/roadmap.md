@@ -1,31 +1,30 @@
 # Roadmap
 
-## Phase 0 - Foundation (Months 0-1)
-- Establish repository, tooling, documentation, CI/CD, and local infrastructure
-- Define domain model, API contracts, and architecture standards
-- Create team operating model, branch strategy, and contribution guidelines
+This roadmap reflects the actual intended product direction, not a generic enterprise-SaaS template. See [docs/vision.md](vision.md) for the non-goals this deliberately excludes (messaging, AI-driven matching, notifications, microservices, event-driven architecture) — those stay out of scope unless the vision changes, not because they were deprioritized.
 
-## Phase 1 - Core Platform (Months 1-3)
-- Authentication and profile management
-- Company and employee onboarding
-- Review and rating workflows
-- Search and discovery
-- Basic moderation and reporting
+## Done — Core product
 
-## Phase 2 - Trust and Engagement (Months 3-6)
-- Reputation scoring
-- Verification systems
-- Notifications and real-time updates
-- Advanced search and recommendation engine
-- Content moderation workflows
+- Auth (register/login/refresh/logout, email verification, account status enforcement)
+- Professional profiles (employment history + verification, expectations, skills, portfolio)
+- Company profiles (locations, benefits, verification, admin claim)
+- Hiring flow: company-initiated opportunities, accept/decline, append-only hiring pipeline
+- Posts feed (comments, likes, attachments, scheduled publish/archive)
+- Reviews gated on verified employment, with company replies
+- Moderation (cases, actions, trust flags, audit logs) and admin role management
+- A completed security audit + red-team review, with every HIGH/MEDIUM finding fixed and regression-tested
 
-## Phase 3 - Growth and Scale (Months 6-9)
-- AI-assisted summaries and insights
-- Event-driven integrations
-- Observability, performance tuning, and cost optimization
-- Multi-region deployment readiness
+## Now — Pre-launch hardening
 
-## Phase 4 - Enterprise Readiness (Months 9-12)
-- SSO, auditability, SLA monitoring, and support tooling
-- Advanced analytics and experiment framework
-- Expanded API ecosystem and partner integrations
+- Close the known-gaps list in [PROJECT_STATUS.md](../PROJECT_STATUS.md): database indexes, real `lint`/`test` scripts across all packages, migration-based CI instead of `drizzle-kit push`
+- Real email provider (currently dev-mode-only verification tokens)
+- Rate limiting on authentication and public write endpoints (identified gap, not yet demonstrated as exploited)
+
+## Next — Trust & polish
+
+- Reputation/trust signals building on the existing `trust_flags`/moderation tables
+- Deeper professional search and discovery filters
+- Company review moderation workflow refinements
+
+## Deliberately not planned
+
+Anything requiring messaging/chat, notifications, AI-driven features, an event bus/queue, microservices, or multi-region/enterprise-SSO infrastructure. If one of these becomes genuinely necessary, it needs its own ADR and an explicit decision entry in [decisions.md](decisions.md) first — not a roadmap line item.

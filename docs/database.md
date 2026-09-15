@@ -25,11 +25,15 @@ PostgreSQL is the system of record. Drizzle ORM (`packages/database`) manages sc
 
 ## Data Principles
 
-- UUIDv7 primary keys everywhere
+- UUID primary keys everywhere (Postgres `gen_random_uuid()` via Drizzle's `.defaultRandom()` — this is UUIDv4, not UUIDv7 as earlier drafts of this doc claimed)
 - Third Normal Form (3NF) — no arrays or JSON blobs for structured data
 - Privacy first — contact info shared only after opportunity acceptance
 - Historical accuracy via immutable snapshots (ReviewSnapshot, ProfessionalSnapshot, OpportunitySnapshot)
 - HiringPipeline and AuditLog are append-only
-- PostgreSQL is the source of truth; Meilisearch handles search; Valkey handles caching; MinIO stores files
+- PostgreSQL is the only backing store actually in use. Meilisearch, Valkey, and MinIO are provisioned in `docker-compose.yml` but have zero application code references — search is direct Postgres queries, there's no caching layer, and file fields are plain URL columns. See [architecture.md](architecture.md).
+
+## Known gap
+
+No explicit indexes exist beyond primary keys and one unique constraint (`likes_post_professional_company_idx`) — not yet an index-per-FK strategy, despite that being implied by [architecture/database-blueprint.md](architecture/database-blueprint.md)'s "Index Strategy" section, which describes a target design that was never implemented. Tracked in [PROJECT_STATUS.md](../PROJECT_STATUS.md).
 
 Schema changes require updating `docs/architecture/schema-freeze.md` first — see D-019/D-020 in [decisions.md](decisions.md).

@@ -1,6 +1,6 @@
 # LinkedOut ER Diagram
 
-> Status: Draft
+> Status: Implemented — matches `packages/database/src/schema` as of this writing
 > Version: MVP v1
 
 ```mermaid

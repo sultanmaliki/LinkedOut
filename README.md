@@ -1,58 +1,56 @@
 # LinkedOut
 
-LinkedOut is a parody-style professional networking platform where companies apply to employees rather than the reverse. The project is designed to help professionals evaluate employers through transparency, culture, compensation, interview experience, growth opportunities, and community feedback.
+LinkedOut is a reverse-hiring platform: companies discover professionals and send them opportunities, rather than professionals applying to job postings. It helps professionals evaluate employers through verified reviews, and helps companies find talent based on demonstrated skills and experience rather than resumes and cover letters.
 
 ## Project Overview
 
-This repository is a production-oriented monorepo for the LinkedOut platform. It currently includes:
+This repository is a monorepo containing:
 
 - a Next.js web application for the user-facing experience,
-- a NestJS backend for API and authentication flows,
-- shared package-level utilities and types,
-- documentation and engineering standards for scalable development,
-- a Turbo-powered workspace setup for build, lint, and test orchestration.
+- a NestJS backend API,
+- a shared Drizzle/PostgreSQL database package,
+- documentation covering architecture, decisions, and operational guidance,
+- a Turborepo-powered workspace for build, lint, test, and typecheck orchestration.
 
-The current repo state includes an initial authentication implementation for the backend and a basic auth UI entry point in the web app.
+**Current state:** the core product is built and functional end-to-end — registration/login/email verification, professional profiles (employment history, skills, portfolio, expectations), company profiles and job postings, the opportunity/hiring-pipeline flow, a posts feed with comments/likes/attachments, verified company reviews with company replies, and a moderation/admin-role system. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed feature-by-feature status and [docs/roadmap.md](docs/roadmap.md) for what's next.
 
 ## Monorepo Structure
 
-- apps/web: Next.js frontend application
-- apps/api: NestJS backend service
-- packages/ui: shared UI component package
-- packages/config: shared tooling and configuration helpers
-- packages/types: shared TypeScript types
-- docs: architecture notes, roadmap items, ADRs, and operational documentation
-- configs: repository-wide config helpers and shared linting setup
+- `apps/web` — Next.js frontend application
+- `apps/api` — NestJS backend service
+- `packages/database` — Drizzle ORM schema, migrations, and DB client (`@linkedout/database`)
+- `packages/ui`, `packages/config`, `packages/types` — empty placeholder packages, not yet in use
+- `docs` — architecture notes, roadmap, decisions, and ADRs
+- `configs` — shared ESLint configuration
 
 ## Technology Stack
 
 ### Frontend
 
-- Next.js
-- React
-- TypeScript
+- Next.js 15, React 19, TypeScript
+- Tailwind-based UI components (no external component library)
 
 ### Backend
 
-- NestJS
-- TypeScript
-- JWT-based authentication flow
-- DTO validation and service-layer structure
+- NestJS, TypeScript
+- Custom JWT authentication (access + refresh tokens, no third-party auth provider)
+- `class-validator`/`class-transformer` DTOs with a global `ValidationPipe`
+- Drizzle ORM over PostgreSQL
 
 ### Tooling
 
-- pnpm workspaces
-- Turbo
-- ESLint, Prettier, Husky, lint-staged
-- Jest for backend tests
+- pnpm workspaces + Turborepo
+- Jest (real test suite for `apps/api`: 54 suites / 300+ tests)
+- ESLint (only `packages/database` has a real lint script today — see [docs/coding-guidelines.md](docs/coding-guidelines.md))
+- Docker Compose for local Postgres + API
+
+Provisioned but **not currently used by any application code**: Valkey (Redis), MinIO (object storage), Meilisearch (search) — they run in `docker-compose.yml` but nothing reads or writes to them yet. Don't assume they're wired up.
 
 ## Prerequisites
 
-Make sure the following are installed before working locally:
-
-- Node.js 20+ recommended
+- Node.js 20+
 - pnpm
-- Docker Desktop or a compatible Docker engine (for local services)
+- Docker Desktop or a compatible Docker engine
 
 ## Local Development Setup
 
@@ -62,113 +60,61 @@ Make sure the following are installed before working locally:
    pnpm install
    ```
 
-2. Start supporting services (optional but recommended for full local development)
+2. Start Postgres (and the API, if you want it containerized)
 
    ```bash
-   docker compose up -d
+   docker compose up -d postgres api
    ```
 
-3. Start the development workflow
+3. Apply the database schema
+
+   ```bash
+   pnpm --filter @linkedout/database push
+   ```
+
+4. Set required environment variables — copy `.env.example` to `.env` and fill in `DATABASE_URL` and `JWT_SECRET` (the API refuses to start without both; there is no insecure default fallback).
+
+5. Start development
 
    ```bash
    pnpm dev
    ```
 
-   This runs the workspace development tasks through Turbo.
-
 ### Useful development commands
 
-- Start the backend in watch mode:
+```bash
+pnpm --filter @linkedout/api dev      # backend in watch mode
+pnpm --filter @linkedout/web dev      # frontend in watch mode
+pnpm build                            # build the whole monorepo
+pnpm test                             # run tests across the workspace
+pnpm typecheck                        # typecheck across the workspace
+```
 
-  ```bash
-  pnpm --filter @linkedout/api dev
-  ```
+Running the API test suite through Docker (the pattern used throughout development, avoids host/container Node version drift):
 
-- Start the web app locally:
-
-  ```bash
-  pnpm --filter @linkedout/web dev
-  ```
-
-- Build the entire monorepo:
-
-  ```bash
-  pnpm build
-  ```
-
-- Run tests across the workspace:
-
-  ```bash
-  pnpm test
-  ```
+```bash
+docker compose run --rm api sh -c "pnpm --filter @linkedout/api test"
+```
 
 ## Available Scripts
 
-From the repository root:
+From the repository root: `pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm format`.
 
-- pnpm build: builds all workspace packages
-- pnpm lint: runs workspace lint tasks
-- pnpm test: runs workspace tests
-- pnpm typecheck: runs TypeScript type checks across the repo
-- pnpm format: formats the repository with Prettier
-
-### App-specific scripts
-
-- apps/api
-  - pnpm --filter @linkedout/api dev
-  - pnpm --filter @linkedout/api build
-  - pnpm --filter @linkedout/api test
-
-- apps/web
-  - pnpm --filter @linkedout/web dev
-  - pnpm --filter @linkedout/web build
-  - pnpm --filter @linkedout/web typecheck
-
-## Current Development Status
-
-The repository is currently in an early but structured production-ready foundation stage. The main areas already present include:
-
-- monorepo scaffolding and workspace configuration,
-- API and web application entry points,
-- authentication module scaffolding,
-- shared configuration and documentation conventions,
-- build and test tooling.
-
-## Contribution Guidelines
-
-When contributing to this repository:
-
-- keep app-specific logic inside the relevant app package,
-- place reusable code in shared packages where appropriate,
-- preserve the existing workspace conventions for TypeScript and tooling,
-- update documentation when adding or changing major functionality.
-
-## Architecture Principles
-
-The project is intended to follow a modular, maintainable structure:
-
-- keep app-specific concerns inside the relevant app package,
-- place reusable logic in shared packages,
-- keep documentation and platform decisions in the docs directory,
-- prefer configuration consistency across the workspace.
+Note: `apps/api` and `apps/web`'s own `lint`/`typecheck`/`test` scripts are mixed — `apps/api` has a real Jest suite but a placeholder `lint` script; `apps/web` has real `typecheck`/`build` but a placeholder `lint` script. This is tracked as known tooling debt, not fixed silently — see [docs/coding-guidelines.md](docs/coding-guidelines.md).
 
 ## Documentation
 
-Project documentation is organized in the docs directory and includes guidance on:
+Start at [docs/README.md](docs/README.md) for the full index. Most relevant to get oriented:
 
-- architecture,
-- authentication,
-- deployment,
-- feature planning,
-- database and storage decisions,
-- observability and operational practices.
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) — what's built, what isn't
+- [docs/vision.md](docs/vision.md) — product philosophy and non-goals
+- [docs/architecture.md](docs/architecture.md) — how the system is actually put together
+- [docs/security.md](docs/security.md) — current security posture, known gaps
+- [docs/decisions.md](docs/decisions.md) — product decision log
 
-## Recommended Next Steps
+## Contribution Guidelines
 
-The next milestones for the project are:
-
-- complete the core product domain modules,
-- expand the authentication and authorization experience,
-- wire the frontend and backend together more fully,
-- strengthen CI/CD and production deployment workflows,
-- add deeper observability and testing coverage.
+- Keep app-specific logic inside the relevant app package; put reusable code in shared packages.
+- Update tests alongside behavior changes — don't weaken or delete existing assertions to make something pass.
+- **Update the relevant markdown docs in the same change whenever you add, remove, or change behavior, an endpoint, a schema column, or a security control.** Stale docs are treated as a bug, not cosmetic debt.
+- See [docs/contributing.md](docs/contributing.md) and [docs/branching-and-commits.md](docs/branching-and-commits.md) for workflow conventions.

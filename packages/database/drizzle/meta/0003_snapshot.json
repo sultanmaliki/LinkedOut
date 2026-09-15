@@ -78,9 +78,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -167,12 +165,8 @@
           "name": "professional_profiles_user_id_users_id_fk",
           "tableFrom": "professional_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -182,9 +176,7 @@
         "professional_profiles_user_id_unique": {
           "name": "professional_profiles_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       },
       "policies": {},
@@ -290,12 +282,8 @@
           "name": "employment_expectations_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "employment_expectations",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -305,9 +293,7 @@
         "employment_expectations_professional_profile_id_unique": {
           "name": "employment_expectations_professional_profile_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "professional_profile_id"
-          ]
+          "columns": ["professional_profile_id"]
         }
       },
       "policies": {},
@@ -414,12 +400,8 @@
           "name": "employment_histories_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "employment_histories",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -472,12 +454,8 @@
           "name": "professional_skills_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "professional_skills",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -485,12 +463,8 @@
           "name": "professional_skills_skill_id_skills_id_fk",
           "tableFrom": "professional_skills",
           "tableTo": "skills",
-          "columnsFrom": [
-            "skill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["skill_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -498,10 +472,7 @@
       "compositePrimaryKeys": {
         "professional_skills_professional_profile_id_skill_id_pk": {
           "name": "professional_skills_professional_profile_id_skill_id_pk",
-          "columns": [
-            "professional_profile_id",
-            "skill_id"
-          ]
+          "columns": ["professional_profile_id", "skill_id"]
         }
       },
       "uniqueConstraints": {},
@@ -541,9 +512,7 @@
         "skills_name_unique": {
           "name": "skills_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -593,12 +562,8 @@
           "name": "portfolio_links_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "portfolio_links",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -685,12 +650,8 @@
           "name": "employment_verifications_employment_history_id_employment_histories_id_fk",
           "tableFrom": "employment_verifications",
           "tableTo": "employment_histories",
-          "columnsFrom": [
-            "employment_history_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["employment_history_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -700,9 +661,7 @@
         "employment_verifications_employment_history_id_unique": {
           "name": "employment_verifications_employment_history_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "employment_history_id"
-          ]
+          "columns": ["employment_history_id"]
         }
       },
       "policies": {},
@@ -800,9 +759,7 @@
         "companies_slug_unique": {
           "name": "companies_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -871,12 +828,8 @@
           "name": "company_profiles_company_id_companies_id_fk",
           "tableFrom": "company_profiles",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -886,9 +839,7 @@
         "company_profiles_company_id_unique": {
           "name": "company_profiles_company_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "company_id"
-          ]
+          "columns": ["company_id"]
         }
       },
       "policies": {},
@@ -983,12 +934,8 @@
           "name": "company_locations_company_id_companies_id_fk",
           "tableFrom": "company_locations",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1029,12 +976,8 @@
           "name": "company_admins_company_id_companies_id_fk",
           "tableFrom": "company_admins",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1042,12 +985,8 @@
           "name": "company_admins_user_id_users_id_fk",
           "tableFrom": "company_admins",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1055,10 +994,7 @@
       "compositePrimaryKeys": {
         "company_admins_company_id_user_id_pk": {
           "name": "company_admins_company_id_user_id_pk",
-          "columns": [
-            "company_id",
-            "user_id"
-          ]
+          "columns": ["company_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1142,12 +1078,8 @@
           "name": "company_verifications_company_id_companies_id_fk",
           "tableFrom": "company_verifications",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1157,9 +1089,7 @@
         "company_verifications_company_id_unique": {
           "name": "company_verifications_company_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "company_id"
-          ]
+          "columns": ["company_id"]
         }
       },
       "policies": {},
@@ -1198,9 +1128,7 @@
         "benefits_name_unique": {
           "name": "benefits_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -1237,12 +1165,8 @@
           "name": "company_benefits_company_id_companies_id_fk",
           "tableFrom": "company_benefits",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1250,12 +1174,8 @@
           "name": "company_benefits_benefit_id_benefits_id_fk",
           "tableFrom": "company_benefits",
           "tableTo": "benefits",
-          "columnsFrom": [
-            "benefit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["benefit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1263,10 +1183,7 @@
       "compositePrimaryKeys": {
         "company_benefits_company_id_benefit_id_pk": {
           "name": "company_benefits_company_id_benefit_id_pk",
-          "columns": [
-            "company_id",
-            "benefit_id"
-          ]
+          "columns": ["company_id", "benefit_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1357,12 +1274,8 @@
           "name": "posts_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "posts",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1370,12 +1283,8 @@
           "name": "posts_company_id_companies_id_fk",
           "tableFrom": "posts",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1461,12 +1370,8 @@
           "name": "attachments_post_id_posts_id_fk",
           "tableFrom": "attachments",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1546,12 +1451,8 @@
           "name": "comments_post_id_posts_id_fk",
           "tableFrom": "comments",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1559,12 +1460,8 @@
           "name": "comments_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "comments",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1572,12 +1469,8 @@
           "name": "comments_company_id_companies_id_fk",
           "tableFrom": "comments",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1585,12 +1478,8 @@
           "name": "comments_parent_comment_fk",
           "tableFrom": "comments",
           "tableTo": "comments",
-          "columnsFrom": [
-            "parent_comment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_comment_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1672,12 +1561,8 @@
           "name": "likes_post_id_posts_id_fk",
           "tableFrom": "likes",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1685,12 +1570,8 @@
           "name": "likes_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "likes",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1698,12 +1579,8 @@
           "name": "likes_company_id_companies_id_fk",
           "tableFrom": "likes",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1831,12 +1708,8 @@
           "name": "jobs_company_id_companies_id_fk",
           "tableFrom": "jobs",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1844,12 +1717,8 @@
           "name": "jobs_company_location_id_company_locations_id_fk",
           "tableFrom": "jobs",
           "tableTo": "company_locations",
-          "columnsFrom": [
-            "company_location_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_location_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1942,12 +1811,8 @@
           "name": "opportunities_job_id_jobs_id_fk",
           "tableFrom": "opportunities",
           "tableTo": "jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1955,12 +1820,8 @@
           "name": "opportunities_professional_profile_id_professional_profiles_id_fk",
           "tableFrom": "opportunities",
           "tableTo": "professional_profiles",
-          "columnsFrom": [
-            "professional_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2008,12 +1869,8 @@
           "name": "opportunity_snapshots_opportunity_id_opportunities_id_fk",
           "tableFrom": "opportunity_snapshots",
           "tableTo": "opportunities",
-          "columnsFrom": [
-            "opportunity_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["opportunity_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2023,9 +1880,7 @@
         "opportunity_snapshots_opportunity_id_unique": {
           "name": "opportunity_snapshots_opportunity_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "opportunity_id"
-          ]
+          "columns": ["opportunity_id"]
         }
       },
       "policies": {},
@@ -2089,12 +1944,8 @@
           "name": "professional_responses_opportunity_id_opportunities_id_fk",
           "tableFrom": "professional_responses",
           "tableTo": "opportunities",
-          "columnsFrom": [
-            "opportunity_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["opportunity_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2104,9 +1955,7 @@
         "professional_responses_opportunity_id_unique": {
           "name": "professional_responses_opportunity_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "opportunity_id"
-          ]
+          "columns": ["opportunity_id"]
         }
       },
       "policies": {},
@@ -2183,12 +2032,8 @@
           "name": "contact_methods_professional_response_id_professional_responses_id_fk",
           "tableFrom": "contact_methods",
           "tableTo": "professional_responses",
-          "columnsFrom": [
-            "professional_response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["professional_response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2198,9 +2043,7 @@
         "contact_methods_professional_response_id_unique": {
           "name": "contact_methods_professional_response_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "professional_response_id"
-          ]
+          "columns": ["professional_response_id"]
         }
       },
       "policies": {},
@@ -2257,12 +2100,8 @@
           "name": "hiring_pipelines_opportunity_id_opportunities_id_fk",
           "tableFrom": "hiring_pipelines",
           "tableTo": "opportunities",
-          "columnsFrom": [
-            "opportunity_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["opportunity_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2363,12 +2202,8 @@
           "name": "reviews_company_id_companies_id_fk",
           "tableFrom": "reviews",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2376,12 +2211,8 @@
           "name": "reviews_employment_history_id_employment_histories_id_fk",
           "tableFrom": "reviews",
           "tableTo": "employment_histories",
-          "columnsFrom": [
-            "employment_history_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["employment_history_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2391,9 +2222,7 @@
         "reviews_employment_history_id_unique": {
           "name": "reviews_employment_history_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "employment_history_id"
-          ]
+          "columns": ["employment_history_id"]
         }
       },
       "policies": {},
@@ -2429,12 +2258,8 @@
           "name": "review_ratings_review_id_reviews_id_fk",
           "tableFrom": "review_ratings",
           "tableTo": "reviews",
-          "columnsFrom": [
-            "review_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2442,10 +2267,7 @@
       "compositePrimaryKeys": {
         "review_ratings_review_id_category_pk": {
           "name": "review_ratings_review_id_category_pk",
-          "columns": [
-            "review_id",
-            "category"
-          ]
+          "columns": ["review_id", "category"]
         }
       },
       "uniqueConstraints": {},
@@ -2504,12 +2326,8 @@
           "name": "company_replies_review_id_reviews_id_fk",
           "tableFrom": "company_replies",
           "tableTo": "reviews",
-          "columnsFrom": [
-            "review_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2519,9 +2337,7 @@
         "company_replies_review_id_unique": {
           "name": "company_replies_review_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "review_id"
-          ]
+          "columns": ["review_id"]
         }
       },
       "policies": {},
@@ -2565,12 +2381,8 @@
           "name": "review_snapshots_review_id_reviews_id_fk",
           "tableFrom": "review_snapshots",
           "tableTo": "reviews",
-          "columnsFrom": [
-            "review_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2580,9 +2392,7 @@
         "review_snapshots_review_id_unique": {
           "name": "review_snapshots_review_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "review_id"
-          ]
+          "columns": ["review_id"]
         }
       },
       "policies": {},
@@ -2626,12 +2436,8 @@
           "name": "professional_snapshots_review_id_reviews_id_fk",
           "tableFrom": "professional_snapshots",
           "tableTo": "reviews",
-          "columnsFrom": [
-            "review_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2641,9 +2447,7 @@
         "professional_snapshots_review_id_unique": {
           "name": "professional_snapshots_review_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "review_id"
-          ]
+          "columns": ["review_id"]
         }
       },
       "policies": {},
@@ -2721,12 +2525,8 @@
           "name": "moderation_cases_reporter_id_users_id_fk",
           "tableFrom": "moderation_cases",
           "tableTo": "users",
-          "columnsFrom": [
-            "reporter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reporter_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2786,12 +2586,8 @@
           "name": "moderation_actions_moderation_case_id_moderation_cases_id_fk",
           "tableFrom": "moderation_actions",
           "tableTo": "moderation_cases",
-          "columnsFrom": [
-            "moderation_case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["moderation_case_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2799,12 +2595,8 @@
           "name": "moderation_actions_moderator_id_users_id_fk",
           "tableFrom": "moderation_actions",
           "tableTo": "users",
-          "columnsFrom": [
-            "moderator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["moderator_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2871,12 +2663,8 @@
           "name": "trust_flags_user_id_users_id_fk",
           "tableFrom": "trust_flags",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2942,12 +2730,8 @@
           "name": "audit_logs_actor_id_users_id_fk",
           "tableFrom": "audit_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3008,64 +2792,32 @@
     "public.account_status": {
       "name": "account_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "DEACTIVATED",
-        "SUSPENDED",
-        "BANNED"
-      ]
+      "values": ["ACTIVE", "DEACTIVATED", "SUSPENDED", "BANNED"]
     },
     "public.attachment_type": {
       "name": "attachment_type",
       "schema": "public",
-      "values": [
-        "IMAGE",
-        "VIDEO",
-        "PDF"
-      ]
+      "values": ["IMAGE", "VIDEO", "PDF"]
     },
     "public.company_type": {
       "name": "company_type",
       "schema": "public",
-      "values": [
-        "STARTUP",
-        "PRIVATE",
-        "PUBLIC",
-        "GOVERNMENT",
-        "NON_PROFIT",
-        "EDUCATIONAL"
-      ]
+      "values": ["STARTUP", "PRIVATE", "PUBLIC", "GOVERNMENT", "NON_PROFIT", "EDUCATIONAL"]
     },
     "public.contact_method_type": {
       "name": "contact_method_type",
       "schema": "public",
-      "values": [
-        "EMAIL",
-        "PHONE",
-        "LINKEDIN",
-        "PORTFOLIO"
-      ]
+      "values": ["EMAIL", "PHONE", "LINKEDIN", "PORTFOLIO"]
     },
     "public.employment_type": {
       "name": "employment_type",
       "schema": "public",
-      "values": [
-        "FULL_TIME",
-        "PART_TIME",
-        "CONTRACT",
-        "FREELANCE",
-        "INTERNSHIP",
-        "APPRENTICESHIP"
-      ]
+      "values": ["FULL_TIME", "PART_TIME", "CONTRACT", "FREELANCE", "INTERNSHIP", "APPRENTICESHIP"]
     },
     "public.job_status": {
       "name": "job_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "CLOSED",
-        "ARCHIVED"
-      ]
+      "values": ["ACTIVE", "CLOSED", "ARCHIVED"]
     },
     "public.moderation_reason": {
       "name": "moderation_reason",
@@ -3084,12 +2836,7 @@
     "public.moderation_status": {
       "name": "moderation_status",
       "schema": "public",
-      "values": [
-        "OPEN",
-        "UNDER_REVIEW",
-        "ACTION_TAKEN",
-        "DISMISSED"
-      ]
+      "values": ["OPEN", "UNDER_REVIEW", "ACTION_TAKEN", "DISMISSED"]
     },
     "public.notice_period": {
       "name": "notice_period",
@@ -3108,59 +2855,32 @@
     "public.opportunity_status": {
       "name": "opportunity_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "ACCEPTED",
-        "DECLINED",
-        "EXPIRED",
-        "WITHDRAWN"
-      ]
+      "values": ["PENDING", "ACCEPTED", "DECLINED", "EXPIRED", "WITHDRAWN"]
     },
     "public.post_visibility": {
       "name": "post_visibility",
       "schema": "public",
-      "values": [
-        "VISIBLE_NOW",
-        "SCHEDULED",
-        "ARCHIVED"
-      ]
+      "values": ["VISIBLE_NOW", "SCHEDULED", "ARCHIVED"]
     },
     "public.review_recommendation": {
       "name": "review_recommendation",
       "schema": "public",
-      "values": [
-        "YES",
-        "NO",
-        "NEUTRAL"
-      ]
+      "values": ["YES", "NO", "NEUTRAL"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "PROFESSIONAL",
-        "COMPANY_ADMIN",
-        "MODERATOR",
-        "ADMIN"
-      ]
+      "values": ["PROFESSIONAL", "COMPANY_ADMIN", "MODERATOR", "ADMIN"]
     },
     "public.verification_status": {
       "name": "verification_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "VERIFIED",
-        "REJECTED"
-      ]
+      "values": ["PENDING", "VERIFIED", "REJECTED"]
     },
     "public.work_mode": {
       "name": "work_mode",
       "schema": "public",
-      "values": [
-        "ONSITE",
-        "HYBRID",
-        "REMOTE"
-      ]
+      "values": ["ONSITE", "HYBRID", "REMOTE"]
     }
   },
   "schemas": {},

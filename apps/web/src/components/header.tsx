@@ -220,7 +220,10 @@ export function Header() {
             ) : (
               !isLoading && (
                 <>
-                  <Link href="/auth" className="text-[14.5px] font-medium text-fg-muted hover:text-fg">
+                  <Link
+                    href="/auth"
+                    className="text-[14.5px] font-medium text-fg-muted hover:text-fg"
+                  >
                     Sign in
                   </Link>
                   <Link

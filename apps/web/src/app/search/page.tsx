@@ -80,9 +80,7 @@ function SearchResults() {
         <Card className="flex flex-col items-center gap-3 px-6 py-16 text-center">
           <Search className="h-8 w-8 text-fg-faint" strokeWidth={1.5} />
           <p className="text-[15px] font-medium text-fg">Search LinkedOut</p>
-          <p className="max-w-sm text-[14px] text-fg-muted">
-            Try a name, headline, or company.
-          </p>
+          <p className="max-w-sm text-[14px] text-fg-muted">Try a name, headline, or company.</p>
         </Card>
       ) : isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,7 +91,9 @@ function SearchResults() {
       ) : totalResults === 0 ? (
         <Card className="flex flex-col items-center gap-3 px-6 py-16 text-center">
           <Search className="h-8 w-8 text-fg-faint" strokeWidth={1.5} />
-          <p className="text-[15px] font-medium text-fg">No results for &ldquo;{initialQuery}&rdquo;</p>
+          <p className="text-[15px] font-medium text-fg">
+            No results for &ldquo;{initialQuery}&rdquo;
+          </p>
           <p className="max-w-sm text-[14px] text-fg-muted">Try a different search term.</p>
         </Card>
       ) : (

@@ -70,6 +70,7 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 - `GET/POST/PUT /reviews/:reviewId/reply` — one company reply per review
 
 ## Contact — `/contact`
+
 - `POST /contact` — public, no authentication required. Persists to `contact_messages`; there is no admin UI to view submissions yet (query the table directly).
 
 ## Moderation — `/moderation`

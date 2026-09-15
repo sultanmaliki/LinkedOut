@@ -6,6 +6,7 @@ This changelog is maintained at a feature-area level, not commit-by-commit. See 
 
 ### Added
 
+- Verification review queue: `GET/PATCH /moderation/verifications/companies/:id` and `GET/PATCH /moderation/verifications/professionals/:id`, plus a "Verifications" tab on `/moderation`. Company and employment verification were previously self-submit-only with no approval path — every submission stayed `PENDING` forever; moderators can now approve or reject each one (rejection requires a reason), approval syncs the company's public `verified` badge, and every decision is audit-logged
 - Dark mode toggle (persisted, no-flash on load), mobile navigation, skip-to-content link, scroll progress bar, back-to-top button
 - Cross-entity search: `/search` page and header search box, covering professionals (name/headline) and companies (name) — new `q` filter on both `GET /professionals` and `GET /companies`
 - Contact form: `POST /contact` (public), `/contact` page, floating contact button — new `contact_messages` table (34th schema entity); no admin inbox UI yet

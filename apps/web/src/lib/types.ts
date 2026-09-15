@@ -85,6 +85,29 @@ export interface EmploymentVerification {
   rejectionReason: string | null;
 }
 
+export interface PendingEmploymentVerification extends EmploymentVerification {
+  professionalProfileId: string;
+  professionalFullName: string;
+  companyName: string;
+  jobTitle: string;
+}
+
+export interface CompanyVerification {
+  id: string;
+  companyId: string;
+  businessRegistrationNumber: string | null;
+  taxIdentificationNumber: string | null;
+  verificationDocumentUrl: string | null;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  verifiedAt: string | null;
+  rejectionReason: string | null;
+}
+
+export interface PendingCompanyVerification extends CompanyVerification {
+  companyDisplayName: string;
+  companyLegalName: string;
+}
+
 export interface Company {
   id: string;
   legalName: string;

@@ -79,6 +79,8 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 - `GET/POST /moderation/cases/:caseId/actions`
 - `POST /moderation/trust-flags`, `GET /moderation/trust-flags/user/:userId`
 - `GET /moderation/audit-logs`
+- `GET /moderation/verifications/companies`, `PATCH /moderation/verifications/companies/:id` — approve/reject a pending `company_verifications` submission; approving syncs `companies.verified`/`companies.verificationStatus`
+- `GET /moderation/verifications/professionals`, `PATCH /moderation/verifications/professionals/:id` — approve/reject a pending `employment_verifications` submission (confirms employment only, not that the named company is real)
 
 ## Auth requirements
 

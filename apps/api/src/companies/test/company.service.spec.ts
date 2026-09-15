@@ -11,6 +11,7 @@ describe('CompanyService', () => {
     listForAdmin: jest.fn(),
     isAdmin: jest.fn(),
     updateById: jest.fn(),
+    setVerificationStatus: jest.fn(),
   };
 
   const service = new CompanyService(repository);

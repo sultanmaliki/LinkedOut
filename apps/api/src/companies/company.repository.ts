@@ -169,6 +169,17 @@ export class CompanyRepository {
     return Boolean(row);
   }
 
+  // companies.verified and companies.verificationStatus are a redundant pair
+  // with company_verifications.verificationStatus (pre-existing schema
+  // design, not something to fix here) -- kept in sync so the public-facing
+  // fields never contradict each other (verified=true but status=PENDING).
+  async setVerificationStatus(id: string, status: 'VERIFIED' | 'REJECTED'): Promise<void> {
+    await db
+      .update(companies)
+      .set({ verified: status === 'VERIFIED', verificationStatus: status, updatedAt: new Date() })
+      .where(eq(companies.id, id));
+  }
+
   async updateById(id: string, data: UpdateCompanyData): Promise<CompanyRecord | undefined> {
     return db.transaction(async (tx) => {
       const companyUpdates: Partial<NewCompany> = {};

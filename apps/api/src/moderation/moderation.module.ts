@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 
+import { CompanyModule } from '../companies/company.module';
+import { ProfessionalProfileModule } from '../professionals/professional-profile.module';
 import { AuditLogController } from './audit-log/audit-log.controller';
 import { AuditLogRepository } from './audit-log/audit-log.repository';
 import { AuditLogService } from './audit-log/audit-log.service';
@@ -12,13 +14,17 @@ import { ModerationCaseService } from './cases/moderation-case.service';
 import { TrustFlagController } from './trust-flags/trust-flag.controller';
 import { TrustFlagRepository } from './trust-flags/trust-flag.repository';
 import { TrustFlagService } from './trust-flags/trust-flag.service';
+import { VerificationReviewController } from './verifications/verification-review.controller';
+import { VerificationReviewService } from './verifications/verification-review.service';
 
 @Module({
+  imports: [CompanyModule, ProfessionalProfileModule],
   controllers: [
     ModerationCaseController,
     ModerationActionController,
     TrustFlagController,
     AuditLogController,
+    VerificationReviewController,
   ],
   providers: [
     ModerationCaseRepository,
@@ -29,6 +35,7 @@ import { TrustFlagService } from './trust-flags/trust-flag.service';
     TrustFlagService,
     AuditLogRepository,
     AuditLogService,
+    VerificationReviewService,
   ],
 })
 export class ModerationModule {}

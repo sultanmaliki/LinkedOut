@@ -20,7 +20,7 @@ This file is the source of truth for "what's actually built." Update it in the s
 ### Professional profiles
 
 - Profile CRUD (headline, bio, location, photos, personal website)
-- Employment history with company-verification flow (verify via company email)
+- Employment history with an employer-verification flow: professional submits company email/employee ID/ID card, a moderator approves or rejects it via the moderation queue (self-submitted, not auto-verified — confirms employment at the named company only, not that the company itself is legitimate)
 - Employment expectations (compensation range, work mode, availability)
 - Skills, portfolio links
 - "Actively looking" toggle, used as a search filter
@@ -28,7 +28,8 @@ This file is the source of truth for "what's actually built." Update it in the s
 
 ### Companies
 
-- Company profiles, locations, benefits, admin claim flow, verification
+- Company profiles, locations, benefits, admin claim flow
+- Company verification: admin submits business registration #/tax ID/document link, a moderator approves or rejects it via the moderation queue; approval syncs the company's public `verified` badge
 - Job postings
 
 ### Hiring flow (the "reverse hiring" core)
@@ -54,6 +55,7 @@ This file is the source of truth for "what's actually built." Update it in the s
 
 - Moderation cases, moderation actions, trust flags, audit logs
 - Moderator/Admin guards separate from regular authenticated access
+- Verification review queue (`/moderation` → Verifications tab): moderators approve/reject pending company and employment verifications; rejection requires a reason, every decision is audit-logged, and re-reviewing an already-decided item is rejected with a `409`
 
 ### Contact
 

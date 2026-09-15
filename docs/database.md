@@ -13,7 +13,7 @@ This file previously described a generic, traditional-hiring schema (`users`, `e
 
 ## Overview
 
-PostgreSQL is the system of record. Drizzle ORM (`packages/database`) manages schema, migrations, and query building. The schema is organized around six domains, all frozen per [schema-freeze.md](architecture/schema-freeze.md):
+PostgreSQL is the system of record. Drizzle ORM (`packages/database`) manages schema, migrations, and query building. The schema is organized around seven domains, all frozen per [schema-freeze.md](architecture/schema-freeze.md):
 
 - **Authentication** — User
 - **Professional** — ProfessionalProfile, EmploymentHistory, EmploymentExpectation, PortfolioLink, Skill, ProfessionalSkill, EmploymentVerification
@@ -22,6 +22,7 @@ PostgreSQL is the system of record. Drizzle ORM (`packages/database`) manages sc
 - **Hiring** — Job, Opportunity, OpportunitySnapshot, ProfessionalResponse, ContactMethod, HiringPipeline
 - **Reviews** — Review, ReviewRating, CompanyReply, ReviewSnapshot, ProfessionalSnapshot
 - **Moderation** — ModerationCase, ModerationAction, TrustFlag, AuditLog
+- **Support** — ContactMessage
 
 ## Data Principles
 

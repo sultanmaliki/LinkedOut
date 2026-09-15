@@ -56,7 +56,7 @@ describe('CompanyController', () => {
     companyService.listCompanies.mockResolvedValue(companies);
 
     await expect(controller.listCompanies({})).resolves.toEqual(companies);
-    expect(companyService.listCompanies).toHaveBeenCalledWith(20, 0);
+    expect(companyService.listCompanies).toHaveBeenCalledWith(20, 0, undefined);
   });
 
   it('lists companies with the requested pagination', async () => {
@@ -64,7 +64,15 @@ describe('CompanyController', () => {
 
     await controller.listCompanies({ limit: 5, offset: 10 });
 
-    expect(companyService.listCompanies).toHaveBeenCalledWith(5, 10);
+    expect(companyService.listCompanies).toHaveBeenCalledWith(5, 10, undefined);
+  });
+
+  it('lists companies matching a search query', async () => {
+    companyService.listCompanies.mockResolvedValue([]);
+
+    await controller.listCompanies({ q: 'Acme' });
+
+    expect(companyService.listCompanies).toHaveBeenCalledWith(20, 0, 'Acme');
   });
 
   it('lists companies the authenticated user administers', async () => {

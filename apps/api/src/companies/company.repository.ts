@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike, or } from 'drizzle-orm';
 
 import {
   companies,
@@ -134,11 +134,16 @@ export class CompanyRepository {
     return company;
   }
 
-  async list(limit: number, offset: number): Promise<CompanyRecord[]> {
+  async list(limit: number, offset: number, q?: string): Promise<CompanyRecord[]> {
+    const nameMatch = q
+      ? or(ilike(companies.legalName, `%${q}%`), ilike(companies.displayName, `%${q}%`))
+      : undefined;
+
     return db
       .select(companySelection)
       .from(companies)
       .leftJoin(companyProfiles, eq(companyProfiles.companyId, companies.id))
+      .where(nameMatch)
       .orderBy(companies.createdAt)
       .limit(limit)
       .offset(offset);

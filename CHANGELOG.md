@@ -2,6 +2,22 @@
 
 This changelog is maintained at a feature-area level, not commit-by-commit. See git history for full detail.
 
+## Unreleased — Site polish
+
+### Added
+
+- Dark mode toggle (persisted, no-flash on load), mobile navigation, skip-to-content link, scroll progress bar, back-to-top button
+- Cross-entity search: `/search` page and header search box, covering professionals (name/headline) and companies (name) — new `q` filter on both `GET /professionals` and `GET /companies`
+- Contact form: `POST /contact` (public), `/contact` page, floating contact button — new `contact_messages` table (34th schema entity); no admin inbox UI yet
+- Confirmation modals on destructive actions (delete post, portfolio link, company location, attachment), replacing an inline two-click pattern in two places and adding real confirmation where there was none in three others
+- Password visibility toggle, copy-profile/company-link buttons, print stylesheet for profile pages, a real 404 page, route-transition loading skeleton, FAQ section on the homepage
+- Last-edited date shown on posts that have been updated since creation
+
+### Fixed
+
+- `turbo.json`'s `test` task was missing `JWT_SECRET` from its env allowlist, so CI's `pnpm test` failed even though the workflow set it — see [security.md](docs/security.md) history
+- A migration applied by hand earlier in this project's history was never recorded in Drizzle's migration-tracking table, so `drizzle-kit migrate` failed on every fresh container start; backfilled the tracking rows
+
 ## Unreleased — Security hardening
 
 ### Added

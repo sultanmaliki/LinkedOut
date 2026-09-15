@@ -10,6 +10,7 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const auth_module_1 = require("./auth/auth.module");
 const company_module_1 = require("./companies/company.module");
+const contact_module_1 = require("./contact/contact.module");
 const hiring_module_1 = require("./hiring/hiring.module");
 const moderation_module_1 = require("./moderation/moderation.module");
 const professional_profile_module_1 = require("./professionals/professional-profile.module");
@@ -28,6 +29,7 @@ exports.AppModule = AppModule = __decorate([
             hiring_module_1.HiringModule,
             publishing_module_1.PublishingModule,
             moderation_module_1.ModerationModule,
+            contact_module_1.ContactModule,
         ],
     })
 ], AppModule);

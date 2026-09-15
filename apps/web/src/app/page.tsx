@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Building2, ShieldCheck, Star, Users } from 'lucide-react';
 
+import { FaqAccordion } from '@/components/faq-accordion';
 import { buttonStyles } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -16,6 +17,39 @@ const steps = [
   {
     title: 'You decide, on your terms',
     body: 'Review the opportunity, and your contact details are shared only after you explicitly accept.',
+  },
+];
+
+const faqs = [
+  {
+    question: 'How is this different from a normal job board?',
+    answer:
+      'You never apply to postings. Companies discover your verified profile and send you opportunities directly. There’s no cover letter, no ATS, and no applying into the void.',
+  },
+  {
+    question: 'Do I have to accept every opportunity I get?',
+    answer:
+      'No. You review each opportunity and decide whether to proceed. Nothing happens automatically, and there’s no penalty for declining.',
+  },
+  {
+    question: 'When do companies get my contact details?',
+    answer:
+      'Only after you explicitly accept an opportunity. Before that, a company can see your public profile but has no way to reach you directly.',
+  },
+  {
+    question: 'How are company reviews verified?',
+    answer:
+      'A review requires a verified employment history at that specific company — verified by confirming access to a company email address. Reviews can’t be posted against a company you didn’t actually work at.',
+  },
+  {
+    question: 'Can a company delete or hide a bad review?',
+    answer:
+      'No. Companies can post one reply to a review, but they can never delete, hide, or edit it. Transparency doesn’t require anyone’s approval.',
+  },
+  {
+    question: 'Is LinkedOut free for professionals?',
+    answer:
+      'Yes — building a profile, browsing companies, and receiving opportunities is free for professionals.',
   },
 ];
 
@@ -131,6 +165,16 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-2xl px-6 py-20">
+        <div className="mb-10 text-center">
+          <h2 className="font-display text-[30px] font-medium tracking-[-0.01em] text-fg">
+            Frequently asked questions
+          </h2>
+        </div>
+
+        <FaqAccordion items={faqs} />
       </section>
 
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">

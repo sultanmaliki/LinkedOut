@@ -96,3 +96,25 @@ body {
     color: var(--color-emerald-50);
   }
 }
+
+@media print {
+  /* Chrome/interactive-only elements have no place on paper (Tailwind's
+     print:hidden utility handles individual components; these two are
+     targeted directly since they're not authored with that class). */
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Printed pages should always read as light mode, regardless of the
+     viewer's on-screen theme. */
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-900);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

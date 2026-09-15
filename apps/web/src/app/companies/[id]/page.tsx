@@ -13,6 +13,7 @@ import {
 import { ApiError, apiFetch } from '@/lib/api';
 import type { Company, CompanyBenefit, CompanyLocation, CompanyReply, Review } from '@/lib/types';
 import { CompanyReplyPanel } from '@/components/company-reply-panel';
+import { CopyLinkButton } from '@/components/copy-link-button';
 import { ManageCompanyLink } from '@/components/manage-company-link';
 import { ReportButton } from '@/components/report-button';
 import { Badge } from '@/components/ui/badge';
@@ -143,8 +144,9 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 flex items-center justify-between">
         <ReportButton targetType="COMPANY" targetId={company.id} />
+        <CopyLinkButton path={`/companies/${company.id}`} />
       </div>
 
       {company.description && (

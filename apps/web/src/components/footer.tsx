@@ -12,6 +12,9 @@ export function Footer() {
           <Link href="/opportunities" className="hover:text-fg-muted">
             Opportunities
           </Link>
+          <Link href="/contact" className="hover:text-fg-muted">
+            Contact
+          </Link>
         </div>
       </div>
     </footer>

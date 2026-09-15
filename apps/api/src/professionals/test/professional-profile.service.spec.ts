@@ -75,6 +75,7 @@ describe('ProfessionalProfileService', () => {
     expect(repository.search).toHaveBeenCalledWith({
       limit: 20,
       offset: 0,
+      q: undefined,
       headline: undefined,
       location: undefined,
       skill: undefined,
@@ -100,10 +101,28 @@ describe('ProfessionalProfileService', () => {
     expect(repository.search).toHaveBeenCalledWith({
       limit: 5,
       offset: 10,
+      q: undefined,
       headline: 'Engineer',
       location: 'London',
       skill: 'Rust',
       activelyLooking: true,
+    });
+  });
+
+  it('searches profiles by a general query term', async () => {
+    const results = [{ id: 'profile-1', fullName: 'Ada Lovelace' }];
+    repository.search.mockResolvedValue(results);
+
+    await expect(service.searchProfiles({ q: 'Ada' })).resolves.toEqual(results);
+
+    expect(repository.search).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 0,
+      q: 'Ada',
+      headline: undefined,
+      location: undefined,
+      skill: undefined,
+      activelyLooking: undefined,
     });
   });
 

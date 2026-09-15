@@ -9,6 +9,7 @@ import type {
   ProfessionalProfile,
   ProfessionalSkill,
 } from '@/lib/types';
+import { CopyLinkButton } from '@/components/copy-link-button';
 import { LookingForCard } from '@/components/looking-for-card';
 import { PortfolioLinksList } from '@/components/portfolio-links-list';
 import { ReportButton } from '@/components/report-button';
@@ -102,8 +103,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           <SkillsBadges skills={skills} />
           <PortfolioLinksList links={links} />
 
-          <div className="mt-6 border-t border-line pt-4">
+          <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
             <ReportButton targetType="PROFESSIONAL" targetId={profile.id} />
+            <CopyLinkButton path={`/professionals/${profile.id}`} />
           </div>
         </CardBody>
       </Card>

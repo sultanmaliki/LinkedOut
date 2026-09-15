@@ -22,7 +22,7 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 
 ## Professionals — `/professionals`
 
-- `GET /professionals` — search/discovery
+- `GET /professionals` — search/discovery; `q` matches fullName or headline, plus `headline`/`location`/`skill`/`activelyLooking` filters
 - `GET /professionals/me`
 - `PATCH /professionals/me`
 - `GET /professionals/:id`
@@ -39,7 +39,7 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 
 ## Companies — `/companies`
 
-- `POST /companies`, `GET /companies`, `GET /companies/mine`, `GET /companies/:id`, `PATCH /companies/:id`
+- `POST /companies`, `GET /companies` (`q` matches legalName or displayName), `GET /companies/mine`, `GET /companies/:id`, `PATCH /companies/:id`
 - `GET/POST /companies/:companyId/locations`, `PATCH/DELETE /companies/:companyId/locations/:locationId`
 - `GET/PUT /companies/:companyId/benefits`
 - `GET/PUT /companies/:companyId/verification`
@@ -68,6 +68,9 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 
 - `POST /reviews`, `GET /reviews/:id`, `PATCH /reviews/:id`, `DELETE /reviews/:id` — requires a verified `EmploymentHistory` whose company matches the one being reviewed
 - `GET/POST/PUT /reviews/:reviewId/reply` — one company reply per review
+
+## Contact — `/contact`
+- `POST /contact` — public, no authentication required. Persists to `contact_messages`; there is no admin UI to view submissions yet (query the table directly).
 
 ## Moderation — `/moderation`
 

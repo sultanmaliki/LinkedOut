@@ -55,7 +55,15 @@ describe('CompanyService', () => {
     repository.list.mockResolvedValue(companies);
 
     await expect(service.listCompanies(10, 20)).resolves.toEqual(companies);
-    expect(repository.list).toHaveBeenCalledWith(10, 20);
+    expect(repository.list).toHaveBeenCalledWith(10, 20, undefined);
+  });
+
+  it('lists companies matching a search query', async () => {
+    const companies = [{ id: 'company-1', displayName: 'Acme Corp' }];
+    repository.list.mockResolvedValue(companies);
+
+    await expect(service.listCompanies(20, 0, 'Acme')).resolves.toEqual(companies);
+    expect(repository.list).toHaveBeenCalledWith(20, 0, 'Acme');
   });
 
   it('lists companies the user administers', async () => {

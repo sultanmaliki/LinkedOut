@@ -398,14 +398,8 @@ describe('Auth HTTP (e2e)', () => {
         })
             .expect(201);
         const refreshToken = registerResponse.body.refreshToken;
-        await (0, supertest_1.default)(app.getHttpServer())
-            .post('/auth/refresh')
-            .send({ refreshToken })
-            .expect(201);
-        await (0, supertest_1.default)(app.getHttpServer())
-            .post('/auth/refresh')
-            .send({ refreshToken })
-            .expect(401);
+        await (0, supertest_1.default)(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(201);
+        await (0, supertest_1.default)(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(401);
         await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
     });
     it('POST /auth/logout invalidates the current refresh token', async () => {
@@ -423,10 +417,7 @@ describe('Auth HTTP (e2e)', () => {
             .post('/auth/logout')
             .set('Authorization', `Bearer ${accessToken}`)
             .expect(201);
-        await (0, supertest_1.default)(app.getHttpServer())
-            .post('/auth/refresh')
-            .send({ refreshToken })
-            .expect(401);
+        await (0, supertest_1.default)(app.getHttpServer()).post('/auth/refresh').send({ refreshToken }).expect(401);
         await database_1.db.delete(database_1.users).where((0, drizzle_orm_1.eq)(database_1.users.email, email));
     });
     it('GET /professionals/me rejects a valid email-verification token used as a bearer token', async () => {

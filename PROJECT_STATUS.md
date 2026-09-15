@@ -2,7 +2,7 @@
 
 ## Current Version
 
-v0.3.0 — core product built, pre-launch hardening in progress
+v0.4.0 — core product built, pre-launch hardening in progress
 
 This file is the source of truth for "what's actually built." Update it in the same change whenever a feature, endpoint, or security control is added or changed.
 
@@ -24,7 +24,7 @@ This file is the source of truth for "what's actually built." Update it in the s
 - Employment expectations (compensation range, work mode, availability)
 - Skills, portfolio links
 - "Actively looking" toggle, used as a search filter
-- Professional search/discovery (direct Postgres queries — see [docs/search.md](docs/search.md))
+- Search across professionals (name/headline) and companies (name) — a `/search` page plus a header search box, both direct Postgres queries (see [docs/search.md](docs/search.md)); does not cover posts or reviews
 
 ### Companies
 
@@ -55,6 +55,17 @@ This file is the source of truth for "what's actually built." Update it in the s
 - Moderation cases, moderation actions, trust flags, audit logs
 - Moderator/Admin guards separate from regular authenticated access
 
+### Contact
+
+- Public contact form (`POST /contact`, `/contact` page, floating contact button on every page) — persists to `contact_messages`. No admin inbox UI exists yet to view submissions; query the table directly.
+
+### Site chrome / UX polish
+
+- Dark mode toggle (persisted to `localStorage`, no-flash on load), mobile nav, skip-to-content link, scroll progress bar, back-to-top button
+- Confirmation modals on destructive actions (delete post, portfolio link, company location, attachment) — a shared `useConfirmDialog` hook
+- Password visibility toggle on the auth form, copy-link buttons on professional/company profile pages
+- Print stylesheet (hides chrome, forces light mode on paper), a real 404 page, route-transition loading skeleton
+
 ### Security (see [docs/security.md](docs/security.md) for the full posture and a completed red-team review)
 
 - `ValidationPipe({whitelist: true, transform: true})` globally — unexpected/server-controlled fields are stripped, not silently trusted
@@ -73,7 +84,8 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 - Internal messaging/chat — hiring continues through the company's own channels (D-004)
 - Notifications (in-app, email, push, webhook) — see [docs/notifications.md](docs/notifications.md), marked deferred
 - AI-assisted features (summaries, matching, moderation triage) — see [docs/ai-integration.md](docs/ai-integration.md), marked deferred
-- Search via Meilisearch, caching via Valkey, file storage via MinIO — all three are provisioned in `docker-compose.yml` but have **zero application code references**. Search is plain Postgres queries; there's no caching layer; attachment/photo fields are plain URL columns, not uploaded objects.
+- Search via Meilisearch, caching via Valkey, file storage via MinIO — all three are provisioned in `docker-compose.yml` but have **zero application code references**. Professional/company search is plain Postgres queries (see Built above); there's no caching layer; attachment/photo fields are plain URL columns, not uploaded objects.
+- Cookie consent banner, newsletter signup, UTM link tracking — no analytics or email-marketing infrastructure exists to make these meaningful; adding the UI without it would be misleading
 - Event-driven/queue architecture — rejected, see [ADR-005](docs/adr/adr-005-event-driven.md) (status corrected to Rejected)
 - Rate limiting, CSRF protection, real observability stack (Sentry/Prometheus/Grafana) — identified gaps, not yet implemented
 
@@ -95,7 +107,8 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 - **Sprint 0 — Foundation:** monorepo, Turborepo, Next.js/NestJS scaffolding, Docker Compose, ADRs. Complete.
 - **Sprint 1 — Domain modeling:** 33-entity schema frozen across Auth/Professional/Company/Publishing/Hiring/Reviews/Moderation domains ([schema-freeze.md](docs/architecture/schema-freeze.md)). Complete.
 - **Sprint 2+ — Core API + frontend:** every domain module above built with unit + e2e tests, backend and frontend wired together. Complete.
-- **Current — Hardening:** a full architecture/security audit and a live red-team review were run against the local dev environment; every HIGH/MEDIUM finding from the red-team pass has been fixed with a regression test (see [docs/security.md](docs/security.md)).
+- **Hardening:** a full architecture/security audit and a live red-team review were run against the local dev environment; every HIGH/MEDIUM finding from the red-team pass has been fixed with a regression test (see [docs/security.md](docs/security.md)).
+- **Current — Site polish:** dark mode, mobile nav, cross-entity search (professionals + companies), a contact form, confirmation modals, and other UX items added (see Built above). Added a 34th schema entity (`contact_messages`).
 
 ## Next up
 

@@ -54,6 +54,17 @@ export function PostCard({ post }: { post: Post }) {
           day: 'numeric',
           year: 'numeric',
         })}
+        {post.updatedAt && post.updatedAt !== post.createdAt && (
+          <>
+            {' · '}
+            edited{' '}
+            {new Date(post.updatedAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </>
+        )}
       </p>
 
       <div className="mt-3 flex items-center gap-4 border-t border-line pt-3">

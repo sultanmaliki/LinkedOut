@@ -6,6 +6,7 @@ import { Archive, ArchiveRestore, Newspaper, Trash2 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { useConfirmDialog } from '@/lib/use-confirm-dialog';
 import type { Post } from '@/lib/types';
 import { AttachmentManager } from '@/components/attachment-manager';
 import { ProfileNav } from '@/components/profile-nav';
@@ -24,7 +25,7 @@ export default function MyPostsPage() {
 
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const { requestConfirm, dialog } = useConfirmDialog();
 
   const load = useCallback(() => {
     if (!accessToken) return;
@@ -59,8 +60,15 @@ export default function MyPostsPage() {
   async function remove(postId: string) {
     if (!accessToken) return;
     await apiFetch(`/posts/${postId}`, { method: 'DELETE', token: accessToken });
-    setConfirmingDeleteId(null);
     load();
+  }
+
+  function confirmRemove(post: Post) {
+    requestConfirm({
+      title: 'Delete post?',
+      description: 'This post and its attachments will be permanently removed.',
+      onConfirm: () => remove(post.id),
+    });
   }
 
   return (
@@ -125,26 +133,18 @@ export default function MyPostsPage() {
                   </button>
                 )}
 
-                {confirmingDeleteId === post.id ? (
-                  <button
-                    onClick={() => remove(post.id)}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-rose-600 dark:text-rose-500"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Confirm delete?
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setConfirmingDeleteId(post.id)}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-muted hover:text-rose-600 dark:hover:text-rose-500"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Delete
-                  </button>
-                )}
+                <button
+                  onClick={() => confirmRemove(post)}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-muted hover:text-rose-600 dark:hover:text-rose-500"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                </button>
               </div>
             </Card>
           ))}
         </div>
       )}
+      {dialog}
     </main>
   );
 }

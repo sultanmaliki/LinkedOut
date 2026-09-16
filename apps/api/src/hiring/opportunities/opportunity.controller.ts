@@ -13,4 +13,9 @@ export class OpportunityController {
   async getOpportunity(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.opportunityService.getOpportunity(id, user.id);
   }
+
+  @Get(':id/contact-methods')
+  async getContactMethods(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.opportunityService.getContactMethods(id, user.id);
+  }
 }

@@ -12,6 +12,7 @@ describe('CompanyService', () => {
     isAdmin: jest.fn(),
     updateById: jest.fn(),
     setVerificationStatus: jest.fn(),
+    findByIds: jest.fn(),
   };
 
   const service = new CompanyService(repository);
@@ -123,5 +124,29 @@ describe('CompanyService', () => {
     ).rejects.toThrow(new NotFoundException('Company not found'));
 
     expect(repository.isAdmin).not.toHaveBeenCalled();
+  });
+
+  it('updates the hiring-settings response windows', async () => {
+    repository.findById.mockResolvedValue({ id: 'company-1' });
+    repository.isAdmin.mockResolvedValue(true);
+
+    const updated = {
+      id: 'company-1',
+      defaultResponseWindowDays: 21,
+      defaultOfferWindowDays: 10,
+    };
+    repository.updateById.mockResolvedValue(updated);
+
+    await expect(
+      service.updateCompany('company-1', 'user-1', {
+        defaultResponseWindowDays: 21,
+        defaultOfferWindowDays: 10,
+      }),
+    ).resolves.toEqual(updated);
+
+    expect(repository.updateById).toHaveBeenCalledWith('company-1', {
+      defaultResponseWindowDays: 21,
+      defaultOfferWindowDays: 10,
+    });
   });
 });

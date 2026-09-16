@@ -44,7 +44,7 @@ describe('HiringPipelineService', () => {
     });
     profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
 
-    const stages = [{ id: 'stage-1', stage: 'OPPORTUNITY_SENT' }];
+    const stages = [{ id: 'stage-1', stage: 'SENT' }];
     pipelineRepository.listByOpportunity.mockResolvedValue(stages);
 
     await expect(service.listStages('opportunity-1', 'user-1')).resolves.toEqual(stages);
@@ -60,7 +60,7 @@ describe('HiringPipelineService', () => {
     jobRepository.findById.mockResolvedValue({ id: 'job-1', companyId: 'company-1' });
     companyRepository.isAdmin.mockResolvedValue(true);
 
-    const stages = [{ id: 'stage-1', stage: 'OPPORTUNITY_SENT' }];
+    const stages = [{ id: 'stage-1', stage: 'SENT' }];
     pipelineRepository.listByOpportunity.mockResolvedValue(stages);
 
     await expect(service.listStages('opportunity-1', 'user-2')).resolves.toEqual(stages);
@@ -86,11 +86,11 @@ describe('HiringPipelineService', () => {
     jobRepository.findById.mockResolvedValue({ id: 'job-1', companyId: 'company-1' });
     companyRepository.isAdmin.mockResolvedValue(true);
 
-    const stage = { id: 'stage-1', stage: 'SCREENING' };
+    const stage = { id: 'stage-1', stage: 'INTERVIEW_SCHEDULED' };
     pipelineRepository.append.mockResolvedValue(stage);
 
     await expect(
-      service.appendStage('opportunity-1', 'user-1', { stage: 'SCREENING' }),
+      service.appendStage('opportunity-1', 'user-1', { stage: 'INTERVIEW_SCHEDULED' }),
     ).resolves.toEqual(stage);
   });
 
@@ -100,7 +100,7 @@ describe('HiringPipelineService', () => {
     companyRepository.isAdmin.mockResolvedValue(false);
 
     await expect(
-      service.appendStage('opportunity-1', 'user-2', { stage: 'SCREENING' }),
+      service.appendStage('opportunity-1', 'user-2', { stage: 'INTERVIEW_SCHEDULED' }),
     ).rejects.toThrow(new ForbiddenException('You do not manage this company'));
 
     expect(pipelineRepository.append).not.toHaveBeenCalled();
@@ -109,8 +109,8 @@ describe('HiringPipelineService', () => {
   it('throws when the opportunity does not exist', async () => {
     opportunityRepository.findById.mockResolvedValue(undefined);
 
-    await expect(service.appendStage('missing', 'user-1', { stage: 'SCREENING' })).rejects.toThrow(
-      new NotFoundException('Opportunity not found'),
-    );
+    await expect(
+      service.appendStage('missing', 'user-1', { stage: 'INTERVIEW_SCHEDULED' }),
+    ).rejects.toThrow(new NotFoundException('Opportunity not found'));
   });
 });

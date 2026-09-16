@@ -123,6 +123,8 @@ export interface Company {
   industry: string | null;
   foundedYear: number | null;
   employeeCount: number | null;
+  defaultResponseWindowDays: number | null;
+  defaultOfferWindowDays: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -158,6 +160,17 @@ export interface Job {
   status: string;
 }
 
+export type PipelineTier = 'onTime' | 'softFlag' | 'hardClosed' | 'terminal';
+export type PipelineOwner = 'professional' | 'company' | null;
+
+export interface DisplayStatus {
+  stage: string;
+  ownedBy: PipelineOwner;
+  deadline: string | null;
+  tier: PipelineTier;
+  daysRemaining: number | null;
+}
+
 export interface Opportunity {
   id: string;
   jobId: string;
@@ -167,13 +180,40 @@ export interface Opportunity {
   acceptedAt: string | null;
   declinedAt: string | null;
   withdrawnAt: string | null;
+  responseWindowDays: number | null;
+  manuallyFlaggedUnresponsiveAt: string | null;
   createdAt: string;
+  displayStatus: DisplayStatus;
+}
+
+export interface OpportunityWithProfessionalName extends Opportunity {
+  professionalFullName: string;
+}
+
+export interface OpportunityWithJobAndProfessional extends OpportunityWithProfessionalName {
+  jobTitle: string;
+}
+
+export interface ContactMethod {
+  id: string;
+  professionalResponseId: string;
+  type: 'EMAIL' | 'PHONE' | 'LINKEDIN' | 'PORTFOLIO';
+  value: string;
+  sharedAt: string;
+}
+
+export interface ResponsivenessScore {
+  totalConsidered: number;
+  responsiveCount: number;
+  rate: number | null;
 }
 
 export interface HiringPipelineStage {
   id: string;
   opportunityId: string;
   stage: string;
+  scheduledAt: string | null;
+  windowDays: number | null;
   notes: string | null;
   changedAt: string;
 }

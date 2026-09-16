@@ -46,14 +46,23 @@ Reminder: LinkedOut reverses traditional hiring — companies discover professio
 - `GET/POST /companies/:companyId/jobs`, `PATCH /companies/:companyId/jobs/:jobId`
 - `GET /companies/:companyId/posts`
 - `GET /companies/:companyId/reviews`
+- `GET /companies/:companyId/opportunities` — every opportunity the company has ever sent, across all its jobs (see Hiring pipeline v2 below)
+- `GET /companies/:companyId/responsiveness` — private, company-admin-only ghosting-responsiveness rate
 
 ## Jobs & Opportunities (the reverse-hiring core)
 
 - `GET /jobs/:jobId`
-- `POST /jobs/:jobId/opportunities` — company sends an opportunity to a professional
+- `POST /jobs/:jobId/opportunities` — company sends an opportunity to a professional; accepts an optional `responseWindowDays` (7–60) override
 - `GET /jobs/:jobId/opportunities`
-- `GET /opportunities/:id`
-- `GET/POST /opportunities/:opportunityId/pipeline` — append-only hiring pipeline stage history
+- `GET /opportunities/:id`, `GET /opportunities/:id/contact-methods` — the professional's contact methods submitted on acceptance (professional owner or the job's company admin only)
+- `GET/POST /opportunities/:opportunityId/pipeline` — append-only hiring pipeline stage history; `POST` accepts `scheduledAt` (required for `INTERVIEW_SCHEDULED`) and an optional `windowDays` (7–60) override
+- `POST /professionals/me/opportunities/:opportunityId/respond-to-offer` — accept/decline a released offer
+- `POST /professionals/me/opportunities/:opportunityId/flag-unresponsive` — mark a stalled, company-owned stage as unresponsive once it's past its soft-flag threshold
+- `GET /professionals/me/responsiveness` — private, self-only ghosting-responsiveness rate
+
+### Hiring pipeline v2 (ghosting prevention)
+
+Every opportunity/company-list response above is decorated with a computed `displayStatus` (`{ stage, ownedBy, deadline, tier, daysRemaining }`) — never stored, always computed at read time from the latest `hiring_pipelines` row plus the resolved response window (per-entry override → company default → system default). See [architecture/hiring-pipeline-v2.md](architecture/hiring-pipeline-v2.md) and decision [D-021](decisions.md) for the full design.
 
 ## Posts — `/posts`
 

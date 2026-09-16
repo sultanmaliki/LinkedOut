@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Clock, Plus, ShieldAlert, ShieldCheck, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Clock,
+  PartyPopper,
+  Plus,
+  ShieldAlert,
+  ShieldCheck,
+  XCircle,
+} from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { EMPLOYMENT_TYPES, formatEnum, WORK_MODES } from '@/lib/enums';
-import type { EmploymentHistory, EmploymentVerification } from '@/lib/types';
+import type { EmploymentHistory, EmploymentVerification, Opportunity } from '@/lib/types';
 import { ProfileNav } from '@/components/profile-nav';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +33,7 @@ export default function EmploymentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [hasNewOffer, setHasNewOffer] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -66,11 +75,27 @@ export default function EmploymentPage() {
     }
 
     load();
+
+    apiFetch<Opportunity[]>('/professionals/me/opportunities', { token: accessToken })
+      .then((list) => setHasNewOffer(list.some((o) => o.displayStatus.stage === 'OFFER_ACCEPTED')))
+      .catch(() => {});
   }, [accessToken, isAuthLoading, router, load]);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-14">
       <ProfileNav />
+
+      {hasNewOffer && (
+        <Card className="mb-6 border-emerald-200 bg-emerald-50 dark:border-emerald-600/30 dark:bg-emerald-600/10">
+          <CardBody className="flex items-start gap-3 pt-5">
+            <PartyPopper className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <p className="text-[13.5px] text-fg">
+              Congrats on the new offer! Once you start, add it below so your profile stays
+              accurate.
+            </p>
+          </CardBody>
+        </Card>
+      )}
 
       <div className="mb-6 flex items-center justify-between">
         <div>

@@ -9,17 +9,22 @@ describe('OpportunityService', () => {
     findById: jest.fn(),
     listByProfessional: jest.fn(),
     listByJob: jest.fn(),
+    listByCompanyId: jest.fn(),
     respond: jest.fn(),
     withdraw: jest.fn(),
+    getContactMethods: jest.fn(),
+    setManuallyFlaggedUnresponsive: jest.fn(),
   };
 
   const jobRepository = {
     findById: jest.fn(),
+    findByIds: jest.fn(),
   };
 
   const companyRepository = {
     isAdmin: jest.fn(),
     findById: jest.fn(),
+    findByIds: jest.fn(),
   };
 
   const profileRepository = {
@@ -27,15 +32,39 @@ describe('OpportunityService', () => {
     findById: jest.fn(),
   };
 
+  const pipelineRepository = {
+    listByOpportunity: jest.fn(),
+    append: jest.fn(),
+  };
+
+  const pipelineStatusService = {
+    decorate: jest.fn(),
+  };
+
   const service = new OpportunityService(
     opportunityRepository as never,
     jobRepository as never,
     companyRepository as never,
     profileRepository as never,
+    pipelineRepository as never,
+    pipelineStatusService as never,
   );
+
+  const dummyDisplayStatus = {
+    stage: 'SENT',
+    ownedBy: null,
+    deadline: null,
+    tier: 'onTime',
+    daysRemaining: null,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jobRepository.findByIds.mockResolvedValue([]);
+    companyRepository.findByIds.mockResolvedValue([]);
+    pipelineStatusService.decorate.mockImplementation(async (opportunities: unknown[]) =>
+      opportunities.map((o) => ({ ...(o as object), displayStatus: dummyDisplayStatus })),
+    );
   });
 
   describe('createOpportunity', () => {
@@ -266,6 +295,174 @@ describe('OpportunityService', () => {
 
       await expect(service.getOpportunity('opportunity-1', 'user-3')).rejects.toThrow(
         new ForbiddenException('You do not have access to this opportunity'),
+      );
+    });
+  });
+
+  describe('listByCompany', () => {
+    it('lists opportunities for a company the user manages', async () => {
+      companyRepository.isAdmin.mockResolvedValue(true);
+      companyRepository.findById.mockResolvedValue({ id: 'company-1' });
+      const opportunities = [{ id: 'opportunity-1' }];
+      opportunityRepository.listByCompanyId.mockResolvedValue(opportunities);
+
+      const result = await service.listByCompany('company-1', 'user-1');
+
+      expect(result).toEqual([{ id: 'opportunity-1', displayStatus: dummyDisplayStatus }]);
+      expect(opportunityRepository.listByCompanyId).toHaveBeenCalledWith('company-1');
+    });
+
+    it('throws when the user does not manage the company', async () => {
+      companyRepository.isAdmin.mockResolvedValue(false);
+
+      await expect(service.listByCompany('company-1', 'user-2')).rejects.toThrow(
+        new ForbiddenException('You do not manage this company'),
+      );
+    });
+  });
+
+  describe('getContactMethods', () => {
+    it('returns contact methods for a user with access', async () => {
+      opportunityRepository.findById.mockResolvedValue({
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      });
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      const methods = [{ id: 'cm-1', type: 'EMAIL', value: 'a@example.com' }];
+      opportunityRepository.getContactMethods.mockResolvedValue(methods);
+
+      await expect(service.getContactMethods('opportunity-1', 'user-1')).resolves.toEqual(methods);
+    });
+
+    it('denies access to unrelated users', async () => {
+      opportunityRepository.findById.mockResolvedValue({
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      });
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-2' });
+      jobRepository.findById.mockResolvedValue({ id: 'job-1', companyId: 'company-1' });
+      companyRepository.isAdmin.mockResolvedValue(false);
+
+      await expect(service.getContactMethods('opportunity-1', 'user-3')).rejects.toThrow(
+        new ForbiddenException('You do not have access to this opportunity'),
+      );
+    });
+  });
+
+  describe('respondToOffer', () => {
+    it('appends OFFER_ACCEPTED when the professional accepts a released offer', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      opportunityRepository.findById.mockResolvedValue({
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      });
+      pipelineRepository.listByOpportunity.mockResolvedValue([
+        { stage: 'SENT' },
+        { stage: 'ACCEPTED' },
+        { stage: 'OFFER_RELEASED' },
+      ]);
+
+      await service.respondToOffer('opportunity-1', 'user-1', true);
+
+      expect(pipelineRepository.append).toHaveBeenCalledWith('opportunity-1', {
+        stage: 'OFFER_ACCEPTED',
+      });
+    });
+
+    it('appends DECLINED when the professional declines a released offer', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      opportunityRepository.findById.mockResolvedValue({
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      });
+      pipelineRepository.listByOpportunity.mockResolvedValue([{ stage: 'OFFER_RELEASED' }]);
+
+      await service.respondToOffer('opportunity-1', 'user-1', false);
+
+      expect(pipelineRepository.append).toHaveBeenCalledWith('opportunity-1', {
+        stage: 'DECLINED',
+      });
+    });
+
+    it('throws when there is no active offer', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      opportunityRepository.findById.mockResolvedValue({
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      });
+      pipelineRepository.listByOpportunity.mockResolvedValue([{ stage: 'REVIEWING' }]);
+
+      await expect(service.respondToOffer('opportunity-1', 'user-1', true)).rejects.toThrow(
+        new ConflictException('This opportunity does not currently have an active offer'),
+      );
+      expect(pipelineRepository.append).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('flagUnresponsive', () => {
+    it('flags an opportunity once it is past its response window', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      const opportunity = {
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      };
+      opportunityRepository.findById.mockResolvedValue(opportunity);
+      pipelineStatusService.decorate.mockResolvedValueOnce([
+        {
+          ...opportunity,
+          displayStatus: { ...dummyDisplayStatus, ownedBy: 'company', tier: 'softFlag' },
+        },
+      ]);
+      const flagged = { ...opportunity, manuallyFlaggedUnresponsiveAt: new Date() };
+      opportunityRepository.setManuallyFlaggedUnresponsive.mockResolvedValue(flagged);
+
+      await service.flagUnresponsive('opportunity-1', 'user-1');
+
+      expect(opportunityRepository.setManuallyFlaggedUnresponsive).toHaveBeenCalledWith(
+        'opportunity-1',
+      );
+    });
+
+    it('throws when the opportunity is not currently company-owned', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      const opportunity = {
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      };
+      opportunityRepository.findById.mockResolvedValue(opportunity);
+      pipelineStatusService.decorate.mockResolvedValueOnce([
+        { ...opportunity, displayStatus: { ...dummyDisplayStatus, ownedBy: 'professional' } },
+      ]);
+
+      await expect(service.flagUnresponsive('opportunity-1', 'user-1')).rejects.toThrow(
+        new ConflictException('This opportunity is not currently waiting on the company'),
+      );
+    });
+
+    it('throws when the response window has not yet elapsed', async () => {
+      profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+      const opportunity = {
+        id: 'opportunity-1',
+        professionalProfileId: 'profile-1',
+        jobId: 'job-1',
+      };
+      opportunityRepository.findById.mockResolvedValue(opportunity);
+      pipelineStatusService.decorate.mockResolvedValueOnce([
+        {
+          ...opportunity,
+          displayStatus: { ...dummyDisplayStatus, ownedBy: 'company', tier: 'onTime' },
+        },
+      ]);
+
+      await expect(service.flagUnresponsive('opportunity-1', 'user-1')).rejects.toThrow(
+        new ConflictException('This opportunity has not yet passed its response window'),
       );
     });
   });

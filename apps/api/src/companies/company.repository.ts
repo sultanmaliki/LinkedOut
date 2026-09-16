@@ -1,4 +1,4 @@
-import { and, eq, ilike, or } from 'drizzle-orm';
+import { and, eq, ilike, inArray, or } from 'drizzle-orm';
 
 import {
   companies,
@@ -24,6 +24,8 @@ export interface CompanyRecord {
   industry: string | null;
   foundedYear: number | null;
   employeeCount: number | null;
+  defaultResponseWindowDays: number | null;
+  defaultOfferWindowDays: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,7 +44,10 @@ export interface CreateCompanyData {
   employeeCount?: number;
 }
 
-export type UpdateCompanyData = Partial<Omit<CreateCompanyData, 'slug'>>;
+export type UpdateCompanyData = Partial<Omit<CreateCompanyData, 'slug'>> & {
+  defaultResponseWindowDays?: number;
+  defaultOfferWindowDays?: number;
+};
 
 const companySelection = {
   id: companies.id,
@@ -59,6 +64,8 @@ const companySelection = {
   industry: companyProfiles.industry,
   foundedYear: companyProfiles.foundedYear,
   employeeCount: companyProfiles.employeeCount,
+  defaultResponseWindowDays: companies.defaultResponseWindowDays,
+  defaultOfferWindowDays: companies.defaultOfferWindowDays,
   createdAt: companies.createdAt,
   updatedAt: companies.updatedAt,
 };
@@ -134,6 +141,18 @@ export class CompanyRepository {
     return company;
   }
 
+  async findByIds(ids: string[]): Promise<CompanyRecord[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return db
+      .select(companySelection)
+      .from(companies)
+      .leftJoin(companyProfiles, eq(companyProfiles.companyId, companies.id))
+      .where(inArray(companies.id, ids));
+  }
+
   async list(limit: number, offset: number, q?: string): Promise<CompanyRecord[]> {
     const nameMatch = q
       ? or(ilike(companies.legalName, `%${q}%`), ilike(companies.displayName, `%${q}%`))
@@ -190,6 +209,12 @@ export class CompanyRepository {
       if (data.website !== undefined) companyUpdates.website = data.website;
       if (data.logoUrl !== undefined) companyUpdates.logoUrl = data.logoUrl;
       if (data.bannerUrl !== undefined) companyUpdates.bannerUrl = data.bannerUrl;
+      if (data.defaultResponseWindowDays !== undefined) {
+        companyUpdates.defaultResponseWindowDays = data.defaultResponseWindowDays;
+      }
+      if (data.defaultOfferWindowDays !== undefined) {
+        companyUpdates.defaultOfferWindowDays = data.defaultOfferWindowDays;
+      }
 
       if (Object.keys(companyUpdates).length > 0) {
         await tx

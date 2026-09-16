@@ -32,11 +32,10 @@ export const COMPANY_TYPES = [
 export const CONTACT_METHOD_TYPES = ['EMAIL', 'PHONE', 'LINKEDIN', 'PORTFOLIO'] as const;
 
 export const HIRING_PIPELINE_STAGES = [
-  'SCREENING',
-  'TECHNICAL',
-  'HR',
-  'OFFER',
-  'HIRED',
+  'INTERVIEW_SCHEDULED',
+  'REVIEWING',
+  'OFFER_RELEASED',
+  'OFFER_ACCEPTED',
   'REJECTED',
 ] as const;
 

@@ -85,6 +85,18 @@ export const contactMethodTypeEnum = pgEnum('contact_method_type', [
   'PORTFOLIO',
 ]);
 
+export const pipelineStageEnum = pgEnum('pipeline_stage', [
+  'SENT',
+  'ACCEPTED',
+  'DECLINED',
+  'WITHDRAWN',
+  'INTERVIEW_SCHEDULED',
+  'REVIEWING',
+  'OFFER_RELEASED',
+  'OFFER_ACCEPTED',
+  'REJECTED',
+]);
+
 /* ============================
    Reviews
 ============================ */

@@ -12,6 +12,7 @@ This roadmap reflects the actual intended product direction, not a generic enter
 - Reviews gated on verified employment, with company replies
 - Moderation (cases, actions, trust flags, audit logs) and admin role management
 - A completed security audit + red-team review, with every HIGH/MEDIUM finding fixed and regression-tested
+- Hiring pipeline v2 — two-tier ghosting detection (soft flag, then automatic resolution) and private responsiveness scoring for both sides, computed at read time with no new scheduler infrastructure — see [architecture/hiring-pipeline-v2.md](architecture/hiring-pipeline-v2.md) and decision [D-021](decisions.md)
 
 ## Now — Pre-launch hardening
 
@@ -21,7 +22,6 @@ This roadmap reflects the actual intended product direction, not a generic enter
 
 ## Next — Trust & polish
 
-- Reputation/trust signals building on the existing `trust_flags`/moderation tables
 - Deeper professional search and discovery filters
 - Company review moderation workflow refinements
 

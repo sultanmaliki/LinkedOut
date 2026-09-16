@@ -260,3 +260,15 @@ Architecture documentation is the source of truth.
 ## Reason
 
 Implementation follows architecture, not the other way around.
+
+---
+
+# D-021
+
+## Decision
+
+Ghosting on either side of the hiring pipeline gets a two-tier response (soft flag, then an automatic outcome) computed at read time, never a background job. Responsiveness scoring is a live-computed aggregate, kept separate from the existing moderator-driven `trust_flags` table, and stays private to its own owner until public display gets its own decision. Full design in [architecture/hiring-pipeline-v2.md](architecture/hiring-pipeline-v2.md).
+
+## Reason
+
+A single "expired" cliff either kills legitimate slow pipelines or has no teeth; two tiers give a visible warning before an automatic, no-action-required resolution. No scheduler/cron exists in this codebase and this feature doesn't need one — "overdue" is a pure function of stored timestamps evaluated on read. Mixing a mechanical timer signal into `trust_flags` (moderator judgment calls) would make both less trustworthy. Publicly damaging a company's or professional's reputation is a bigger decision than a timer default and deserves its own review (minimum sample size, dispute path) before shipping.

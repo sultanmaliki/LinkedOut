@@ -1,0 +1,1 @@
+ALTER TABLE "contact_methods" DROP CONSTRAINT "contact_methods_professional_response_id_unique";

@@ -31,6 +31,15 @@ export function PipelineView({ opportunityId, token }: { opportunityId: string; 
               day: 'numeric',
             })}
           </span>
+          {stage.scheduledAt && (
+            <span className="text-fg-muted">
+              — interview on{' '}
+              {new Date(stage.scheduledAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}
+            </span>
+          )}
           {stage.notes && <span className="text-fg-muted">— {stage.notes}</span>}
         </li>
       ))}

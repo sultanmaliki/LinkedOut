@@ -7,7 +7,7 @@ import { ApiError, apiFetch } from '@/lib/api';
 import type { ProfessionalSkill } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Input, Label } from '@/components/ui/input';
 
 interface DraftSkill {
   name: string;
@@ -100,41 +100,49 @@ export function SkillsSection({ token }: { token: string }) {
         ) : skills.length === 0 ? (
           <p className="text-[13.5px] text-fg-faint">No skills yet. Add your first one.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {skills.map((row, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  value={row.name}
-                  onChange={(e) => updateRow(index, { name: e.target.value })}
-                  placeholder="Skill name"
-                  className="flex-1"
-                />
-                <Input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={row.proficiency}
-                  onChange={(e) => updateRow(index, { proficiency: e.target.value })}
-                  placeholder="Level 1–5"
-                  className="w-28"
-                />
-                <Input
-                  type="number"
-                  min={0}
-                  max={60}
-                  value={row.yearsOfExperience}
-                  onChange={(e) => updateRow(index, { yearsOfExperience: e.target.value })}
-                  placeholder="Years"
-                  className="w-24"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeRow(index)}
-                  className="shrink-0 rounded-full p-1.5 text-fg-faint hover:text-rose-600"
-                  aria-label={`Remove ${row.name || 'skill'}`}
-                >
-                  <X className="h-4 w-4" />
-                </button>
+              <div key={index} className="rounded-xl border border-line-strong bg-canvas p-3.5">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={row.name}
+                    onChange={(e) => updateRow(index, { name: e.target.value })}
+                    placeholder="Skill name, e.g. React"
+                    className="min-w-0 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeRow(index)}
+                    className="shrink-0 rounded-full p-1.5 text-fg-faint hover:text-rose-600"
+                    aria-label={`Remove ${row.name || 'skill'}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                  <div>
+                    <Label>Proficiency (1–5)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={5}
+                      value={row.proficiency}
+                      onChange={(e) => updateRow(index, { proficiency: e.target.value })}
+                      placeholder="e.g. 4"
+                    />
+                  </div>
+                  <div>
+                    <Label>Years of experience</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={60}
+                      value={row.yearsOfExperience}
+                      onChange={(e) => updateRow(index, { yearsOfExperience: e.target.value })}
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                </div>
               </div>
             ))}
           </div>

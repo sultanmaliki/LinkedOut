@@ -4,8 +4,10 @@ import {
   contactMethods,
   db,
   hiringPipelines,
+  jobs,
   opportunities,
   opportunitySnapshots,
+  professionalProfiles,
   professionalResponses,
   type NewContactMethod,
 } from '@linkedout/database';
@@ -14,10 +16,19 @@ export type OpportunityRecord = typeof opportunities.$inferSelect;
 export type ProfessionalResponseRecord = typeof professionalResponses.$inferSelect;
 export type ContactMethodRecord = typeof contactMethods.$inferSelect;
 
+export interface OpportunityWithProfessionalName extends OpportunityRecord {
+  professionalFullName: string;
+}
+
+export interface OpportunityWithJobAndProfessional extends OpportunityWithProfessionalName {
+  jobTitle: string;
+}
+
 export interface CreateOpportunityData {
   jobId: string;
   professionalProfileId: string;
   message?: string;
+  responseWindowDays?: number;
 }
 
 export interface RespondData {
@@ -57,6 +68,7 @@ export class OpportunityRepository {
           jobId: data.jobId,
           professionalProfileId: data.professionalProfileId,
           message: data.message,
+          responseWindowDays: data.responseWindowDays,
         })
         .returning();
 
@@ -71,7 +83,7 @@ export class OpportunityRepository {
 
       await tx.insert(hiringPipelines).values({
         opportunityId: opportunity.id,
-        stage: 'OPPORTUNITY_SENT',
+        stage: 'SENT',
       });
 
       return opportunity;
@@ -95,8 +107,57 @@ export class OpportunityRepository {
       .where(eq(opportunities.professionalProfileId, professionalProfileId));
   }
 
-  async listByJob(jobId: string): Promise<OpportunityRecord[]> {
-    return db.select().from(opportunities).where(eq(opportunities.jobId, jobId));
+  async listByJob(jobId: string): Promise<OpportunityWithProfessionalName[]> {
+    const rows = await db
+      .select({
+        opportunity: opportunities,
+        professionalFullName: professionalProfiles.fullName,
+      })
+      .from(opportunities)
+      .innerJoin(
+        professionalProfiles,
+        eq(professionalProfiles.id, opportunities.professionalProfileId),
+      )
+      .where(eq(opportunities.jobId, jobId));
+
+    return rows.map((row) => ({
+      ...row.opportunity,
+      professionalFullName: row.professionalFullName,
+    }));
+  }
+
+  async listByCompanyId(companyId: string): Promise<OpportunityWithJobAndProfessional[]> {
+    const rows = await db
+      .select({
+        opportunity: opportunities,
+        professionalFullName: professionalProfiles.fullName,
+        jobTitle: jobs.title,
+      })
+      .from(opportunities)
+      .innerJoin(jobs, eq(jobs.id, opportunities.jobId))
+      .innerJoin(
+        professionalProfiles,
+        eq(professionalProfiles.id, opportunities.professionalProfileId),
+      )
+      .where(eq(jobs.companyId, companyId));
+
+    return rows.map((row) => ({
+      ...row.opportunity,
+      professionalFullName: row.professionalFullName,
+      jobTitle: row.jobTitle,
+    }));
+  }
+
+  async setManuallyFlaggedUnresponsive(
+    opportunityId: string,
+  ): Promise<OpportunityRecord | undefined> {
+    const [opportunity] = await db
+      .update(opportunities)
+      .set({ manuallyFlaggedUnresponsiveAt: new Date(), updatedAt: new Date() })
+      .where(eq(opportunities.id, opportunityId))
+      .returning();
+
+    return opportunity;
   }
 
   async respond(
@@ -144,7 +205,7 @@ export class OpportunityRepository {
 
       await tx.insert(hiringPipelines).values({
         opportunityId,
-        stage: data.accepted ? 'OPPORTUNITY_ACCEPTED' : 'OPPORTUNITY_DECLINED',
+        stage: data.accepted ? 'ACCEPTED' : 'DECLINED',
       });
 
       return { opportunity, response };

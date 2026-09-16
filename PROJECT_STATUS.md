@@ -35,8 +35,10 @@ This file is the source of truth for "what's actually built." Update it in the s
 ### Hiring flow (the "reverse hiring" core)
 
 - Companies send opportunities to professionals (not the other way around)
-- Professionals accept/decline; acceptance requires supplying a contact method
-- Hiring pipeline: append-only stage history per opportunity
+- Professionals accept/decline; acceptance requires supplying 1–10 contact methods (email/phone/LinkedIn/portfolio)
+- Hiring pipeline v2 (full stack — see [docs/architecture/hiring-pipeline-v2.md](docs/architecture/hiring-pipeline-v2.md)): a 9-stage canonical pipeline (`SENT → ACCEPTED → INTERVIEW_SCHEDULED → REVIEWING → OFFER_RELEASED → OFFER_ACCEPTED`), each opportunity decorated at read time with a computed ghosting-timer status (soft flag, then an automatic outcome) instead of a background job; company-customizable response windows (defaults on the company, overridable per-send/per-offer); a private, per-side responsiveness score; a professional can manually flag a stalled company-owned stage. Frontend: a `PipelineStepper` status-bar component on both sides, a new company-wide "Opportunities" tab (with interview scheduling, move-to-review, offer release, reject, and contact-info reveal), the professional's opportunity cards show the stepper plus offer-response/flag-unresponsive actions, company hiring-settings fields on the Overview tab, private response-rate stats on both sides, and a post-offer nudge banner on the professional's employment-history page.
+- Company-wide "opportunities sent" list (`GET /companies/:id/opportunities`) — previously only visible per-job
+- The professional's submitted contact methods are now actually visible to the company after acceptance (`GET /opportunities/:id/contact-methods`) — this endpoint existed as dead code for a while; fixed as part of hiring pipeline v2
 - "Send opportunity" wired directly from a professional's profile page
 
 ### Posts & social
@@ -115,3 +117,5 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 ## Next up
 
 See [docs/roadmap.md](docs/roadmap.md). Immediate candidates: closing the known-gaps list above (indexes, real lint scripts, a real migration-based CI flow), then a real email provider.
+
+**Hiring pipeline v2** (ghosting prevention + private responsiveness scoring) is complete end-to-end — see Hiring flow above and [docs/architecture/hiring-pipeline-v2.md](docs/architecture/hiring-pipeline-v2.md).

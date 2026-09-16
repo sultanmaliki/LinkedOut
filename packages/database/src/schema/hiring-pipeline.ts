@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+import { pipelineStageEnum } from './enums';
 import { opportunities } from './opportunity';
 
 /* ==========================================
@@ -16,7 +17,17 @@ export const hiringPipelines = pgTable('hiring_pipelines', {
       onDelete: 'cascade',
     }),
 
-  stage: text('stage').notNull(),
+  stage: pipelineStageEnum('stage').notNull(),
+
+  // Interview date for the INTERVIEW_SCHEDULED stage; the anchor timer
+  // computation counts from once set.
+  scheduledAt: timestamp('scheduled_at', {
+    withTimezone: true,
+  }),
+
+  // Per-stage-entry response window override, in days. Null falls back to
+  // the company's default, then the system default, at read time.
+  windowDays: integer('window_days'),
 
   notes: text('notes'),
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, Clock, GitBranch } from 'lucide-react';
+import { Briefcase, Clock, Flag, GitBranch } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { formatEnum } from '@/lib/enums';
@@ -10,6 +10,8 @@ import type { Company, Job, Opportunity } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PipelineStepper } from '@/components/pipeline-stepper';
+import { OfferResponseForm } from './offer-response-form';
 import { PipelineView } from './pipeline-view';
 import { RespondForm } from './respond-form';
 
@@ -34,9 +36,10 @@ export function OpportunityCard({
 }) {
   const [job, setJob] = useState<Job | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
-  const [panel, setPanel] = useState<'none' | 'respond' | 'pipeline'>('none');
+  const [panel, setPanel] = useState<'none' | 'respond' | 'offer' | 'pipeline'>('none');
   const [error, setError] = useState<string | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isFlagging, setIsFlagging] = useState(false);
 
   useEffect(() => {
     apiFetch<Job>(`/jobs/${opportunity.jobId}`)
@@ -67,6 +70,28 @@ export function OpportunityCard({
       setIsWithdrawing(false);
     }
   }
+
+  async function handleFlagUnresponsive() {
+    setIsFlagging(true);
+    try {
+      await apiFetch(`/professionals/me/opportunities/${opportunity.id}/flag-unresponsive`, {
+        method: 'POST',
+        token,
+      });
+      onChanged();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to flag as unresponsive');
+    } finally {
+      setIsFlagging(false);
+    }
+  }
+
+  const { displayStatus } = opportunity;
+  const canRespondToOffer = displayStatus.stage === 'OFFER_RELEASED';
+  const canFlagUnresponsive =
+    displayStatus.ownedBy === 'company' &&
+    (displayStatus.tier === 'softFlag' || displayStatus.tier === 'hardClosed') &&
+    !opportunity.manuallyFlaggedUnresponsiveAt;
 
   return (
     <Card className="p-5">
@@ -106,6 +131,12 @@ export function OpportunityCard({
         </p>
       )}
 
+      {opportunity.status === 'ACCEPTED' && (
+        <div className="mt-3.5 rounded-xl border border-line bg-canvas px-3.5 py-3">
+          <PipelineStepper displayStatus={displayStatus} perspective="professional" />
+        </div>
+      )}
+
       {error && <p className="mt-3 text-[13px] text-rose-600 dark:text-rose-500">{error}</p>}
 
       <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
@@ -114,9 +145,24 @@ export function OpportunityCard({
             Respond
           </Button>
         )}
+        {canRespondToOffer && (
+          <Button size="sm" onClick={() => setPanel(panel === 'offer' ? 'none' : 'offer')}>
+            Respond to offer
+          </Button>
+        )}
         {canWithdraw && (
           <Button size="sm" variant="secondary" onClick={handleWithdraw} disabled={isWithdrawing}>
             {isWithdrawing ? 'Withdrawing…' : 'Withdraw'}
+          </Button>
+        )}
+        {canFlagUnresponsive && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleFlagUnresponsive}
+            disabled={isFlagging}
+          >
+            <Flag className="h-3.5 w-3.5" /> {isFlagging ? 'Flagging…' : 'Flag as unresponsive'}
           </Button>
         )}
         {opportunity.status !== 'PENDING' && (
@@ -125,7 +171,7 @@ export function OpportunityCard({
             variant="ghost"
             onClick={() => setPanel(panel === 'pipeline' ? 'none' : 'pipeline')}
           >
-            <GitBranch className="h-3.5 w-3.5" /> View progress
+            <GitBranch className="h-3.5 w-3.5" /> View history
           </Button>
         )}
       </div>
@@ -133,6 +179,19 @@ export function OpportunityCard({
       {panel === 'respond' && (
         <div className="mt-4">
           <RespondForm
+            opportunityId={opportunity.id}
+            token={token}
+            onResponded={() => {
+              setPanel('none');
+              onChanged();
+            }}
+            onCancel={() => setPanel('none')}
+          />
+        </div>
+      )}
+      {panel === 'offer' && (
+        <div className="mt-4">
+          <OfferResponseForm
             opportunityId={opportunity.id}
             token={token}
             onResponded={() => {

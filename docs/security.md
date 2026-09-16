@@ -54,6 +54,12 @@ This reflects the actual implementation and the outcome of a completed security 
 
 Verdict at the time: safe to continue feature development; the three HIGH findings were blockers for any production launch and are now fixed.
 
+**Follow-up audit (completed, hiring-pipeline-v2 + moderator verification queue):** a full guard-coverage pass over every controller in `apps/api/src` (all 37), plus a targeted authorization review of every new endpoint added with these two features, SQL-injection surface, hardcoded-secret, path-traversal/SSRF, `ValidationPipe` field-coverage, and unscoped-UPDATE/DELETE checks. Confirmed safe: all 37 controllers guard correctly (every unguarded route is an intentionally public one); every new endpoint's authorization was traced past the `@UseGuards` decorator into the actual service-layer ownership check (`isAdmin`/`professionalProfileId` comparison), not just "is logged in"; zero raw-SQL interpolation found; zero new hardcoded secrets; zero filesystem/outbound-HTTP surface exists in the API at all; every new DTO field carries a `class-validator` decorator; every `.update()`/`.delete()` call site has a `.where()`.
+
+- MEDIUM — a company admin could call `POST /opportunities/:id/pipeline` with `{"stage":"OFFER_ACCEPTED"}` directly, fabricating the professional's own offer-acceptance without their consent or contact methods. `OFFER_ACCEPTED` is meant to be written only by `OpportunityService.respondToOffer` in response to the professional's explicit action, mirroring `SENT`/`ACCEPTED`/`DECLINED`/`WITHDRAWN` — it was mistakenly left in the company-appendable `HIRING_PIPELINE_STAGES` set. Fixed by removing it from that set (`hiring-pipeline.repository.ts`); the DTO's `@IsIn` now rejects it with a `400`, live-verified against a real forgery attempt, with a permanent regression test asserting the DTO validation layer rejects it.
+
+Known, accepted gap (not a vulnerability): `HiringPipelineService.appendStage` doesn't enforce stage-transition order — a company admin can jump from `ACCEPTED` straight to `OFFER_RELEASED`, skipping `INTERVIEW_SCHEDULED`/`REVIEWING`. This is a deliberate flexibility choice (a company that already knows a candidate shouldn't be forced through a formal interview step), not an authorization gap — the caller is still confined to their own company's opportunities either way.
+
 ## Threat model (not yet re-validated after every subsequent change — re-run the red-team process before a real launch)
 
 - Credential stuffing / brute force — not yet rate-limited

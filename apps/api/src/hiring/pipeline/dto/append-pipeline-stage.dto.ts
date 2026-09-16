@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 
 import { HIRING_PIPELINE_STAGES } from '../hiring-pipeline.repository';
+import { MAX_WINDOW_DAYS, MIN_WINDOW_DAYS } from '../pipeline-status.util';
 
 export class AppendPipelineStageDto {
   @IsIn(HIRING_PIPELINE_STAGES)
@@ -31,7 +32,7 @@ export class AppendPipelineStageDto {
   // OFFER_RELEASED (how long the professional has to accept/decline).
   @IsOptional()
   @IsInt()
-  @Min(7)
-  @Max(60)
+  @Min(MIN_WINDOW_DAYS)
+  @Max(MAX_WINDOW_DAYS)
   windowDays?: number;
 }

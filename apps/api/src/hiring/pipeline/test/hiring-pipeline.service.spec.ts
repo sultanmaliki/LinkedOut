@@ -1,5 +1,8 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
+import { AppendPipelineStageDto } from '../dto/append-pipeline-stage.dto';
 import { HiringPipelineService } from '../hiring-pipeline.service';
 
 describe('HiringPipelineService', () => {
@@ -112,5 +115,17 @@ describe('HiringPipelineService', () => {
     await expect(
       service.appendStage('missing', 'user-1', { stage: 'INTERVIEW_SCHEDULED' }),
     ).rejects.toThrow(new NotFoundException('Opportunity not found'));
+  });
+
+  // Regression guard for a real vulnerability: OFFER_ACCEPTED must only ever
+  // be written by OpportunityService.respondToOffer in response to the
+  // professional's own consent. A company admin must never be able to
+  // fabricate that acceptance by posting it directly to this endpoint.
+  it('rejects OFFER_ACCEPTED as a company-appendable stage at the DTO validation layer', async () => {
+    const dto = plainToInstance(AppendPipelineStageDto, { stage: 'OFFER_ACCEPTED' });
+    const errors = await validate(dto);
+
+    expect(errors).not.toHaveLength(0);
+    expect(errors[0]?.property).toBe('stage');
   });
 });

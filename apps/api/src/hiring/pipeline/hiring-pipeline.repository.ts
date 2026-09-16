@@ -6,13 +6,18 @@ export type HiringPipelineRecord = typeof hiringPipelines.$inferSelect;
 export type PipelineStage = HiringPipelineRecord['stage'];
 
 // The subset of PipelineStage a company can manually append via the API.
-// SENT/ACCEPTED/DECLINED/WITHDRAWN are lifecycle stages, written only by
-// OpportunityRepository in response to the professional's own actions.
+// SENT/ACCEPTED/DECLINED/WITHDRAWN/OFFER_ACCEPTED are all professional-driven
+// lifecycle stages: SENT/ACCEPTED/DECLINED/WITHDRAWN are written by
+// OpportunityRepository in response to the professional's initial
+// accept/decline, and OFFER_ACCEPTED is written only by
+// OpportunityService.respondToOffer when the professional explicitly
+// accepts a released offer. None of these belong here -- a company admin
+// must never be able to fabricate the professional's own consent by
+// appending them directly through this endpoint.
 export const HIRING_PIPELINE_STAGES = [
   'INTERVIEW_SCHEDULED',
   'REVIEWING',
   'OFFER_RELEASED',
-  'OFFER_ACCEPTED',
   'REJECTED',
 ] as const;
 

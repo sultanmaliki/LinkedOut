@@ -42,9 +42,8 @@ export class PostgresExceptionFilter implements ExceptionFilter {
     }
 
     this.logger.error(
-      exception instanceof Error ? exception.stack : exception,
-      undefined,
-      'UnhandledException',
+      exception instanceof Error ? exception.message : String(exception),
+      exception instanceof Error ? exception.stack : undefined,
     );
 
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

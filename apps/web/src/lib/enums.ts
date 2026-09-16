@@ -31,14 +31,6 @@ export const COMPANY_TYPES = [
 
 export const CONTACT_METHOD_TYPES = ['EMAIL', 'PHONE', 'LINKEDIN', 'PORTFOLIO'] as const;
 
-export const HIRING_PIPELINE_STAGES = [
-  'INTERVIEW_SCHEDULED',
-  'REVIEWING',
-  'OFFER_RELEASED',
-  'OFFER_ACCEPTED',
-  'REJECTED',
-] as const;
-
 export const REVIEW_RATING_CATEGORIES = [
   'COMPENSATION',
   'CULTURE',

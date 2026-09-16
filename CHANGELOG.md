@@ -2,6 +2,24 @@
 
 This changelog is maintained at a feature-area level, not commit-by-commit. See git history for full detail.
 
+## Unreleased — Follow-up security audit
+
+A full guard-coverage and authorization audit of every controller plus the new hiring-pipeline-v2/verification-queue endpoints specifically — see [docs/security.md](docs/security.md) "Follow-up audit". One real finding, fixed with a regression test and a live-verified exploit attempt:
+
+### Fixed
+
+- MEDIUM: a company admin could call `POST /opportunities/:id/pipeline` with `{"stage":"OFFER_ACCEPTED"}` and fabricate a professional's offer-acceptance without their consent — `OFFER_ACCEPTED` is meant to be written only by the professional's own `respondToOffer` action and was mistakenly left in the company-appendable stage list. Removed from `HIRING_PIPELINE_STAGES`.
+- `PostgresExceptionFilter`'s unhandled-exception logging call had its `Logger.error(...)` arguments in the wrong order (an instance-bound logger's context is fixed at construction, so passing one per-call was silently swallowed into the trace output as an unlabeled extra line) — fixed to `error(message, stack)`.
+
+### Removed (dead code)
+
+- `HIRING_PIPELINE_STAGES` in `apps/web/src/lib/enums.ts` — an unused mirror of the backend constant, never wired into any UI (the company Opportunities tab builds its own `NEXT_STAGE` map instead).
+- The unused `MIN_WINDOW_DAYS`/`MAX_WINDOW_DAYS` exports in `pipeline-status.util.ts` weren't deleted — they were wired into the three DTOs (`create-opportunity.dto.ts`, `append-pipeline-stage.dto.ts`, `update-company.dto.ts`) that had been hardcoding the same `7`/`60` bounds independently, closing a duplication/drift risk.
+
+### Cleaned up
+
+- Removed 76 throwaway test accounts, 5 test-pattern companies, and all 13 junk contact-form submissions accumulated from repeated local/e2e test runs across several days, leaving the intentional demo dataset (7 companies, 13 accounts) untouched.
+
 ## Unreleased — CI
 
 ### Fixed

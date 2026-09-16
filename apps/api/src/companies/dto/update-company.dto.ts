@@ -11,6 +11,8 @@ import {
   MinLength,
 } from 'class-validator';
 
+import { MAX_WINDOW_DAYS, MIN_WINDOW_DAYS } from '../../hiring/pipeline/pipeline-status.util';
+
 export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
@@ -69,13 +71,13 @@ export class UpdateCompanyDto {
   // docs/architecture/hiring-pipeline-v2.md.
   @IsOptional()
   @IsInt()
-  @Min(7)
-  @Max(60)
+  @Min(MIN_WINDOW_DAYS)
+  @Max(MAX_WINDOW_DAYS)
   defaultResponseWindowDays?: number;
 
   @IsOptional()
   @IsInt()
-  @Min(7)
-  @Max(60)
+  @Min(MIN_WINDOW_DAYS)
+  @Max(MAX_WINDOW_DAYS)
   defaultOfferWindowDays?: number;
 }

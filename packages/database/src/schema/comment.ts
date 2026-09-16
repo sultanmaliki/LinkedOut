@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, foreignKey, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, foreignKey, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { companies } from './company';
 import { posts } from './post';
@@ -55,6 +55,8 @@ export const comments = pgTable(
       foreignColumns: [table.id],
       name: 'comments_parent_comment_fk',
     }).onDelete('cascade'),
+    postIdx: index('comments_post_id_idx').on(table.postId),
+    parentCommentIdx: index('comments_parent_comment_id_idx').on(table.parentCommentId),
   }),
 );
 

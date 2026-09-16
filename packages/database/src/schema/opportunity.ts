@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { opportunityStatusEnum } from './enums';
 
@@ -10,66 +10,75 @@ import { professionalProfiles } from './professional-profile';
  * Opportunity
  * ========================================== */
 
-export const opportunities = pgTable('opportunities', {
-  id: uuid('id').defaultRandom().primaryKey(),
+export const opportunities = pgTable(
+  'opportunities',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
 
-  jobId: uuid('job_id')
-    .notNull()
-    .references(() => jobs.id, {
-      onDelete: 'cascade',
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => jobs.id, {
+        onDelete: 'cascade',
+      }),
+
+    professionalProfileId: uuid('professional_profile_id')
+      .notNull()
+      .references(() => professionalProfiles.id, {
+        onDelete: 'cascade',
+      }),
+
+    message: text('message'),
+
+    status: opportunityStatusEnum('status').default('PENDING').notNull(),
+
+    acceptedAt: timestamp('accepted_at', {
+      withTimezone: true,
     }),
 
-  professionalProfileId: uuid('professional_profile_id')
-    .notNull()
-    .references(() => professionalProfiles.id, {
-      onDelete: 'cascade',
+    declinedAt: timestamp('declined_at', {
+      withTimezone: true,
     }),
 
-  message: text('message'),
+    expiresAt: timestamp('expires_at', {
+      withTimezone: true,
+    }),
 
-  status: opportunityStatusEnum('status').default('PENDING').notNull(),
+    withdrawnAt: timestamp('withdrawn_at', {
+      withTimezone: true,
+    }),
 
-  acceptedAt: timestamp('accepted_at', {
-    withTimezone: true,
+    // Per-send override (days) for how long the professional has to respond
+    // to this specific opportunity. Null falls back to the company's default,
+    // then the system default, at read time.
+    responseWindowDays: integer('response_window_days'),
+
+    // Set when the professional explicitly flags a stalled, company-owned
+    // stage as unresponsive. This is the one value in the ghosting-detection
+    // design that's written proactively rather than computed at read time,
+    // because it's a real user action, not an inference.
+    manuallyFlaggedUnresponsiveAt: timestamp('manually_flagged_unresponsive_at', {
+      withTimezone: true,
+    }),
+
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    jobIdx: index('opportunities_job_id_idx').on(table.jobId),
+    professionalProfileIdx: index('opportunities_professional_profile_id_idx').on(
+      table.professionalProfileId,
+    ),
   }),
-
-  declinedAt: timestamp('declined_at', {
-    withTimezone: true,
-  }),
-
-  expiresAt: timestamp('expires_at', {
-    withTimezone: true,
-  }),
-
-  withdrawnAt: timestamp('withdrawn_at', {
-    withTimezone: true,
-  }),
-
-  // Per-send override (days) for how long the professional has to respond
-  // to this specific opportunity. Null falls back to the company's default,
-  // then the system default, at read time.
-  responseWindowDays: integer('response_window_days'),
-
-  // Set when the professional explicitly flags a stalled, company-owned
-  // stage as unresponsive. This is the one value in the ghosting-detection
-  // design that's written proactively rather than computed at read time,
-  // because it's a real user action, not an inference.
-  manuallyFlaggedUnresponsiveAt: timestamp('manually_flagged_unresponsive_at', {
-    withTimezone: true,
-  }),
-
-  createdAt: timestamp('created_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-
-  updatedAt: timestamp('updated_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-});
+);
 
 /* ==========================================
  * Relations

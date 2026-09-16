@@ -3,6 +3,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { CompanyRepository } from '../../companies/company.repository';
 import { ProfessionalProfileRepository } from '../../professionals/professional-profile.repository';
 import { CreatePostDto } from './dto/create-post.dto';
+import { ListPostsDto } from './dto/list-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostRecord, PostRepository } from './post.repository';
 
@@ -33,8 +34,11 @@ export class PostService {
     });
   }
 
-  async listPublicPosts(): Promise<PublicPostView[]> {
-    const list = await this.postRepository.listVisible();
+  async listPublicPosts(query: ListPostsDto): Promise<PublicPostView[]> {
+    const limit = query.limit ?? 20;
+    const offset = query.offset ?? 0;
+
+    const list = await this.postRepository.listVisible(limit, offset);
 
     return list.map((post) => this.toPublicView(post));
   }

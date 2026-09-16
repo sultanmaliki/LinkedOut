@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { CreateModerationCaseDto } from './dto/create-moderation-case.dto';
+import { ListModerationCasesDto } from './dto/list-moderation-cases.dto';
 import { UpdateCaseStatusDto } from './dto/update-case-status.dto';
 import { ModerationCaseRecord, ModerationCaseRepository } from './moderation-case.repository';
 
@@ -31,8 +32,12 @@ export class ModerationCaseService {
     return created;
   }
 
-  async listCases(): Promise<ModerationCaseRecord[]> {
-    return this.caseRepository.list();
+  async listCases(query: ListModerationCasesDto): Promise<ModerationCaseRecord[]> {
+    return this.caseRepository.list({
+      limit: query.limit ?? 20,
+      offset: query.offset ?? 0,
+      status: query.status,
+    });
   }
 
   async getCase(caseId: string): Promise<ModerationCaseRecord> {

@@ -32,15 +32,27 @@ export class AuditLogRepository {
     return log;
   }
 
-  async listByEntity(entityType: string, entityId: string): Promise<AuditLogRecord[]> {
+  async listByEntity(
+    entityType: string,
+    entityId: string,
+    limit: number,
+    offset: number,
+  ): Promise<AuditLogRecord[]> {
     return db
       .select()
       .from(auditLogs)
       .where(and(eq(auditLogs.entityType, entityType), eq(auditLogs.entityId, entityId)))
-      .orderBy(desc(auditLogs.createdAt));
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
-  async list(): Promise<AuditLogRecord[]> {
-    return db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt));
+  async list(limit: number, offset: number): Promise<AuditLogRecord[]> {
+    return db
+      .select()
+      .from(auditLogs)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 }

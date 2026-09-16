@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { pipelineStageEnum } from './enums';
 import { opportunities } from './opportunity';
@@ -8,41 +8,47 @@ import { opportunities } from './opportunity';
  * Hiring Pipeline
  * ========================================== */
 
-export const hiringPipelines = pgTable('hiring_pipelines', {
-  id: uuid('id').defaultRandom().primaryKey(),
+export const hiringPipelines = pgTable(
+  'hiring_pipelines',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
 
-  opportunityId: uuid('opportunity_id')
-    .notNull()
-    .references(() => opportunities.id, {
-      onDelete: 'cascade',
+    opportunityId: uuid('opportunity_id')
+      .notNull()
+      .references(() => opportunities.id, {
+        onDelete: 'cascade',
+      }),
+
+    stage: pipelineStageEnum('stage').notNull(),
+
+    // Interview date for the INTERVIEW_SCHEDULED stage; the anchor timer
+    // computation counts from once set.
+    scheduledAt: timestamp('scheduled_at', {
+      withTimezone: true,
     }),
 
-  stage: pipelineStageEnum('stage').notNull(),
+    // Per-stage-entry response window override, in days. Null falls back to
+    // the company's default, then the system default, at read time.
+    windowDays: integer('window_days'),
 
-  // Interview date for the INTERVIEW_SCHEDULED stage; the anchor timer
-  // computation counts from once set.
-  scheduledAt: timestamp('scheduled_at', {
-    withTimezone: true,
+    notes: text('notes'),
+
+    changedAt: timestamp('changed_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    opportunityIdx: index('hiring_pipelines_opportunity_id_idx').on(table.opportunityId),
   }),
-
-  // Per-stage-entry response window override, in days. Null falls back to
-  // the company's default, then the system default, at read time.
-  windowDays: integer('window_days'),
-
-  notes: text('notes'),
-
-  changedAt: timestamp('changed_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-
-  createdAt: timestamp('created_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-});
+);
 
 /* ==========================================
  * Relations

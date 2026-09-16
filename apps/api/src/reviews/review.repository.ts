@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 import {
   db,
@@ -122,14 +122,35 @@ export class ReviewRepository {
   async listByCompany(companyId: string): Promise<ReviewWithRatings[]> {
     const rows = await db.select().from(reviews).where(eq(reviews.companyId, companyId));
 
-    const results: ReviewWithRatings[] = [];
-
-    for (const row of rows) {
-      const ratings = await this.getRatings(row.id);
-      results.push({ ...row, ratings });
+    if (rows.length === 0) {
+      return [];
     }
 
-    return results;
+    const reviewIds = rows.map((row) => row.id);
+
+    const allRatings = await db
+      .select({
+        reviewId: reviewRatings.reviewId,
+        category: reviewRatings.category,
+        score: reviewRatings.score,
+      })
+      .from(reviewRatings)
+      .where(inArray(reviewRatings.reviewId, reviewIds));
+
+    const ratingsByReviewId = new Map<string, ReviewRatingInput[]>();
+
+    for (const { reviewId, category, score } of allRatings) {
+      const existing = ratingsByReviewId.get(reviewId);
+      const rating = { category, score };
+
+      if (existing) {
+        existing.push(rating);
+      } else {
+        ratingsByReviewId.set(reviewId, [rating]);
+      }
+    }
+
+    return rows.map((row) => ({ ...row, ratings: ratingsByReviewId.get(row.id) ?? [] }));
   }
 
   async updateById(

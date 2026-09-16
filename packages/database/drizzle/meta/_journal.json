@@ -43,6 +43,13 @@
       "when": 1789556002534,
       "tag": "0005_pipeline_v2_ghosting_prevention",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789578542849,
+      "tag": "0006_add_missing_fk_indexes",
+      "breakpoints": true
     }
   ]
 }

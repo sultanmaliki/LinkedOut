@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
   /* raw palette */
   --color-ink-950: #0b0c0e;
@@ -22,11 +22,12 @@
   --color-paper: #faf9f6;
   --color-paper-raised: #ffffff;
 
-  --color-emerald-600: #0e7d5a;
-  --color-emerald-500: #0e9f6e;
-  --color-emerald-400: #34b884;
-  --color-emerald-100: #dcf5e9;
-  --color-emerald-50: #f0faf5;
+  --color-emerald-700: #065f46;
+  --color-emerald-600: #047857;
+  --color-emerald-500: #10b981;
+  --color-emerald-400: #34d399;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-50: #ecfdf5;
 
   --color-gold-600: #b45309;
   --color-gold-500: #d97706;
@@ -50,18 +51,6 @@
   --shadow-lifted: 0 12px 32px -12px rgba(11, 12, 14, 0.22);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-canvas: var(--color-ink-950);
-    --color-surface: var(--color-ink-900);
-    --color-fg: var(--color-ink-50);
-    --color-fg-muted: var(--color-ink-400);
-    --color-fg-faint: var(--color-ink-500);
-    --color-line: var(--color-ink-700);
-    --color-line-strong: var(--color-ink-600);
-  }
-}
-
 :root.dark {
   --color-canvas: var(--color-ink-950);
   --color-surface: var(--color-ink-900);
@@ -74,7 +63,11 @@
 
 html {
   scroll-behavior: smooth;
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -90,11 +83,22 @@ body {
   color: var(--color-emerald-600);
 }
 
-@media (prefers-color-scheme: dark) {
-  ::selection {
-    background: var(--color-emerald-600);
-    color: var(--color-emerald-50);
+.dark ::selection {
+  background: var(--color-emerald-600);
+  color: var(--color-emerald-50);
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
   }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 28s linear infinite;
 }
 
 @media print {

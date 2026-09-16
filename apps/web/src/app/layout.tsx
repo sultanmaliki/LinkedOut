@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { BackToTopButton } from '@/components/back-to-top-button';
@@ -12,17 +12,10 @@ import { AuthProvider } from '@/lib/auth-context';
 
 import './globals.css';
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-outfit',
   display: 'swap',
-});
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  display: 'swap',
-  axes: ['opsz'],
 });
 
 export const metadata: Metadata = {
@@ -48,7 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // standard escape hatch for a no-flash theme script: it deliberately
     // mutates this element's class before hydration runs, so a mismatch
     // here is expected, not a bug.
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
+    <html lang="en" className={outfit.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
       </head>

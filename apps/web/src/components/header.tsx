@@ -73,10 +73,10 @@ export function Header() {
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900 text-[13px] font-semibold text-white dark:bg-emerald-500 dark:text-ink-950">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-600 text-[13px] font-semibold text-white dark:bg-emerald-500 dark:text-ink-950">
             L
           </span>
-          <span className="font-display text-[19px] font-medium tracking-[-0.01em] text-fg">
+          <span className="font-display text-[19px] font-semibold tracking-[-0.01em] text-fg">
             LinkedOut
           </span>
         </Link>

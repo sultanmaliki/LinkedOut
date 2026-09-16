@@ -93,7 +93,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
             {company.displayName
               .split(' ')
               .slice(0, 2)

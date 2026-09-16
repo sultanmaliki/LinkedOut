@@ -85,7 +85,7 @@ function SearchResults() {
       ) : isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />
+            <div key={i} className="h-40 animate-pulse rounded-lg bg-surface" />
           ))}
         </div>
       ) : totalResults === 0 ? (
@@ -108,8 +108,8 @@ function SearchResults() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {professionals.map((profile) => (
                   <Link key={profile.id} href={`/professionals/${profile.id}`}>
-                    <Card className="h-full p-6 transition-shadow hover:shadow-[var(--shadow-lifted)]">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+                    <Card className="h-full p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-md bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
                         {initials(profile.fullName)}
                       </div>
                       <h3 className="mt-4 text-[16.5px] font-medium tracking-[-0.01em] text-fg">
@@ -135,9 +135,9 @@ function SearchResults() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {companies.map((company) => (
                   <Link key={company.id} href={`/companies/${company.id}`}>
-                    <Card className="h-full p-6 transition-shadow hover:shadow-[var(--shadow-lifted)]">
+                    <Card className="h-full p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong">
                       <div className="flex items-start justify-between">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
                           {initials(company.displayName)}
                         </div>
                         {company.verified && (

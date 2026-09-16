@@ -17,7 +17,7 @@ export function FloatingContactButton() {
     <Link
       href="/contact"
       aria-label="Contact us"
-      className="fixed right-6 bottom-20 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-ink-900 text-white shadow-[var(--shadow-lifted)] transition-transform hover:scale-105 dark:bg-emerald-500 dark:text-ink-950 print:hidden"
+      className="fixed right-6 bottom-20 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[var(--shadow-lifted)] transition-transform hover:scale-105 dark:bg-emerald-500 dark:text-ink-950 print:hidden"
     >
       <MessageCircleQuestion className="h-5 w-5" />
     </Link>

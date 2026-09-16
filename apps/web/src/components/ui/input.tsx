@@ -8,7 +8,7 @@ import {
 import { cn } from '@/lib/cn';
 
 export const fieldStyles =
-  'w-full rounded-xl border border-line-strong bg-canvas px-3.5 py-2.5 text-[15px] text-fg placeholder:text-fg-faint ' +
+  'w-full rounded-md border border-line-strong bg-canvas px-3.5 py-2.5 text-[15px] text-fg placeholder:text-fg-faint ' +
   'transition-colors duration-150 outline-none ' +
   'focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 ' +
   'disabled:opacity-50 disabled:cursor-not-allowed';

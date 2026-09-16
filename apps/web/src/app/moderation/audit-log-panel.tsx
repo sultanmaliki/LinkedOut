@@ -8,23 +8,47 @@ import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
+const PAGE_SIZE = 30;
+
 export function AuditLogPanel({ token }: { token: string }) {
   const [entityType, setEntityType] = useState('');
   const [entityId, setEntityId] = useState('');
   const [entries, setEntries] = useState<AuditLogEntry[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  function load() {
-    const params = new URLSearchParams();
+  function buildParams(offset: number) {
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) });
     if (entityType.trim() && entityId.trim()) {
       params.set('entityType', entityType.trim());
       params.set('entityId', entityId.trim());
     }
+    return params;
+  }
 
+  function load() {
     setIsLoading(true);
-    apiFetch<AuditLogEntry[]>(`/moderation/audit-logs?${params.toString()}`, { token })
-      .then(setEntries)
+    apiFetch<AuditLogEntry[]>(`/moderation/audit-logs?${buildParams(0).toString()}`, { token })
+      .then((list) => {
+        setEntries(list);
+        setHasMore(list.length === PAGE_SIZE);
+      })
       .finally(() => setIsLoading(false));
+  }
+
+  function loadMore() {
+    if (!entries) return;
+
+    setLoadingMore(true);
+    apiFetch<AuditLogEntry[]>(`/moderation/audit-logs?${buildParams(entries.length).toString()}`, {
+      token,
+    })
+      .then((list) => {
+        setEntries((prev) => [...(prev ?? []), ...list]);
+        setHasMore(list.length === PAGE_SIZE);
+      })
+      .finally(() => setLoadingMore(false));
   }
 
   useEffect(load, [token]);
@@ -68,6 +92,18 @@ export function AuditLogPanel({ token }: { token: string }) {
               </p>
             </div>
           ))}
+
+          {hasMore && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full"
+            >
+              {loadingMore ? 'Loading…' : 'Load more'}
+            </Button>
+          )}
         </div>
       )}
     </div>

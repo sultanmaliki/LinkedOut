@@ -99,10 +99,9 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 
 - No explicit database indexes beyond primary keys and one unique constraint (`likes_post_professional_company_idx`) — flagged, not yet fixed
 - `apps/api` and `apps/web`'s `lint` scripts are placeholders (`echo`); `apps/api`'s `test` script is real
-- CI applies schema via `drizzle-kit push`, not replayed migrations — migrations in `packages/database/drizzle/` aren't exercised by CI
+- CI applies schema via `drizzle-kit push --force`, not replayed migrations — migrations in `packages/database/drizzle/` aren't exercised by CI. (Until now, CI ran plain `drizzle-kit push` with no TTY, which prints "Interactive prompts require a TTY", never applies anything, and exits `0` anyway — the "Push database schema" step reported success while every CI run's database stayed completely empty. Every real-DB test — `auth.e2e-spec.ts`, `auth.service.spec.ts`, `auth.guard.spec.ts`, `contact.e2e-spec.ts` — was failing in CI for this reason alone; `--force` fixes it. See `.github/workflows/ci.yml`'s comment on the push step and the CHANGELOG.)
 - `apps/api/dist/**` and `tsconfig.tsbuildinfo` files are committed to git despite a later `.gitignore` rule — never retroactively cleaned up
 - No real email provider — verification links are returned directly in dev-mode API responses
-- `hiring_pipelines.stage` is a plain `text` column written by two different vocabularies (auto lifecycle events vs. DTO-validated business stages), not a Postgres enum
 
 ---
 

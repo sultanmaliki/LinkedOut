@@ -2,6 +2,13 @@
 
 This changelog is maintained at a feature-area level, not commit-by-commit. See git history for full detail.
 
+## Unreleased — CI
+
+### Fixed
+
+- CI's "Push database schema" step ran plain `drizzle-kit push`, which needs an interactive confirmation this schema has no TTY for in CI; it printed "Interactive prompts require a TTY", never applied anything, and — critically — exited `0` anyway, so the step reported success while the database stayed completely empty on every run. Every test that touches a real DB connection (`auth.e2e-spec.ts`, `auth.service.spec.ts`, `contact.e2e-spec.ts`, and `auth.guard.spec.ts` below) was failing in CI for this reason alone. Fixed by adding `--force` to the CI-only push command (safe there since the database is a disposable container recreated every run; never use it against a real database).
+- `auth.guard.spec.ts` signed its test JWTs with the hardcoded literal `'dev-secret'` instead of the actual configured secret — a leftover from before `getJwtSecret()` replaced that value as a fallback (see `jwt-secret.ts`'s own comment on why the fallback was removed). It only passed by coincidence locally, where `docker-compose.yml` happens to set `JWT_SECRET=dev-secret`; CI uses a different value, so every guard test failed with "Invalid access token" regardless of what it was actually testing. Fixed by signing with `getJwtSecret()` directly.
+
 ## Unreleased — Site polish
 
 ### Added

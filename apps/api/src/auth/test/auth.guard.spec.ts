@@ -2,6 +2,7 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
 import { AuthGuard } from '../guards/auth.guard';
+import { getJwtSecret } from '../jwt-secret';
 import { UserRepository } from '../user.repository';
 
 describe('AuthGuard', () => {
@@ -46,7 +47,7 @@ describe('AuthGuard', () => {
         type: 'access',
         ...overrides,
       },
-      'dev-secret',
+      getJwtSecret(),
     );
 
   beforeEach(() => {
@@ -98,7 +99,7 @@ describe('AuthGuard', () => {
         role: 'PROFESSIONAL',
         type: 'refresh',
       },
-      'dev-secret',
+      getJwtSecret(),
     );
 
     const { context } = createContext(`Bearer ${token}`);
@@ -126,7 +127,7 @@ describe('AuthGuard', () => {
         email: 'ada@example.com',
         role: 'PROFESSIONAL',
       },
-      'dev-secret',
+      getJwtSecret(),
     );
 
     const { context } = createContext(`Bearer ${token}`);
@@ -143,7 +144,7 @@ describe('AuthGuard', () => {
         role: 'PROFESSIONAL',
         type: 'access',
       },
-      'dev-secret',
+      getJwtSecret(),
     );
 
     const { context } = createContext(`Bearer ${token}`);

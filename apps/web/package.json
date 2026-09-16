@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "lint": "echo \"Lint will be configured in Sprint 2\"",
+    "lint": "eslint .",
     "test": "echo \"Testing will be configured in Sprint 3\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -21,8 +21,11 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^9.15.0",
+    "eslint-config-next": "15.5.22",
     "typescript": "^5.7.3"
   }
 }

@@ -51,6 +51,9 @@ export function AuditLogPanel({ token }: { token: string }) {
       .finally(() => setLoadingMore(false));
   }
 
+  // Only mount and an actual token change should refetch — entityType/entityId
+  // filters are applied explicitly via the Filter button, not on every keystroke.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(load, [token]);
 
   return (

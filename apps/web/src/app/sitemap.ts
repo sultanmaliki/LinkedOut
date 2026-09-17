@@ -5,9 +5,30 @@ import type { Company, ProfessionalProfile } from '@/lib/types';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
+// The API caps `limit` at 100 per page, so a flat single fetch silently
+// missed everything once there were more than 100 rows (it 400'd, and the
+// catch below swallowed it). Page through instead so the sitemap keeps
+// growing with the data. Capped at 20 pages (2000 rows) as a sanity limit
+// in case the API ever stops honoring offset/limit correctly.
+const PAGE_SIZE = 100;
+const MAX_PAGES = 20;
+
+async function fetchAllPages<T>(path: string): Promise<T[]> {
+  const results: T[] = [];
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const offset = page * PAGE_SIZE;
+    const batch = await apiFetch<T[]>(`${path}?limit=${PAGE_SIZE}&offset=${offset}`);
+    results.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+  }
+
+  return results;
+}
+
 async function companyEntries(): Promise<MetadataRoute.Sitemap> {
   try {
-    const companies = await apiFetch<Company[]>('/companies?limit=500');
+    const companies = await fetchAllPages<Company>('/companies');
     return companies.map((company) => ({
       url: `${SITE_URL}/companies/${company.id}`,
       lastModified: company.updatedAt,
@@ -23,7 +44,7 @@ async function companyEntries(): Promise<MetadataRoute.Sitemap> {
 
 async function professionalEntries(): Promise<MetadataRoute.Sitemap> {
   try {
-    const profiles = await apiFetch<ProfessionalProfile[]>('/professionals?limit=500');
+    const profiles = await fetchAllPages<ProfessionalProfile>('/professionals');
     return profiles.map((profile) => ({
       url: `${SITE_URL}/professionals/${profile.id}`,
       lastModified: profile.updatedAt,

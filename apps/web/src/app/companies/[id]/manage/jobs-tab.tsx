@@ -12,6 +12,7 @@ import { Card, CardBody } from '@/components/ui/card';
 import { Input, Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { PipelineStepper } from '@/components/pipeline-stepper';
+import { ProfessionalSearchInput } from '@/components/professional-search-input';
 
 interface Job {
   id: string;
@@ -160,6 +161,12 @@ function SendOpportunityForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!professionalProfileId) {
+      setError('Search for and select a professional first');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -183,19 +190,12 @@ function SendOpportunityForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-line bg-canvas p-4">
-      <div>
-        <Label htmlFor={`profile-${jobId}`}>Professional profile ID</Label>
-        <Input
-          id={`profile-${jobId}`}
-          required
-          value={professionalProfileId}
-          onChange={(e) => setProfessionalProfileId(e.target.value)}
-          placeholder="Paste their profile ID"
-        />
-        <p className="mt-1 text-[12px] text-fg-faint">
-          Professional discovery/search isn&rsquo;t built yet — paste an ID directly for now.
-        </p>
-      </div>
+      <ProfessionalSearchInput
+        id={`profile-${jobId}`}
+        label="Professional"
+        value={professionalProfileId}
+        onChange={setProfessionalProfileId}
+      />
       <div>
         <Label htmlFor={`message-${jobId}`}>Message (optional)</Label>
         <Textarea

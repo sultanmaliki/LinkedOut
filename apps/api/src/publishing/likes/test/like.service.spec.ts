@@ -64,10 +64,51 @@ describe('LikeService', () => {
     );
   });
 
-  it('returns the like count for a post', async () => {
+  it('returns the like count without a liked status for an anonymous caller', async () => {
     postRepository.findById.mockResolvedValue({ id: 'post-1' });
     likeRepository.countByPost.mockResolvedValue(3);
 
-    await expect(service.getLikeCount('post-1')).resolves.toEqual({ count: 3 });
+    await expect(service.getLikeStatus('post-1')).resolves.toEqual({ count: 3, liked: false });
+    expect(profileRepository.findByUserId).not.toHaveBeenCalled();
+  });
+
+  it('reports liked: false for a signed-in caller with no professional profile', async () => {
+    postRepository.findById.mockResolvedValue({ id: 'post-1' });
+    likeRepository.countByPost.mockResolvedValue(3);
+    profileRepository.findByUserId.mockResolvedValue(undefined);
+
+    await expect(service.getLikeStatus('post-1', 'user-1')).resolves.toEqual({
+      count: 3,
+      liked: false,
+    });
+    expect(likeRepository.findByActor).not.toHaveBeenCalled();
+  });
+
+  it('reports liked: true when the signed-in caller has liked the post', async () => {
+    postRepository.findById.mockResolvedValue({ id: 'post-1' });
+    likeRepository.countByPost.mockResolvedValue(3);
+    profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+    likeRepository.findByActor.mockResolvedValue({ postId: 'post-1' });
+
+    await expect(service.getLikeStatus('post-1', 'user-1')).resolves.toEqual({
+      count: 3,
+      liked: true,
+    });
+    expect(likeRepository.findByActor).toHaveBeenCalledWith('post-1', {
+      professionalProfileId: 'profile-1',
+      companyId: null,
+    });
+  });
+
+  it('reports liked: false when the signed-in caller has not liked the post', async () => {
+    postRepository.findById.mockResolvedValue({ id: 'post-1' });
+    likeRepository.countByPost.mockResolvedValue(3);
+    profileRepository.findByUserId.mockResolvedValue({ id: 'profile-1' });
+    likeRepository.findByActor.mockResolvedValue(undefined);
+
+    await expect(service.getLikeStatus('post-1', 'user-1')).resolves.toEqual({
+      count: 3,
+      liked: false,
+    });
   });
 });

@@ -21,7 +21,10 @@ export function PostCard({ post }: { post: Post }) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
-    apiFetch<{ count: number }>(`/posts/${post.id}/like`).then((res) => setLikeCount(res.count));
+    apiFetch<{ count: number; liked: boolean }>(`/posts/${post.id}/like`).then((res) => {
+      setLikeCount(res.count);
+      setLiked(res.liked);
+    });
     apiFetch<Attachment[]>(`/posts/${post.id}/attachments`)
       .then(setAttachments)
       .catch(() => setAttachments([]));
@@ -77,7 +80,11 @@ export function PostCard({ post }: { post: Post }) {
           )}
         >
           <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
-          {likeCount ?? '—'}
+          {likeCount === null ? (
+            <span className="inline-block h-3 w-3 animate-pulse rounded bg-ink-100 dark:bg-ink-800" />
+          ) : (
+            likeCount
+          )}
         </button>
         <button
           onClick={() => setShowComments((v) => !v)}

@@ -10,6 +10,10 @@ async function bootstrap() {
   app.enableCors({
     origin: process.env.WEB_ORIGIN?.split(',') ?? 'http://localhost:3000',
     credentials: true,
+    // Without this, Chrome/Firefox don't cache the preflight and send a
+    // fresh OPTIONS before every single GET/POST/DELETE — doubling the
+    // number of round trips to the API on every page.
+    maxAge: 86400,
   });
   await app.listen(3001);
 }

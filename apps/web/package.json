@@ -7,7 +7,10 @@
     "build": "next build",
     "lint": "eslint .",
     "test": "echo \"Testing will be configured in Sprint 3\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -15,17 +18,19 @@
     "clsx": "^2.1.1",
     "gsap": "^3.15.0",
     "lucide-react": "^1.45.0",
-    "next": "^15.3.0",
+    "next": "^15.5.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.15.0",
     "eslint-config-next": "15.5.22",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "wrangler": "^4.133.0"
   }
 }

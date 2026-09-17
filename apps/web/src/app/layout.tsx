@@ -19,9 +19,13 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  // Resolves relative OG/Twitter image URLs against the deployed site
+  // instead of defaulting to localhost:3000 in production.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: 'LinkedOut — Companies apply. You decide.',
   description:
     'LinkedOut is the reverse-hiring platform where companies earn the attention of professionals through transparency, verified reviews, and respect.',
+  manifest: '/manifest.webmanifest',
 };
 
 // Runs before paint so the page never flashes the wrong theme: reads the

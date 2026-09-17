@@ -2,6 +2,7 @@
 
 import { Suspense, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -48,6 +49,13 @@ function AuthForm() {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-6 py-16">
       <div className="mb-8 text-center">
+        <Image
+          src="/mark.svg"
+          alt="LinkedOut"
+          width={44}
+          height={44}
+          className="mx-auto mb-4 h-11 w-11 rounded-xl"
+        />
         <h1 className="font-display text-[28px] font-medium tracking-[-0.01em] text-fg">
           {mode === 'login' ? 'Welcome back' : 'Build your profile'}
         </h1>

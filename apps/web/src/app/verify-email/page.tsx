@@ -44,7 +44,7 @@ function VerifyEmailContent() {
           {status === 'verifying' && (
             <>
               <div className="h-8 w-8 animate-pulse rounded-full bg-ink-200 dark:bg-ink-700" />
-              <p className="text-[14.5px] text-fg-muted">Verifying your email…</p>
+              <h1 className="text-[14.5px] font-normal text-fg-muted">Verifying your email…</h1>
             </>
           )}
 
@@ -52,7 +52,7 @@ function VerifyEmailContent() {
             <>
               <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
               <div>
-                <p className="text-[16px] font-medium text-fg">Email verified</p>
+                <h1 className="text-[16px] font-medium text-fg">Email verified</h1>
                 <p className="mt-1 text-[14px] text-fg-muted">
                   Your email address has been confirmed.
                 </p>
@@ -67,7 +67,7 @@ function VerifyEmailContent() {
             <>
               <XCircle className="h-8 w-8 text-rose-600 dark:text-rose-500" />
               <div>
-                <p className="text-[16px] font-medium text-fg">Verification failed</p>
+                <h1 className="text-[16px] font-medium text-fg">Verification failed</h1>
                 <p className="mt-1 text-[14px] text-fg-muted">{error}</p>
               </div>
               <Link href="/me" className={buttonStyles('secondary', 'sm')}>

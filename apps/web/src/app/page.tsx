@@ -23,22 +23,22 @@ const principles = [
   {
     title: 'Verified over assumed',
     body: 'Employment history, company identity, and reviews are verified wherever possible — trust earned through evidence, not marketing copy.',
-    seed: 'linkedout-verify',
+    image: '/images/verify.jpg',
   },
   {
     title: 'Reviews companies can’t hide',
     body: 'Employers can reply to reviews, but they can never delete or bury them. Transparency doesn’t require anyone’s approval.',
-    seed: 'linkedout-review',
+    image: '/images/review.jpg',
   },
   {
     title: 'Privacy by design',
     body: 'Your contact information stays private until you accept an opportunity — never before.',
-    seed: 'linkedout-privacy',
+    image: '/images/privacy.jpg',
   },
   {
     title: 'Companies held accountable',
     body: 'Public trust scores and verified reviews mean employers earn attention through the quality of their workplace.',
-    seed: 'linkedout-accountable',
+    image: '/images/accountable.jpg',
   },
 ];
 
@@ -188,7 +188,7 @@ export default function HomePage() {
           <div className="group relative mt-16 ml-auto h-72 w-full max-w-xl overflow-hidden rounded-lg sm:h-80 lg:-mt-16 lg:ml-[38%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://picsum.photos/seed/linkedout-hero/1400/900"
+              src="/images/hero.jpg"
               alt="A professional reviewing verified employment history on a laptop"
               // This is the page's LCP element — without fetchPriority, the
               // browser treats it as a normal-priority image and queues it
@@ -242,7 +242,7 @@ export default function HomePage() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://picsum.photos/seed/${pillar.seed}/900/1400`}
+                src={pillar.image}
                 alt=""
                 className="absolute inset-0 h-full w-full scale-110 object-cover mix-blend-luminosity transition-transform duration-700 ease-out group-hover:scale-100"
               />

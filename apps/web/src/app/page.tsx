@@ -190,6 +190,14 @@ export default function HomePage() {
             <img
               src="https://picsum.photos/seed/linkedout-hero/1400/900"
               alt="A professional reviewing verified employment history on a laptop"
+              // This is the page's LCP element — without fetchPriority, the
+              // browser treats it as a normal-priority image and queues it
+              // behind other requests, which measured as a ~7s LCP in
+              // Lighthouse even though the image itself loads in <1s once
+              // requested.
+              fetchPriority="high"
+              width={1400}
+              height={900}
               className="h-full w-full scale-105 object-cover contrast-125 grayscale transition-transform duration-700 ease-out group-hover:scale-100"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/0 to-transparent" />

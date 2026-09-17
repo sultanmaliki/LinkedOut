@@ -48,7 +48,7 @@ describe('ModerationCaseController', () => {
     const cases = [{ id: 'case-1' }];
     caseService.listCases.mockResolvedValue(cases);
 
-    await expect(controller.listCases()).resolves.toEqual(cases);
+    await expect(controller.listCases({})).resolves.toEqual(cases);
   });
 
   it('gets a case by id', async () => {

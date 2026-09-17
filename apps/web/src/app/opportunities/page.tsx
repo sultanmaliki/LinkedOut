@@ -6,7 +6,7 @@ import { Inbox } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import type { Opportunity } from '@/lib/types';
+import type { Opportunity, ResponsivenessScore } from '@/lib/types';
 import { Card, CardBody } from '@/components/ui/card';
 import { OpportunityCard } from './opportunity-card';
 
@@ -15,6 +15,7 @@ export default function OpportunitiesPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [score, setScore] = useState<ResponsivenessScore | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +29,9 @@ export default function OpportunitiesPage() {
         setError(err instanceof ApiError ? err.message : 'Failed to load opportunities'),
       )
       .finally(() => setIsLoading(false));
+    apiFetch<ResponsivenessScore>('/professionals/me/responsiveness', { token: accessToken }).then(
+      setScore,
+    );
   }, [accessToken]);
 
   useEffect(() => {
@@ -43,13 +47,25 @@ export default function OpportunitiesPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-14">
-      <div className="mb-8">
-        <h1 className="font-display text-[26px] font-medium tracking-[-0.01em] text-fg">
-          Opportunities
-        </h1>
-        <p className="mt-1 text-[14.5px] text-fg-muted">
-          Companies that want to talk to you. Nothing is shared until you accept.
-        </p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-[26px] font-medium tracking-[-0.01em] text-fg">
+            Opportunities
+          </h1>
+          <p className="mt-1 text-[14.5px] text-fg-muted">
+            Companies that want to talk to you. Nothing is shared until you accept.
+          </p>
+        </div>
+        {score && (
+          <div className="rounded-lg border border-line-strong bg-canvas px-3 py-1.5">
+            <span className="text-[12.5px] text-fg-muted">Your response rate (private): </span>
+            <span className="text-[12.5px] font-medium text-fg">
+              {score.rate === null
+                ? `not enough data yet (${score.totalConsidered}/5)`
+                : `${Math.round(score.rate * 100)}% of ${score.totalConsidered}`}
+            </span>
+          </div>
+        )}
       </div>
 
       {isAuthLoading || isLoading ? (

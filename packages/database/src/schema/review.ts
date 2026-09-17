@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { companies } from './company';
 import { employmentHistories } from './employment-history';
@@ -8,54 +8,60 @@ import { employmentHistories } from './employment-history';
  * Review
  * ========================================== */
 
-export const reviews = pgTable('reviews', {
-  id: uuid('id').defaultRandom().primaryKey(),
+export const reviews = pgTable(
+  'reviews',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
 
-  companyId: uuid('company_id')
-    .notNull()
-    .references(() => companies.id, {
-      onDelete: 'cascade',
+    companyId: uuid('company_id')
+      .notNull()
+      .references(() => companies.id, {
+        onDelete: 'cascade',
+      }),
+
+    employmentHistoryId: uuid('employment_history_id')
+      .notNull()
+      .unique()
+      .references(() => employmentHistories.id, {
+        onDelete: 'cascade',
+      }),
+
+    title: text('title').notNull(),
+
+    review: text('review').notNull(),
+
+    anonymous: boolean('anonymous').default(true).notNull(),
+
+    recommended: boolean('recommended').default(true).notNull(),
+
+    edited: boolean('edited').default(false).notNull(),
+
+    publishedAt: timestamp('published_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    lastEditedAt: timestamp('last_edited_at', {
+      withTimezone: true,
     }),
 
-  employmentHistoryId: uuid('employment_history_id')
-    .notNull()
-    .unique()
-    .references(() => employmentHistories.id, {
-      onDelete: 'cascade',
-    }),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
 
-  title: text('title').notNull(),
-
-  review: text('review').notNull(),
-
-  anonymous: boolean('anonymous').default(true).notNull(),
-
-  recommended: boolean('recommended').default(true).notNull(),
-
-  edited: boolean('edited').default(false).notNull(),
-
-  publishedAt: timestamp('published_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-
-  lastEditedAt: timestamp('last_edited_at', {
-    withTimezone: true,
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    companyIdx: index('reviews_company_id_idx').on(table.companyId),
   }),
-
-  createdAt: timestamp('created_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-
-  updatedAt: timestamp('updated_at', {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-});
+);
 
 /* ==========================================
  * Relations

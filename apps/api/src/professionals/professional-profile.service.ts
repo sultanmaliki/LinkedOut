@@ -25,6 +25,7 @@ export class ProfessionalProfileService {
     return this.profileRepository.search({
       limit: query.limit ?? 20,
       offset: query.offset ?? 0,
+      q: query.q,
       headline: query.headline,
       location: query.location,
       skill: query.skill,

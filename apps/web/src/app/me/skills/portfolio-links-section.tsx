@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { ExternalLink, Pencil, Plus, Trash2, X } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { useConfirmDialog } from '@/lib/use-confirm-dialog';
 import type { PortfolioLink } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
@@ -13,6 +14,7 @@ export function PortfolioLinksSection({ token }: { token: string }) {
   const [links, setLinks] = useState<PortfolioLink[] | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { requestConfirm, dialog } = useConfirmDialog();
 
   function load() {
     apiFetch<PortfolioLink[]>('/professionals/me/portfolio-links', { token }).then(setLinks);
@@ -23,6 +25,14 @@ export function PortfolioLinksSection({ token }: { token: string }) {
   async function remove(id: string) {
     await apiFetch(`/professionals/me/portfolio-links/${id}`, { method: 'DELETE', token });
     load();
+  }
+
+  function confirmRemove(link: PortfolioLink) {
+    requestConfirm({
+      title: 'Delete portfolio link?',
+      description: `"${link.title}" will be removed from your profile.`,
+      onConfirm: () => remove(link.id),
+    });
   }
 
   return (
@@ -98,7 +108,7 @@ export function PortfolioLinksSection({ token }: { token: string }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => remove(link.id)}
+                      onClick={() => confirmRemove(link)}
                       className="rounded-full p-1.5 text-fg-faint hover:text-rose-600"
                       aria-label={`Delete ${link.title}`}
                     >
@@ -111,6 +121,7 @@ export function PortfolioLinksSection({ token }: { token: string }) {
           </div>
         )}
       </CardBody>
+      {dialog}
     </Card>
   );
 }

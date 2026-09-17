@@ -24,6 +24,12 @@ export function OverviewTab({
   const [industry, setIndustry] = useState(company.industry ?? '');
   const [website, setWebsite] = useState(company.website ?? '');
   const [description, setDescription] = useState(company.description ?? '');
+  const [defaultResponseWindowDays, setDefaultResponseWindowDays] = useState(
+    company.defaultResponseWindowDays?.toString() ?? '',
+  );
+  const [defaultOfferWindowDays, setDefaultOfferWindowDays] = useState(
+    company.defaultOfferWindowDays?.toString() ?? '',
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -45,6 +51,12 @@ export function OverviewTab({
           industry: industry || undefined,
           website: website || undefined,
           description: description || undefined,
+          defaultResponseWindowDays: defaultResponseWindowDays
+            ? Number(defaultResponseWindowDays)
+            : undefined,
+          defaultOfferWindowDays: defaultOfferWindowDays
+            ? Number(defaultOfferWindowDays)
+            : undefined,
         },
       });
       onSaved(updated);
@@ -118,6 +130,40 @@ export function OverviewTab({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+      </div>
+
+      <div className="border-t border-line pt-4">
+        <Label>Response windows</Label>
+        <p className="mb-2 text-[12px] text-fg-faint">
+          How long professionals get to respond, by default. Overridable per opportunity or offer.
+          Leave blank to use the platform default (30 days / 14 days).
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="defaultResponseWindowDays">Opportunity response window (days)</Label>
+            <Input
+              id="defaultResponseWindowDays"
+              type="number"
+              min={7}
+              max={60}
+              placeholder="30"
+              value={defaultResponseWindowDays}
+              onChange={(e) => setDefaultResponseWindowDays(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="defaultOfferWindowDays">Offer response window (days)</Label>
+            <Input
+              id="defaultOfferWindowDays"
+              type="number"
+              min={7}
+              max={60}
+              placeholder="14"
+              value={defaultOfferWindowDays}
+              onChange={(e) => setDefaultOfferWindowDays(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
       {error && (

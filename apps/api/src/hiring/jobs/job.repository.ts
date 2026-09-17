@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import { db, jobs, opportunities, type NewJob } from '@linkedout/database';
 
@@ -30,6 +30,14 @@ export class JobRepository {
     const [job] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
 
     return job;
+  }
+
+  async findByIds(jobIds: string[]): Promise<JobRecord[]> {
+    if (jobIds.length === 0) {
+      return [];
+    }
+
+    return db.select().from(jobs).where(inArray(jobs.id, jobIds));
   }
 
   async findByIdForCompany(companyId: string, jobId: string): Promise<JobRecord | undefined> {

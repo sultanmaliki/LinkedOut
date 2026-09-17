@@ -11,6 +11,8 @@ describe('CompanyService', () => {
     listForAdmin: jest.fn(),
     isAdmin: jest.fn(),
     updateById: jest.fn(),
+    setVerificationStatus: jest.fn(),
+    findByIds: jest.fn(),
   };
 
   const service = new CompanyService(repository);
@@ -55,7 +57,15 @@ describe('CompanyService', () => {
     repository.list.mockResolvedValue(companies);
 
     await expect(service.listCompanies(10, 20)).resolves.toEqual(companies);
-    expect(repository.list).toHaveBeenCalledWith(10, 20);
+    expect(repository.list).toHaveBeenCalledWith(10, 20, undefined);
+  });
+
+  it('lists companies matching a search query', async () => {
+    const companies = [{ id: 'company-1', displayName: 'Acme Corp' }];
+    repository.list.mockResolvedValue(companies);
+
+    await expect(service.listCompanies(20, 0, 'Acme')).resolves.toEqual(companies);
+    expect(repository.list).toHaveBeenCalledWith(20, 0, 'Acme');
   });
 
   it('lists companies the user administers', async () => {
@@ -114,5 +124,29 @@ describe('CompanyService', () => {
     ).rejects.toThrow(new NotFoundException('Company not found'));
 
     expect(repository.isAdmin).not.toHaveBeenCalled();
+  });
+
+  it('updates the hiring-settings response windows', async () => {
+    repository.findById.mockResolvedValue({ id: 'company-1' });
+    repository.isAdmin.mockResolvedValue(true);
+
+    const updated = {
+      id: 'company-1',
+      defaultResponseWindowDays: 21,
+      defaultOfferWindowDays: 10,
+    };
+    repository.updateById.mockResolvedValue(updated);
+
+    await expect(
+      service.updateCompany('company-1', 'user-1', {
+        defaultResponseWindowDays: 21,
+        defaultOfferWindowDays: 10,
+      }),
+    ).resolves.toEqual(updated);
+
+    expect(repository.updateById).toHaveBeenCalledWith('company-1', {
+      defaultResponseWindowDays: 21,
+      defaultOfferWindowDays: 10,
+    });
   });
 });

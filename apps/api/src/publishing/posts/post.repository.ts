@@ -1,4 +1,4 @@
-import { and, eq, lte, or } from 'drizzle-orm';
+import { and, desc, eq, lte, or } from 'drizzle-orm';
 
 import { db, posts, type NewPost } from '@linkedout/database';
 
@@ -29,7 +29,7 @@ export class PostRepository {
     return post;
   }
 
-  async listVisible(): Promise<PostRecord[]> {
+  async listVisible(limit: number, offset: number): Promise<PostRecord[]> {
     const now = new Date();
 
     return db
@@ -40,7 +40,10 @@ export class PostRepository {
           eq(posts.visibility, 'VISIBLE_NOW'),
           and(eq(posts.visibility, 'SCHEDULED'), lte(posts.scheduledAt, now)),
         ),
-      );
+      )
+      .orderBy(desc(posts.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async listByProfessional(professionalProfileId: string): Promise<PostRecord[]> {

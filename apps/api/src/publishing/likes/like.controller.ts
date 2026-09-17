@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { CurrentUser, OptionalCurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { OptionalAuthGuard } from '../../auth/guards/optional-auth.guard';
 import { ToggleLikeDto } from './dto/toggle-like.dto';
 import { LikeService } from './like.service';
 
@@ -10,8 +11,12 @@ export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
   @Get()
-  async getLikeCount(@Param('postId') postId: string) {
-    return this.likeService.getLikeCount(postId);
+  @UseGuards(OptionalAuthGuard)
+  async getLikeStatus(
+    @Param('postId') postId: string,
+    @OptionalCurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.likeService.getLikeStatus(postId, user?.id);
   }
 
   @Post()

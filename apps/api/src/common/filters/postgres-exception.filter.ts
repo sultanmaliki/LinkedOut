@@ -1,4 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 
 // Passing a non-UUID string as an :id param (or a forged JWT's sub claim)
 // reaches a Drizzle query, which throws a raw Postgres error instead of a
@@ -12,6 +19,8 @@ const POSTGRES_INVALID_INPUT_CODE = '22P02';
 
 @Catch()
 export class PostgresExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(PostgresExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<{
@@ -31,6 +40,11 @@ export class PostgresExceptionFilter implements ExceptionFilter {
       });
       return;
     }
+
+    this.logger.error(
+      exception instanceof Error ? exception.message : String(exception),
+      exception instanceof Error ? exception.stack : undefined,
+    );
 
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

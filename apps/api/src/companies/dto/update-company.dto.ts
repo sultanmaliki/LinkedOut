@@ -11,6 +11,8 @@ import {
   MinLength,
 } from 'class-validator';
 
+import { MAX_WINDOW_DAYS, MIN_WINDOW_DAYS } from '../../hiring/pipeline/pipeline-status.util';
+
 export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
@@ -63,4 +65,19 @@ export class UpdateCompanyDto {
   @IsInt()
   @Min(1)
   employeeCount?: number;
+
+  // Default response windows (days) applied to opportunities/offers this
+  // company sends, when not overridden per-send. See
+  // docs/architecture/hiring-pipeline-v2.md.
+  @IsOptional()
+  @IsInt()
+  @Min(MIN_WINDOW_DAYS)
+  @Max(MAX_WINDOW_DAYS)
+  defaultResponseWindowDays?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(MIN_WINDOW_DAYS)
+  @Max(MAX_WINDOW_DAYS)
+  defaultOfferWindowDays?: number;
 }

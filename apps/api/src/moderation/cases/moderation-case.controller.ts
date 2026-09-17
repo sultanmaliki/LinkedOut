@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
 import { ModeratorGuard } from '../moderator.guard';
 import { CreateModerationCaseDto } from './dto/create-moderation-case.dto';
+import { ListModerationCasesDto } from './dto/list-moderation-cases.dto';
 import { UpdateCaseStatusDto } from './dto/update-case-status.dto';
 import { ModerationCaseService } from './moderation-case.service';
 
@@ -19,8 +20,8 @@ export class ModerationCaseController {
 
   @Get()
   @UseGuards(ModeratorGuard)
-  async listCases() {
-    return this.caseService.listCases();
+  async listCases(@Query() query: ListModerationCasesDto) {
+    return this.caseService.listCases(query);
   }
 
   @Get(':id')

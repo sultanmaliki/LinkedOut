@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Archive, ArchiveRestore, Newspaper, Trash2 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { useConfirmDialog } from '@/lib/use-confirm-dialog';
 import type { Post } from '@/lib/types';
 import { AttachmentManager } from '@/components/attachment-manager';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardBody } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 function statusBadge(visibility: Post['visibility']) {
   if (visibility === 'ARCHIVED') return <Badge>Archived</Badge>;
@@ -18,7 +19,7 @@ function statusBadge(visibility: Post['visibility']) {
 export function PostsTab({ companyId, token }: { companyId: string; token: string }) {
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const { requestConfirm, dialog } = useConfirmDialog();
 
   const load = useCallback(() => {
     apiFetch<Post[]>(`/companies/${companyId}/posts`, { token })
@@ -40,8 +41,15 @@ export function PostsTab({ companyId, token }: { companyId: string; token: strin
 
   async function remove(postId: string) {
     await apiFetch(`/posts/${postId}`, { method: 'DELETE', token });
-    setConfirmingDeleteId(null);
     load();
+  }
+
+  function confirmRemove(post: Post) {
+    requestConfirm({
+      title: 'Delete post?',
+      description: 'This post and its attachments will be permanently removed.',
+      onConfirm: () => remove(post.id),
+    });
   }
 
   if (error) {
@@ -102,24 +110,16 @@ export function PostsTab({ companyId, token }: { companyId: string; token: strin
               </button>
             )}
 
-            {confirmingDeleteId === post.id ? (
-              <button
-                onClick={() => remove(post.id)}
-                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-rose-600 dark:text-rose-500"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Confirm delete?
-              </button>
-            ) : (
-              <button
-                onClick={() => setConfirmingDeleteId(post.id)}
-                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-muted hover:text-rose-600 dark:hover:text-rose-500"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
-            )}
+            <button
+              onClick={() => confirmRemove(post)}
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-fg-muted hover:text-rose-600 dark:hover:text-rose-500"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </button>
           </div>
         </Card>
       ))}
+      {dialog}
     </div>
   );
 }

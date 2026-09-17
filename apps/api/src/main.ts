@@ -10,8 +10,15 @@ async function bootstrap() {
   app.enableCors({
     origin: process.env.WEB_ORIGIN?.split(',') ?? 'http://localhost:3000',
     credentials: true,
+    // Without this, Chrome/Firefox don't cache the preflight and send a
+    // fresh OPTIONS before every single GET/POST/DELETE — doubling the
+    // number of round trips to the API on every page.
+    maxAge: 86400,
   });
-  await app.listen(3001);
+  // Railway (and most PaaS hosts) assign their own port at runtime via
+  // PORT — a hardcoded 3001 means the platform's proxy can never reach
+  // the container. 3001 remains the local-dev default.
+  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3001);
 }
 
 bootstrap();

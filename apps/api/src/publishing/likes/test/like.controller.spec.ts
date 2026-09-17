@@ -8,7 +8,7 @@ describe('LikeController', () => {
   let controller: LikeController;
 
   const likeService = {
-    getLikeCount: jest.fn(),
+    getLikeStatus: jest.fn(),
     toggleLike: jest.fn(),
   };
 
@@ -29,10 +29,24 @@ describe('LikeController', () => {
     controller = module.get<LikeController>(LikeController);
   });
 
-  it('gets the like count for a post', async () => {
-    likeService.getLikeCount.mockResolvedValue({ count: 2 });
+  it('gets the like status for an anonymous caller', async () => {
+    likeService.getLikeStatus.mockResolvedValue({ count: 2, liked: false });
 
-    await expect(controller.getLikeCount('post-1')).resolves.toEqual({ count: 2 });
+    await expect(controller.getLikeStatus('post-1')).resolves.toEqual({
+      count: 2,
+      liked: false,
+    });
+    expect(likeService.getLikeStatus).toHaveBeenCalledWith('post-1', undefined);
+  });
+
+  it('gets the like status for a signed-in caller', async () => {
+    likeService.getLikeStatus.mockResolvedValue({ count: 2, liked: true });
+
+    await expect(controller.getLikeStatus('post-1', user)).resolves.toEqual({
+      count: 2,
+      liked: true,
+    });
+    expect(likeService.getLikeStatus).toHaveBeenCalledWith('post-1', 'user-1');
   });
 
   it('toggles a like for the authenticated user', async () => {

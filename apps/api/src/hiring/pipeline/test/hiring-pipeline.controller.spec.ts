@@ -30,7 +30,7 @@ describe('HiringPipelineController', () => {
   });
 
   it('lists stages for an opportunity', async () => {
-    const stages = [{ id: 'stage-1', stage: 'OPPORTUNITY_SENT' }];
+    const stages = [{ id: 'stage-1', stage: 'SENT' }];
     pipelineService.listStages.mockResolvedValue(stages);
 
     await expect(controller.listStages('opportunity-1', user)).resolves.toEqual(stages);
@@ -38,7 +38,7 @@ describe('HiringPipelineController', () => {
   });
 
   it('appends a stage for the authenticated user', async () => {
-    const dto = { stage: 'SCREENING' as const };
+    const dto = { stage: 'INTERVIEW_SCHEDULED' as const };
     const stage = { id: 'stage-1', ...dto };
     pipelineService.appendStage.mockResolvedValue(stage);
 

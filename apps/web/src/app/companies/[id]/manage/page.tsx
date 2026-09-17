@@ -13,11 +13,20 @@ import { Card, CardBody } from '@/components/ui/card';
 import { BenefitsTab } from './benefits-tab';
 import { JobsTab } from './jobs-tab';
 import { LocationsTab } from './locations-tab';
+import { OpportunitiesTab } from './opportunities-tab';
 import { OverviewTab } from './overview-tab';
 import { PostsTab } from './posts-tab';
 import { VerificationTab } from './verification-tab';
 
-const tabs = ['Overview', 'Locations', 'Benefits', 'Verification', 'Jobs', 'Posts'] as const;
+const tabs = [
+  'Overview',
+  'Locations',
+  'Benefits',
+  'Verification',
+  'Jobs',
+  'Opportunities',
+  'Posts',
+] as const;
 type Tab = (typeof tabs)[number];
 
 export default function ManageCompanyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -129,6 +138,9 @@ export default function ManageCompanyPage({ params }: { params: Promise<{ id: st
             <VerificationTab companyId={company.id} token={accessToken!} />
           )}
           {activeTab === 'Jobs' && <JobsTab companyId={company.id} token={accessToken!} />}
+          {activeTab === 'Opportunities' && (
+            <OpportunitiesTab companyId={company.id} token={accessToken!} />
+          )}
           {activeTab === 'Posts' && <PostsTab companyId={company.id} token={accessToken!} />}
         </CardBody>
       </Card>

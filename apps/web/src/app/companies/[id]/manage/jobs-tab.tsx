@@ -5,11 +5,14 @@ import { Briefcase, Plus, Send, Users } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
 import { EMPLOYMENT_TYPES, formatEnum, WORK_MODES } from '@/lib/enums';
+import type { OpportunityWithProfessionalName } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Input, Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { PipelineStepper } from '@/components/pipeline-stepper';
+import { ProfessionalSearchInput } from '@/components/professional-search-input';
 
 interface Job {
   id: string;
@@ -18,13 +21,6 @@ interface Job {
   employmentType: string;
   workMode: string;
   status: string;
-}
-
-interface Opportunity {
-  id: string;
-  professionalProfileId: string;
-  status: string;
-  message: string | null;
 }
 
 export function JobsTab({ companyId, token }: { companyId: string; token: string }) {
@@ -159,11 +155,18 @@ function SendOpportunityForm({
 }) {
   const [professionalProfileId, setProfessionalProfileId] = useState('');
   const [message, setMessage] = useState('');
+  const [responseWindowDays, setResponseWindowDays] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!professionalProfileId) {
+      setError('Search for and select a professional first');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -171,7 +174,11 @@ function SendOpportunityForm({
       await apiFetch(`/jobs/${jobId}/opportunities`, {
         method: 'POST',
         token,
-        body: { professionalProfileId, message: message || undefined },
+        body: {
+          professionalProfileId,
+          message: message || undefined,
+          responseWindowDays: responseWindowDays ? Number(responseWindowDays) : undefined,
+        },
       });
       onSent();
     } catch (err) {
@@ -183,19 +190,12 @@ function SendOpportunityForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-line bg-canvas p-4">
-      <div>
-        <Label htmlFor={`profile-${jobId}`}>Professional profile ID</Label>
-        <Input
-          id={`profile-${jobId}`}
-          required
-          value={professionalProfileId}
-          onChange={(e) => setProfessionalProfileId(e.target.value)}
-          placeholder="Paste their profile ID"
-        />
-        <p className="mt-1 text-[12px] text-fg-faint">
-          Professional discovery/search isn&rsquo;t built yet — paste an ID directly for now.
-        </p>
-      </div>
+      <ProfessionalSearchInput
+        id={`profile-${jobId}`}
+        label="Professional"
+        value={professionalProfileId}
+        onChange={setProfessionalProfileId}
+      />
       <div>
         <Label htmlFor={`message-${jobId}`}>Message (optional)</Label>
         <Textarea
@@ -203,6 +203,20 @@ function SendOpportunityForm({
           rows={3}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+        />
+      </div>
+      <div>
+        <Label htmlFor={`window-${jobId}`}>
+          Response window override (days, optional — defaults to your company setting)
+        </Label>
+        <Input
+          id={`window-${jobId}`}
+          type="number"
+          min={7}
+          max={60}
+          placeholder="30"
+          value={responseWindowDays}
+          onChange={(e) => setResponseWindowDays(e.target.value)}
         />
       </div>
       {error && <p className="text-[13px] text-rose-600 dark:text-rose-500">{error}</p>}
@@ -214,10 +228,14 @@ function SendOpportunityForm({
 }
 
 function OpportunityList({ jobId, token }: { jobId: string; token: string }) {
-  const [opportunities, setOpportunities] = useState<Opportunity[] | null>(null);
+  const [opportunities, setOpportunities] = useState<OpportunityWithProfessionalName[] | null>(
+    null,
+  );
 
   useEffect(() => {
-    apiFetch<Opportunity[]>(`/jobs/${jobId}/opportunities`, { token }).then(setOpportunities);
+    apiFetch<OpportunityWithProfessionalName[]>(`/jobs/${jobId}/opportunities`, { token }).then(
+      setOpportunities,
+    );
   }, [jobId, token]);
 
   if (!opportunities) {
@@ -231,22 +249,26 @@ function OpportunityList({ jobId, token }: { jobId: string; token: string }) {
   return (
     <div className="space-y-2">
       {opportunities.map((opp) => (
-        <div
-          key={opp.id}
-          className="flex items-center justify-between rounded-xl border border-line bg-canvas px-3.5 py-2.5"
-        >
-          <span className="font-mono text-[12.5px] text-fg-muted">{opp.professionalProfileId}</span>
-          <Badge
-            tone={
-              opp.status === 'ACCEPTED'
-                ? 'emerald'
-                : opp.status === 'DECLINED' || opp.status === 'EXPIRED'
-                  ? 'rose'
-                  : 'neutral'
-            }
-          >
-            {formatEnum(opp.status)}
-          </Badge>
+        <div key={opp.id} className="rounded-xl border border-line bg-canvas px-3.5 py-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-medium text-fg">{opp.professionalFullName}</span>
+            <Badge
+              tone={
+                opp.status === 'ACCEPTED'
+                  ? 'emerald'
+                  : opp.status === 'DECLINED' || opp.status === 'EXPIRED'
+                    ? 'rose'
+                    : 'neutral'
+              }
+            >
+              {formatEnum(opp.status)}
+            </Badge>
+          </div>
+          {opp.status === 'ACCEPTED' && (
+            <div className="mt-2.5">
+              <PipelineStepper displayStatus={opp.displayStatus} perspective="company" />
+            </div>
+          )}
         </div>
       ))}
     </div>

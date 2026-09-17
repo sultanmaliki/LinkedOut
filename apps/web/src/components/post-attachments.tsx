@@ -15,6 +15,8 @@ export function PostAttachments({ attachments }: { attachments: Attachment[] }) 
               <img
                 src={attachment.fileUrl}
                 alt={attachment.fileName}
+                loading="lazy"
+                decoding="async"
                 className="max-h-80 w-full rounded-xl border border-line object-cover"
               />
             </a>

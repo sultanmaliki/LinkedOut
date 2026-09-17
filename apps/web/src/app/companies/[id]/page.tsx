@@ -13,6 +13,7 @@ import {
 import { ApiError, apiFetch } from '@/lib/api';
 import type { Company, CompanyBenefit, CompanyLocation, CompanyReply, Review } from '@/lib/types';
 import { CompanyReplyPanel } from '@/components/company-reply-panel';
+import { CopyLinkButton } from '@/components/copy-link-button';
 import { ManageCompanyLink } from '@/components/manage-company-link';
 import { ReportButton } from '@/components/report-button';
 import { Badge } from '@/components/ui/badge';
@@ -92,7 +93,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
             {company.displayName
               .split(' ')
               .slice(0, 2)
@@ -143,8 +144,9 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 flex items-center justify-between">
         <ReportButton targetType="COMPANY" targetId={company.id} />
+        <CopyLinkButton path={`/companies/${company.id}`} />
       </div>
 
       {company.description && (

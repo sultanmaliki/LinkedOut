@@ -13,7 +13,6 @@ export const contactMethods = pgTable('contact_methods', {
 
   professionalResponseId: uuid('professional_response_id')
     .notNull()
-    .unique()
     .references(() => professionalResponses.id, {
       onDelete: 'cascade',
     }),

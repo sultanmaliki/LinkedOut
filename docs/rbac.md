@@ -4,7 +4,7 @@
 
 - `PROFESSIONAL` — default role on registration. Manages their own profile, employment history, posts, and reviews (subject to verified-employment gating).
 - `COMPANY_ADMIN` — manages a company they've claimed/been added to: profile, locations, benefits, jobs, opportunities, review replies.
-- `MODERATOR` — access to moderation cases, actions, trust flags, and audit logs via `ModeratorGuard`.
+- `MODERATOR` — access to moderation cases, actions, trust flags, audit logs, and the company/employment verification review queue via `ModeratorGuard`.
 - `ADMIN` — everything `MODERATOR` can do, plus role management (`PATCH /users/:id/role`) via `AdminGuard`.
 
 There is no `super_admin`, `company_rep`, or `anonymous`-as-a-role concept — unauthenticated requests simply have no `request.user` and hit `AuthGuard`'s `401` before any role check runs.

@@ -10,11 +10,16 @@ export class AuditLogService {
     await this.auditLogRepository.create(data);
   }
 
-  async listAll(): Promise<AuditLogRecord[]> {
-    return this.auditLogRepository.list();
+  async listAll(limit = 20, offset = 0): Promise<AuditLogRecord[]> {
+    return this.auditLogRepository.list(limit, offset);
   }
 
-  async listForEntity(entityType: string, entityId: string): Promise<AuditLogRecord[]> {
-    return this.auditLogRepository.listByEntity(entityType, entityId);
+  async listForEntity(
+    entityType: string,
+    entityId: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<AuditLogRecord[]> {
+    return this.auditLogRepository.listByEntity(entityType, entityId, limit, offset);
   }
 }

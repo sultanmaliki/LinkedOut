@@ -54,9 +54,9 @@ export default async function CompaniesPage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {companies.map((company) => (
             <Link key={company.id} href={`/companies/${company.id}`}>
-              <Card className="h-full p-6 transition-shadow hover:shadow-[var(--shadow-lifted)]">
+              <Card className="h-full p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong">
                 <div className="flex items-start justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-ink-100 text-[14px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
                     {initials(company.displayName)}
                   </div>
                   {company.verified && (

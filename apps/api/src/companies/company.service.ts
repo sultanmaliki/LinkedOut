@@ -22,8 +22,8 @@ export class CompanyService {
     return this.companyRepository.createWithProfileAndAdmin({ ...dto, slug }, userId);
   }
 
-  async listCompanies(limit: number, offset: number): Promise<CompanyRecord[]> {
-    return this.companyRepository.list(limit, offset);
+  async listCompanies(limit: number, offset: number, q?: string): Promise<CompanyRecord[]> {
+    return this.companyRepository.list(limit, offset, q);
   }
 
   async listMine(userId: string): Promise<CompanyRecord[]> {

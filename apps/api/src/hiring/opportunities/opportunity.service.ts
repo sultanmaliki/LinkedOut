@@ -5,12 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CompanyRepository } from '../../companies/company.repository';
+import { CompanyRecord, CompanyRepository } from '../../companies/company.repository';
 import { ProfessionalProfileRepository } from '../../professionals/professional-profile.repository';
 import { JobRepository } from '../jobs/job.repository';
+import { HiringPipelineRepository, PipelineStage } from '../pipeline/hiring-pipeline.repository';
+import { PipelineStatusService, WithDisplayStatus } from '../pipeline/pipeline-status.service';
+import {
+  ContactMethodRecord,
+  OpportunityRecord,
+  OpportunityRepository,
+  OpportunityWithJobAndProfessional,
+  OpportunityWithProfessionalName,
+} from './opportunity.repository';
 import { CreateOpportunityDto } from './dto/create-opportunity.dto';
 import { RespondToOpportunityDto } from './dto/respond-to-opportunity.dto';
-import { OpportunityRecord, OpportunityRepository } from './opportunity.repository';
 
 const WITHDRAW_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -21,6 +29,8 @@ export class OpportunityService {
     private readonly jobRepository: JobRepository,
     private readonly companyRepository: CompanyRepository,
     private readonly profileRepository: ProfessionalProfileRepository,
+    private readonly pipelineRepository: HiringPipelineRepository,
+    private readonly pipelineStatusService: PipelineStatusService,
   ) {}
 
   async createOpportunity(
@@ -68,6 +78,7 @@ export class OpportunityService {
         jobId,
         professionalProfileId: dto.professionalProfileId,
         message: dto.message,
+        responseWindowDays: dto.responseWindowDays,
       },
       {
         job: {
@@ -81,21 +92,39 @@ export class OpportunityService {
     );
   }
 
-  async getOpportunity(opportunityId: string, userId: string): Promise<OpportunityRecord> {
-    return this.requireAccess(opportunityId, userId);
+  async getOpportunity(
+    opportunityId: string,
+    userId: string,
+  ): Promise<WithDisplayStatus<OpportunityRecord>> {
+    const opportunity = await this.requireAccess(opportunityId, userId);
+    const job = await this.jobRepository.findById(opportunity.jobId);
+    const company = job ? await this.companyRepository.findById(job.companyId) : undefined;
+
+    const [decorated] = await this.pipelineStatusService.decorate(
+      [opportunity],
+      new Map([[opportunity.id, company]]),
+    );
+
+    return decorated;
   }
 
-  async listMyOpportunities(userId: string): Promise<OpportunityRecord[]> {
+  async listMyOpportunities(userId: string): Promise<WithDisplayStatus<OpportunityRecord>[]> {
     const profile = await this.profileRepository.findByUserId(userId);
 
     if (!profile) {
       throw new NotFoundException('Professional profile not found');
     }
 
-    return this.opportunityRepository.listByProfessional(profile.id);
+    const opportunities = await this.opportunityRepository.listByProfessional(profile.id);
+    const companiesById = await this.resolveCompaniesForOpportunities(opportunities);
+
+    return this.pipelineStatusService.decorate(opportunities, companiesById);
   }
 
-  async listByJob(jobId: string, userId: string): Promise<OpportunityRecord[]> {
+  async listByJob(
+    jobId: string,
+    userId: string,
+  ): Promise<WithDisplayStatus<OpportunityWithProfessionalName>[]> {
     const job = await this.jobRepository.findById(jobId);
 
     if (!job) {
@@ -108,7 +137,28 @@ export class OpportunityService {
       throw new ForbiddenException('You do not manage this company');
     }
 
-    return this.opportunityRepository.listByJob(jobId);
+    const opportunities = await this.opportunityRepository.listByJob(jobId);
+    const company = await this.companyRepository.findById(job.companyId);
+    const companiesById = new Map(opportunities.map((o) => [o.id, company]));
+
+    return this.pipelineStatusService.decorate(opportunities, companiesById);
+  }
+
+  async listByCompany(
+    companyId: string,
+    userId: string,
+  ): Promise<WithDisplayStatus<OpportunityWithJobAndProfessional>[]> {
+    const isAdmin = await this.companyRepository.isAdmin(companyId, userId);
+
+    if (!isAdmin) {
+      throw new ForbiddenException('You do not manage this company');
+    }
+
+    const opportunities = await this.opportunityRepository.listByCompanyId(companyId);
+    const company = await this.companyRepository.findById(companyId);
+    const companiesById = new Map(opportunities.map((o) => [o.id, company]));
+
+    return this.pipelineStatusService.decorate(opportunities, companiesById);
   }
 
   async respond(
@@ -185,6 +235,125 @@ export class OpportunityService {
     }
 
     return updated;
+  }
+
+  async getContactMethods(opportunityId: string, userId: string): Promise<ContactMethodRecord[]> {
+    await this.requireAccess(opportunityId, userId);
+
+    return this.opportunityRepository.getContactMethods(opportunityId);
+  }
+
+  async respondToOffer(
+    opportunityId: string,
+    userId: string,
+    accepted: boolean,
+  ): Promise<WithDisplayStatus<OpportunityRecord>> {
+    const profile = await this.profileRepository.findByUserId(userId);
+
+    if (!profile) {
+      throw new NotFoundException('Professional profile not found');
+    }
+
+    const opportunity = await this.opportunityRepository.findById(opportunityId);
+
+    if (!opportunity || opportunity.professionalProfileId !== profile.id) {
+      throw new NotFoundException('Opportunity not found');
+    }
+
+    const latest = await this.latestStage(opportunityId);
+
+    if (!latest || latest.stage !== 'OFFER_RELEASED') {
+      throw new ConflictException('This opportunity does not currently have an active offer');
+    }
+
+    await this.pipelineRepository.append(opportunityId, {
+      stage: accepted ? 'OFFER_ACCEPTED' : 'DECLINED',
+    });
+
+    const job = await this.jobRepository.findById(opportunity.jobId);
+    const company = job ? await this.companyRepository.findById(job.companyId) : undefined;
+
+    const [decorated] = await this.pipelineStatusService.decorate(
+      [opportunity],
+      new Map([[opportunity.id, company]]),
+    );
+
+    return decorated;
+  }
+
+  async flagUnresponsive(
+    opportunityId: string,
+    userId: string,
+  ): Promise<WithDisplayStatus<OpportunityRecord>> {
+    const profile = await this.profileRepository.findByUserId(userId);
+
+    if (!profile) {
+      throw new NotFoundException('Professional profile not found');
+    }
+
+    const opportunity = await this.opportunityRepository.findById(opportunityId);
+
+    if (!opportunity || opportunity.professionalProfileId !== profile.id) {
+      throw new NotFoundException('Opportunity not found');
+    }
+
+    const job = await this.jobRepository.findById(opportunity.jobId);
+    const company = job ? await this.companyRepository.findById(job.companyId) : undefined;
+
+    const [currentStatus] = await this.pipelineStatusService.decorate(
+      [opportunity],
+      new Map([[opportunity.id, company]]),
+    );
+
+    if (currentStatus.displayStatus.ownedBy !== 'company') {
+      throw new ConflictException('This opportunity is not currently waiting on the company');
+    }
+
+    if (currentStatus.displayStatus.tier === 'onTime') {
+      throw new ConflictException('This opportunity has not yet passed its response window');
+    }
+
+    const updated = await this.opportunityRepository.setManuallyFlaggedUnresponsive(opportunityId);
+
+    if (!updated) {
+      throw new NotFoundException('Opportunity not found');
+    }
+
+    const [decorated] = await this.pipelineStatusService.decorate(
+      [updated],
+      new Map([[updated.id, company]]),
+    );
+
+    return decorated;
+  }
+
+  private async latestStage(opportunityId: string): Promise<{ stage: PipelineStage } | undefined> {
+    const stages = await this.pipelineRepository.listByOpportunity(opportunityId);
+
+    return stages[stages.length - 1];
+  }
+
+  private async resolveCompaniesForOpportunities(
+    opportunities: OpportunityRecord[],
+  ): Promise<Map<string, CompanyRecord | undefined>> {
+    if (opportunities.length === 0) {
+      return new Map();
+    }
+
+    const jobIds = [...new Set(opportunities.map((o) => o.jobId))];
+    const jobs = await this.jobRepository.findByIds(jobIds);
+    const companyIdByJobId = new Map(jobs.map((job) => [job.id, job.companyId]));
+
+    const companyIds = [...new Set(jobs.map((job) => job.companyId))];
+    const companies = await this.companyRepository.findByIds(companyIds);
+    const companyById = new Map(companies.map((company) => [company.id, company]));
+
+    return new Map(
+      opportunities.map((opportunity) => [
+        opportunity.id,
+        companyById.get(companyIdByJobId.get(opportunity.jobId) ?? ''),
+      ]),
+    );
   }
 
   private async requireAccess(opportunityId: string, userId: string): Promise<OpportunityRecord> {

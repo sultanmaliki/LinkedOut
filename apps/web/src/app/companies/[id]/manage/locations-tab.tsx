@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { MapPin, Plus, Trash2 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { useConfirmDialog } from '@/lib/use-confirm-dialog';
 import type { CompanyLocation } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ export function LocationsTab({ companyId, token }: { companyId: string; token: s
   const [locations, setLocations] = useState<CompanyLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const { requestConfirm, dialog } = useConfirmDialog();
 
   function load() {
     apiFetch<CompanyLocation[]>(`/companies/${companyId}/locations`)
@@ -29,6 +31,14 @@ export function LocationsTab({ companyId, token }: { companyId: string; token: s
       token,
     });
     load();
+  }
+
+  function confirmDelete(location: CompanyLocation) {
+    requestConfirm({
+      title: 'Delete location?',
+      description: `"${location.locationName}" will be removed from your company profile.`,
+      onConfirm: () => handleDelete(location.id),
+    });
   }
 
   return (
@@ -78,7 +88,7 @@ export function LocationsTab({ companyId, token }: { companyId: string; token: s
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(location.id)}
+                onClick={() => confirmDelete(location)}
                 className="rounded-lg p-2 text-fg-faint hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-600/10"
                 aria-label="Delete location"
               >
@@ -88,6 +98,7 @@ export function LocationsTab({ companyId, token }: { companyId: string; token: s
           ))}
         </div>
       )}
+      {dialog}
     </div>
   );
 }

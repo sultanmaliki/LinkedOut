@@ -11,6 +11,8 @@ describe('MyOpportunityController', () => {
     listMyOpportunities: jest.fn(),
     respond: jest.fn(),
     withdraw: jest.fn(),
+    respondToOffer: jest.fn(),
+    flagUnresponsive: jest.fn(),
   };
 
   const user: AuthenticatedUser = {
@@ -53,5 +55,23 @@ describe('MyOpportunityController', () => {
 
     await expect(controller.withdraw('opportunity-1', user)).resolves.toEqual(withdrawn);
     expect(opportunityService.withdraw).toHaveBeenCalledWith('opportunity-1', 'user-1');
+  });
+
+  it('responds to a released offer for the authenticated user', async () => {
+    const updated = { id: 'opportunity-1', displayStatus: { stage: 'OFFER_ACCEPTED' } };
+    opportunityService.respondToOffer.mockResolvedValue(updated);
+
+    await expect(
+      controller.respondToOffer('opportunity-1', user, { accepted: true }),
+    ).resolves.toEqual(updated);
+    expect(opportunityService.respondToOffer).toHaveBeenCalledWith('opportunity-1', 'user-1', true);
+  });
+
+  it('flags an opportunity as unresponsive for the authenticated user', async () => {
+    const flagged = { id: 'opportunity-1', displayStatus: { tier: 'hardClosed' } };
+    opportunityService.flagUnresponsive.mockResolvedValue(flagged);
+
+    await expect(controller.flagUnresponsive('opportunity-1', user)).resolves.toEqual(flagged);
+    expect(opportunityService.flagUnresponsive).toHaveBeenCalledWith('opportunity-1', 'user-1');
   });
 });

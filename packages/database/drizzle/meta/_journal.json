@@ -22,6 +22,34 @@
       "when": 1789463109147,
       "tag": "0002_colossal_darwin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789468876673,
+      "tag": "0003_overjoyed_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789494534263,
+      "tag": "0004_drop_contact_method_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789556002534,
+      "tag": "0005_pipeline_v2_ghosting_prevention",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789578542849,
+      "tag": "0006_add_missing_fk_indexes",
+      "breakpoints": true
     }
   ]
 }

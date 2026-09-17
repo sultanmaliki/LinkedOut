@@ -18,6 +18,11 @@ export class ListProfessionalsDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  q?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
   headline?: string;
 
   @IsOptional()

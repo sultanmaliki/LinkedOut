@@ -19,7 +19,7 @@ export class CompanyController {
 
   @Get()
   async listCompanies(@Query() query: ListCompaniesDto) {
-    return this.companyService.listCompanies(query.limit ?? 20, query.offset ?? 0);
+    return this.companyService.listCompanies(query.limit ?? 20, query.offset ?? 0, query.q);
   }
 
   @Get('mine')

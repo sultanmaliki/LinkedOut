@@ -71,3 +71,9 @@ export * from './moderation-case';
 export * from './moderation-action';
 export * from './trust-flag';
 export * from './audit-log';
+
+/* ==========================================
+ * Support Domain
+ * ========================================== */
+
+export * from './contact-message';

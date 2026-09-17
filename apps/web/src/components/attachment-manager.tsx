@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Paperclip, Trash2 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { useConfirmDialog } from '@/lib/use-confirm-dialog';
 import type { Attachment, AttachmentType } from '@/lib/types';
 import { PostAttachments } from '@/components/post-attachments';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
   const [sizeKb, setSizeKb] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { requestConfirm, dialog } = useConfirmDialog();
 
   function load() {
     apiFetch<Attachment[]>(`/posts/${postId}/attachments`).then(setAttachments);
@@ -75,6 +77,15 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
     load();
   }
 
+  function confirmRemoveAttachment(attachment: Attachment) {
+    requestConfirm({
+      title: 'Remove attachment?',
+      description: `"${attachment.fileName}" will be removed from this post.`,
+      confirmLabel: 'Remove',
+      onConfirm: () => removeAttachment(attachment.id),
+    });
+  }
+
   if (attachments === null) {
     return <div className="mt-3 h-6 animate-pulse rounded bg-canvas" />;
   }
@@ -89,7 +100,7 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
               <button
                 key={attachment.id}
                 type="button"
-                onClick={() => removeAttachment(attachment.id)}
+                onClick={() => confirmRemoveAttachment(attachment)}
                 className="inline-flex items-center gap-1 text-[12px] font-medium text-fg-faint hover:text-rose-600"
               >
                 <Trash2 className="h-3 w-3" /> Remove {attachment.fileName}
@@ -148,6 +159,8 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
           <Paperclip className="h-3.5 w-3.5" /> Add attachment
         </button>
       )}
+
+      {dialog}
     </div>
   );
 }

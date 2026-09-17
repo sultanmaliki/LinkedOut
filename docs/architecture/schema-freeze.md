@@ -1,7 +1,7 @@
 # LinkedOut Schema Freeze
 
-> Status: Frozen (MVP v1) — 33 entities implemented in `packages/database/src/schema`
-> Last Updated: September 2026 (added `User.activeRefreshTokenId` for refresh-token rotation — see [security.md](../security.md))
+> Status: Frozen (MVP v1) — 34 entities implemented in `packages/database/src/schema`
+> Last Updated: September 2026 (added `ContactMessage`; added `User.activeRefreshTokenId` for refresh-token rotation — see [security.md](../security.md))
 
 ---
 
@@ -110,6 +110,12 @@ No exceptions.
 - ModerationAction
 - TrustFlag
 - AuditLog
+
+---
+
+## Support
+
+- ContactMessage — public contact-form submissions (`POST /contact`, no auth required). No relations to other entities; no admin UI reads it yet.
 
 ---
 

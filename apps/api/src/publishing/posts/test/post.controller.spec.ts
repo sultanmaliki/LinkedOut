@@ -47,7 +47,7 @@ describe('PostController', () => {
     const list = [{ id: 'post-1' }];
     postService.listPublicPosts.mockResolvedValue(list);
 
-    await expect(controller.listPosts()).resolves.toEqual(list);
+    await expect(controller.listPosts({})).resolves.toEqual(list);
   });
 
   it('gets a post by id', async () => {

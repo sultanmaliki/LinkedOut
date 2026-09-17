@@ -10,8 +10,9 @@ import { AdminPanel } from './admin-panel';
 import { AuditLogPanel } from './audit-log-panel';
 import { CasesPanel } from './cases-panel';
 import { TrustFlagsPanel } from './trust-flags-panel';
+import { VerificationsPanel } from './verifications-panel';
 
-const baseTabs = ['Cases', 'Trust flags', 'Audit log'] as const;
+const baseTabs = ['Cases', 'Verifications', 'Trust flags', 'Audit log'] as const;
 type Tab = (typeof baseTabs)[number] | 'Admin';
 
 export default function ModerationPage() {
@@ -68,6 +69,7 @@ export default function ModerationPage() {
       </div>
 
       {activeTab === 'Cases' && <CasesPanel token={accessToken} />}
+      {activeTab === 'Verifications' && <VerificationsPanel token={accessToken} />}
       {activeTab === 'Trust flags' && <TrustFlagsPanel token={accessToken} />}
       {activeTab === 'Audit log' && <AuditLogPanel token={accessToken} />}
       {activeTab === 'Admin' && isAdmin && <AdminPanel token={accessToken} />}

@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { CompanyRepository } from '../../companies/company.repository';
 import { ProfessionalProfileRepository } from '../../professionals/professional-profile.repository';
@@ -6,6 +11,8 @@ import { JobRepository } from '../jobs/job.repository';
 import { OpportunityRepository } from '../opportunities/opportunity.repository';
 import { AppendPipelineStageDto } from './dto/append-pipeline-stage.dto';
 import { HiringPipelineRecord, HiringPipelineRepository } from './hiring-pipeline.repository';
+
+const TERMINAL_STAGES = new Set(['OFFER_ACCEPTED', 'DECLINED', 'REJECTED', 'WITHDRAWN']);
 
 @Injectable()
 export class HiringPipelineService {
@@ -46,7 +53,19 @@ export class HiringPipelineService {
       throw new ForbiddenException('You do not manage this company');
     }
 
-    return this.pipelineRepository.append(opportunityId, dto.stage, dto.notes);
+    const stages = await this.pipelineRepository.listByOpportunity(opportunityId);
+    const latest = stages[stages.length - 1];
+
+    if (latest && TERMINAL_STAGES.has(latest.stage)) {
+      throw new ConflictException('This opportunity has already reached a final stage');
+    }
+
+    return this.pipelineRepository.append(opportunityId, {
+      stage: dto.stage,
+      notes: dto.notes,
+      scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+      windowDays: dto.windowDays,
+    });
   }
 
   private async requireAccess(opportunityId: string, userId: string): Promise<void> {

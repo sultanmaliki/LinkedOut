@@ -30,6 +30,6 @@ import { CompanyVerificationService } from './verification/company-verification.
     CompanyBenefitRepository,
     CompanyBenefitService,
   ],
-  exports: [CompanyRepository],
+  exports: [CompanyRepository, CompanyVerificationRepository],
 })
 export class CompanyModule {}

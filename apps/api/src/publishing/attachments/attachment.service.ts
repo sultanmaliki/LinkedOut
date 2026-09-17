@@ -47,13 +47,16 @@ export class AttachmentService {
   }
 
   async listByPost(postId: string): Promise<AttachmentRecord[]> {
-    const post = await this.postRepository.findById(postId);
+    const [post, attachments] = await Promise.all([
+      this.postRepository.findById(postId),
+      this.attachmentRepository.listByPost(postId),
+    ]);
 
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    return this.attachmentRepository.listByPost(postId);
+    return attachments;
   }
 
   async getAttachment(attachmentId: string): Promise<AttachmentRecord> {

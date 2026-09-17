@@ -1,4 +1,4 @@
-import { and, eq, ilike, inArray } from 'drizzle-orm';
+import { and, eq, ilike, inArray, or } from 'drizzle-orm';
 
 import {
   db,
@@ -25,6 +25,7 @@ export interface ProfessionalProfileRecord {
 export interface SearchProfessionalProfilesFilters {
   limit: number;
   offset: number;
+  q?: string;
   headline?: string;
   location?: string;
   skill?: string;
@@ -88,6 +89,15 @@ export class ProfessionalProfileRepository {
 
   async search(filters: SearchProfessionalProfilesFilters): Promise<ProfessionalProfileRecord[]> {
     const conditions = [];
+
+    if (filters.q) {
+      conditions.push(
+        or(
+          ilike(professionalProfiles.fullName, `%${filters.q}%`),
+          ilike(professionalProfiles.headline, `%${filters.q}%`),
+        ),
+      );
+    }
 
     if (filters.headline) {
       conditions.push(ilike(professionalProfiles.headline, `%${filters.headline}%`));

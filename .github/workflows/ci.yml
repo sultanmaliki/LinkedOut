@@ -45,7 +45,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Push database schema
-        run: pnpm --filter @linkedout/database push
+        # --force: drizzle-kit push wants an interactive confirmation for
+        # this schema (see hiring-pipeline-v2's pipeline_stage enum), which
+        # has no TTY in CI. Without --force, drizzle-kit prints "Interactive
+        # prompts require a TTY" and silently no-ops -- it does not set a
+        # nonzero exit code, so the step reports success while the database
+        # stays completely empty, and every test touching a real DB
+        # connection then fails with confusing 500s. --force is safe here
+        # because CI's database is a fresh, disposable container recreated
+        # every run; never use it against a real database.
+        run: pnpm --filter @linkedout/database push --force
 
       - run: pnpm lint
       - run: pnpm test

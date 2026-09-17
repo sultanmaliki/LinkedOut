@@ -9,6 +9,7 @@ import type {
   ProfessionalProfile,
   ProfessionalSkill,
 } from '@/lib/types';
+import { CopyLinkButton } from '@/components/copy-link-button';
 import { LookingForCard } from '@/components/looking-for-card';
 import { PortfolioLinksList } from '@/components/portfolio-links-list';
 import { ReportButton } from '@/components/report-button';
@@ -54,7 +55,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         <CardBody className="pt-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-[20px] font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200">
                 {profile.fullName
                   .split(' ')
                   .slice(0, 2)
@@ -102,8 +103,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           <SkillsBadges skills={skills} />
           <PortfolioLinksList links={links} />
 
-          <div className="mt-6 border-t border-line pt-4">
+          <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
             <ReportButton targetType="PROFESSIONAL" targetId={profile.id} />
+            <CopyLinkButton path={`/professionals/${profile.id}`} />
           </div>
         </CardBody>
       </Card>

@@ -6,20 +6,39 @@ import { Newspaper } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import type { Post } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { ComposeBox } from './compose-box';
 import { PostCard } from './post-card';
+
+const PAGE_SIZE = 20;
 
 export default function FeedPage() {
   const { isLoading: isAuthLoading } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const load = useCallback(() => {
-    apiFetch<Post[]>('/posts')
-      .then((list) => setPosts([...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt))))
+    setIsLoading(true);
+    apiFetch<Post[]>(`/posts?limit=${PAGE_SIZE}&offset=0`)
+      .then((list) => {
+        setPosts(list);
+        setHasMore(list.length === PAGE_SIZE);
+      })
       .finally(() => setIsLoading(false));
   }, []);
+
+  function loadMore() {
+    setLoadingMore(true);
+    apiFetch<Post[]>(`/posts?limit=${PAGE_SIZE}&offset=${posts.length}`)
+      .then((list) => {
+        setPosts((prev) => [...prev, ...list]);
+        setHasMore(list.length === PAGE_SIZE);
+      })
+      .finally(() => setLoadingMore(false));
+  }
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -52,6 +71,18 @@ export default function FeedPage() {
           {posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
+
+          {hasMore && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full"
+            >
+              {loadingMore ? 'Loading…' : 'Load more'}
+            </Button>
+          )}
         </div>
       )}
     </main>

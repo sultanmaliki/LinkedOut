@@ -17,3 +17,13 @@ export const CurrentUser = createParamDecorator(
     return request.user;
   },
 );
+
+// For routes guarded by OptionalAuthGuard, where request.user may or may
+// not be set depending on whether the caller sent a valid token.
+export const OptionalCurrentUser = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): AuthenticatedUser | undefined => {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+
+    return request.user;
+  },
+);

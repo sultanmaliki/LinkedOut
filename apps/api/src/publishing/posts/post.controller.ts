@@ -8,12 +8,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
+import { ListPostsDto } from './dto/list-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostService } from './post.service';
 
@@ -28,8 +30,8 @@ export class PostController {
   }
 
   @Get()
-  async listPosts() {
-    return this.postService.listPublicPosts();
+  async listPosts(@Query() query: ListPostsDto) {
+    return this.postService.listPublicPosts(query);
   }
 
   @Get(':id')

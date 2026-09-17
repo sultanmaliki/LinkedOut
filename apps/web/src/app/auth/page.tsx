@@ -2,8 +2,9 @@
 
 import { Suspense, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -22,6 +23,7 @@ function AuthForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,6 +49,13 @@ function AuthForm() {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-6 py-16">
       <div className="mb-8 text-center">
+        <Image
+          src="/mark.svg"
+          alt="LinkedOut"
+          width={44}
+          height={44}
+          className="mx-auto mb-4 h-11 w-11 rounded-xl"
+        />
         <h1 className="font-display text-[28px] font-medium tracking-[-0.01em] text-fg">
           {mode === 'login' ? 'Welcome back' : 'Build your profile'}
         </h1>
@@ -105,15 +114,26 @@ function AuthForm() {
 
           <div>
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="At least 8 characters"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={8}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 8 characters"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((show) => !show)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-fg-faint transition-colors hover:text-fg-muted"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           {error && (

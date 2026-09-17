@@ -28,6 +28,22 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'LinkedOut',
+  url: siteUrl,
+  description:
+    'The reverse-hiring platform where companies earn the attention of professionals through transparency, verified reviews, and respect.',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/search?q={search_term_string}` },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 // Runs before paint so the page never flashes the wrong theme: reads the
 // saved preference (falling back to the OS setting) and sets the `dark`
 // class synchronously, ahead of React hydration.
@@ -48,6 +64,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={outfit.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
       </head>
       <body className="flex min-h-screen flex-col">
         <a

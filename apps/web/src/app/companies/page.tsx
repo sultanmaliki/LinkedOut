@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 
 export const metadata = {
   title: 'Companies — LinkedOut',
+  description:
+    'Browse verified companies on LinkedOut. Every profile is built by the company itself, and every review comes from a verified employee.',
 };
 
 async function getCompanies(): Promise<Company[]> {

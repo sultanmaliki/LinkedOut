@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Globe, MapPin } from 'lucide-react';
@@ -26,6 +27,30 @@ async function getProfile(id: string): Promise<ProfessionalProfile | null> {
   }
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const profile = await getProfile(id);
+
+  if (!profile) {
+    return { title: 'Profile not found' };
+  }
+
+  const title = profile.headline ? `${profile.fullName} — ${profile.headline}` : profile.fullName;
+  const description =
+    profile.bio ?? `${profile.fullName}'s verified professional profile on LinkedOut.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
+
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const profile = await getProfile(id);
@@ -42,8 +67,23 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     ),
   ]);
 
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: profile.fullName,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/professionals/${profile.id}`,
+    ...(profile.headline ? { jobTitle: profile.headline } : {}),
+    ...(profile.bio ? { description: profile.bio } : {}),
+    ...(profile.currentLocation ? { address: profile.currentLocation } : {}),
+    ...(profile.personalWebsite ? { sameAs: [profile.personalWebsite] } : {}),
+  };
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
       <Link
         href="/feed"
         className="mb-8 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-fg-muted hover:text-fg"

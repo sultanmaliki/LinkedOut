@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -66,6 +67,30 @@ function averageScore(review: Review): number | null {
   return total / review.ratings.length;
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const company = await getCompany(id);
+
+  if (!company) {
+    return { title: 'Company not found' };
+  }
+
+  const description =
+    company.description ??
+    `${company.displayName} on LinkedOut — verified reviews, benefits, and open roles.`;
+
+  return {
+    title: `${company.displayName} — LinkedOut`,
+    description,
+    openGraph: { title: company.displayName, description },
+    twitter: { title: company.displayName, description },
+  };
+}
+
 export default async function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [company, benefits, locations, reviews] = await Promise.all([
@@ -82,8 +107,22 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   const replies = await Promise.all(reviews.map((review) => getReply(review.id)));
   const replyByReviewId = new Map(reviews.map((review, i) => [review.id, replies[i] ?? null]));
 
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: company.displayName,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/companies/${company.id}`,
+    ...(company.description ? { description: company.description } : {}),
+    ...(company.website ? { sameAs: [company.website] } : {}),
+    ...(company.logoUrl ? { logo: company.logoUrl } : {}),
+  };
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
       <Link
         href="/companies"
         className="mb-8 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-fg-muted hover:text-fg"

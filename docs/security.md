@@ -31,9 +31,8 @@ This reflects the actual implementation and the outcome of a completed security 
 
 ## What's not implemented
 
-- No rate limiting on login/register/public write endpoints — identified as a gap, never live-tested as exploited
 - No CSRF protection — access/refresh tokens live in `localStorage`, not cookies, which is the standard tradeoff for this stage (XSS becomes the primary token-theft vector instead)
-- No dedicated security monitoring/alerting stack (no Sentry, no Prometheus)
+- No dedicated security monitoring/alerting stack (no Sentry, no Prometheus) — structured Pino logging exists (see [logging-and-observability.md](logging-and-observability.md)), but nothing aggregates or alerts on it yet
 
 ## Audit history
 
@@ -62,7 +61,7 @@ Known, accepted gap (not a vulnerability): `HiringPipelineService.appendStage` d
 
 ## Threat model (not yet re-validated after every subsequent change — re-run the red-team process before a real launch)
 
-- Credential stuffing / brute force — not yet rate-limited
+- Credential stuffing / brute force — rate-limited (`@nestjs/throttler`: 5/min on register+login, global default 120/min/IP elsewhere) since [auth.controller.ts](../apps/api/src/auth/auth.controller.ts); not re-validated with a live attack simulation
 - Token theft via XSS — bounded by short access-token TTL and single-use rotating refresh tokens, not eliminated
 - Broken access control / IDOR — actively tested and found sound on the surfaces checked so far; re-test new endpoints as they're added
 - Review/data integrity abuse — the specific fabrication vector found is closed; the trust model still relies on the employment-history free-text company name matching, not a real foreign key

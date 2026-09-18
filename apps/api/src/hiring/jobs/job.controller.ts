@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/co
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { PublicCache } from '../../common/decorators/public-cache.decorator';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobService } from './job.service';
@@ -10,6 +11,7 @@ import { JobService } from './job.service';
 export class JobController {
   constructor(private readonly jobService: JobService) {}
 
+  @PublicCache()
   @Get()
   async listJobs(@Param('companyId') companyId: string) {
     return this.jobService.listJobs(companyId);

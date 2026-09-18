@@ -233,7 +233,11 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
               const avg = averageScore(review);
               return (
                 <Card key={review.id} className="p-6">
-                  <div className="flex items-start justify-between gap-4">
+                  {/* Below sm, stacking the badge under the title (instead of
+                      squeezing both into one row) stops the title wrapping
+                      more than it needs to on a narrow phone — sm and up is
+                      unchanged. */}
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-4">
                     <div>
                       <h3 className="text-[16px] font-medium tracking-[-0.01em] text-fg">
                         {review.title}

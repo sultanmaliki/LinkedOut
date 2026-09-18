@@ -80,7 +80,11 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* lg, not md: at 768-1023px the full nav plus the search icon and
+            sign-in/join-free links (both sm:flex, so already on) don't fit
+            in one row — verified overflowing by ~70-80px at 768px. The
+            hamburger menu covers that range instead; it's plenty of room. */}
+        <nav className="hidden items-center gap-1 lg:flex">
           {items.map((item) => (
             <Link
               key={item.href}
@@ -172,7 +176,7 @@ export function Header() {
             onClick={() => setMenuOpen((open) => !open)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-surface hover:text-fg md:hidden"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-surface hover:text-fg lg:hidden"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -180,7 +184,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <div className="border-t border-line bg-canvas md:hidden">
+        <div className="border-t border-line bg-canvas lg:hidden">
           <form onSubmit={handleSearchSubmit} className="px-6 pt-4">
             <input
               value={query}

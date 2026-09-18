@@ -273,7 +273,7 @@ function EditProfileForm({
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-2">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving…' : 'Save changes'}
             </Button>

@@ -92,9 +92,9 @@ export function RespondForm({
           </p>
           <div className="space-y-2">
             {contactMethods.map((row, index) => (
-              <div key={index} className="flex gap-2">
+              <div key={index} className="flex flex-col gap-2 sm:flex-row">
                 <Select
-                  className="w-32 shrink-0"
+                  className="w-full shrink-0 sm:w-32"
                   value={row.type}
                   onChange={(e) =>
                     updateRow(index, { type: e.target.value as ContactMethodRow['type'] })
@@ -106,21 +106,26 @@ export function RespondForm({
                     </option>
                   ))}
                 </Select>
-                <Input
-                  value={row.value}
-                  onChange={(e) => updateRow(index, { value: e.target.value })}
-                  placeholder={row.type === 'EMAIL' ? 'you@example.com' : 'Value'}
-                />
-                {contactMethods.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setContactMethods((rows) => rows.filter((_, i) => i !== index))}
-                    className="shrink-0 rounded-lg p-2 text-fg-faint hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-600/10"
-                    aria-label="Remove contact method"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
+                <div className="flex gap-2">
+                  <Input
+                    className="min-w-0 flex-1"
+                    value={row.value}
+                    onChange={(e) => updateRow(index, { value: e.target.value })}
+                    placeholder={row.type === 'EMAIL' ? 'you@example.com' : 'Value'}
+                  />
+                  {contactMethods.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setContactMethods((rows) => rows.filter((_, i) => i !== index))
+                      }
+                      className="shrink-0 rounded-lg p-2 text-fg-faint hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-600/10"
+                      aria-label="Remove contact method"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

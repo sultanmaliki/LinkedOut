@@ -234,11 +234,16 @@ export default function HomePage() {
           </h2>
         </div>
 
-        <div className="flex h-[420px] gap-2 overflow-hidden rounded-lg sm:h-[460px]">
+        {/* Below sm, there's no hover — so the desktop hover-accordion (vertical
+            title text that turns horizontal, body copy that fades in, only on
+            hover) would stay permanently rotated and invisible on a phone.
+            Below sm this renders as plain stacked cards with everything
+            always visible instead; sm and up is pixel-identical to before. */}
+        <div className="flex flex-col gap-4 sm:h-[420px] sm:flex-row sm:gap-2 sm:overflow-hidden sm:rounded-lg lg:h-[460px]">
           {principles.map((pillar) => (
             <div
               key={pillar.title}
-              className="group relative flex-1 cursor-pointer overflow-hidden rounded-lg transition-[flex-grow] duration-500 ease-out hover:flex-[3]"
+              className="group relative h-56 overflow-hidden rounded-lg sm:h-full sm:flex-1 sm:cursor-pointer sm:transition-[flex-grow] sm:duration-500 sm:ease-out sm:hover:flex-[3]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -249,10 +254,10 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/40 to-ink-950/10" />
 
               <div className="absolute inset-0 flex flex-col justify-end p-5">
-                <h3 className="text-[18px] leading-tight font-semibold tracking-[-0.01em] text-white [writing-mode:vertical-rl] group-hover:[writing-mode:horizontal-tb]">
+                <h3 className="text-[18px] leading-tight font-semibold tracking-[-0.01em] text-white sm:[writing-mode:vertical-rl] sm:group-hover:[writing-mode:horizontal-tb]">
                   {pillar.title}
                 </h3>
-                <p className="mt-2 max-w-xs text-[13.5px] leading-relaxed text-ink-200 opacity-0 transition-opacity delay-100 duration-300 group-hover:opacity-100">
+                <p className="mt-2 max-w-xs text-[13.5px] leading-relaxed text-ink-200 sm:opacity-0 sm:transition-opacity sm:delay-100 sm:duration-300 sm:group-hover:opacity-100">
                   {pillar.body}
                 </p>
               </div>

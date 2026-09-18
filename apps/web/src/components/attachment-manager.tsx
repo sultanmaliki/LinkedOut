@@ -33,7 +33,6 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
   const [isAdding, setIsAdding] = useState(false);
   const [type, setType] = useState<AttachmentType>('IMAGE');
   const [url, setUrl] = useState('');
-  const [sizeKb, setSizeKb] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { requestConfirm, dialog } = useConfirmDialog();
@@ -58,11 +57,13 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
           fileName: fileNameFromUrl(url),
           fileUrl: url.trim(),
           mimeType: MIME_TYPE_BY_ATTACHMENT_TYPE[type],
-          fileSize: sizeKb ? Math.max(1, Math.round(Number(sizeKb) * 1024)) : 1,
+          // We don't upload the file ourselves — just the URL the user
+          // pasted — so there's no real size to report. See fileSize on
+          // CreateAttachmentDto.
+          fileSize: 1,
         },
       });
       setUrl('');
-      setSizeKb('');
       setIsAdding(false);
       load();
     } catch (err) {
@@ -124,14 +125,6 @@ export function AttachmentManager({ postId, token }: { postId: string; token: st
                 </option>
               ))}
             </Select>
-            <Input
-              type="number"
-              min={1}
-              value={sizeKb}
-              onChange={(e) => setSizeKb(e.target.value)}
-              placeholder="Size (KB)"
-              className="w-28"
-            />
           </div>
           <Input
             type="url"

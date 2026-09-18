@@ -14,3 +14,4 @@ dist/
 .next/
 .open-next/
 .wrangler/
+backup/

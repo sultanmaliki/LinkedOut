@@ -19,6 +19,7 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:ps": "docker compose ps",
+    "loadtest": "node load-tests/browse.js",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "@types/node": "^22.10.1",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
+    "autocannon": "^8.0.0",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^10.0.0",
     "globals": "^17.11.0",

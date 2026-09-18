@@ -88,10 +88,10 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 - Internal messaging/chat — hiring continues through the company's own channels (D-004)
 - Notifications (in-app, email, push, webhook) — see [docs/notifications.md](docs/notifications.md), marked deferred
 - AI-assisted features (summaries, matching, moderation triage) — see [docs/ai-integration.md](docs/ai-integration.md), marked deferred
-- Search via Meilisearch, caching via Valkey, file storage via MinIO — all three are provisioned in `docker-compose.yml` but have **zero application code references**. Professional/company search is plain Postgres queries (see Built above); there's no caching layer; attachment/photo fields are plain URL columns, not uploaded objects.
+- Search via Meilisearch, caching via Valkey, file storage via MinIO — all three are provisioned in `docker-compose.yml` but have **zero application code references**. Professional/company search is plain Postgres queries (see Built above); attachment/photo fields are plain URL columns, not uploaded objects. (HTTP `Cache-Control` on public GET endpoints — see below — is separate and doesn't use Valkey.)
 - Cookie consent banner, newsletter signup, UTM link tracking — no analytics or email-marketing infrastructure exists to make these meaningful; adding the UI without it would be misleading
 - Event-driven/queue architecture — rejected, see [ADR-005](docs/adr/adr-005-event-driven.md) (status corrected to Rejected)
-- Rate limiting, CSRF protection, real observability stack (Sentry/Prometheus/Grafana) — identified gaps, not yet implemented
+- CSRF protection, Prometheus/Grafana, Sentry — identified gaps, not yet implemented. Rate limiting (`@nestjs/throttler`) and structured logging (Pino, via `nestjs-pino`) **are** implemented — see [docs/security.md](docs/security.md) and [docs/logging-and-observability.md](docs/logging-and-observability.md).
 
 ---
 

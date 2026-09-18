@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/c
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
+import { PublicCache } from '../common/decorators/public-cache.decorator';
 import { ListProfessionalsDto } from './dto/list-professionals.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
 import { EmploymentExpectationService } from './employment-expectation/employment-expectation.service';
@@ -18,6 +19,7 @@ export class ProfessionalProfileController {
     private readonly employmentExpectationService: EmploymentExpectationService,
   ) {}
 
+  @PublicCache()
   @Get()
   async searchProfiles(@Query() query: ListProfessionalsDto) {
     return this.profileService.searchProfiles(query);
@@ -38,21 +40,25 @@ export class ProfessionalProfileController {
     return this.profileService.updateMyProfile(user.id, dto);
   }
 
+  @PublicCache()
   @Get(':id')
   async getProfile(@Param('id') id: string) {
     return this.profileService.getProfile(id);
   }
 
+  @PublicCache()
   @Get(':id/skills')
   async getProfileSkills(@Param('id') id: string) {
     return this.skillService.listForProfileId(id);
   }
 
+  @PublicCache()
   @Get(':id/portfolio-links')
   async getProfilePortfolioLinks(@Param('id') id: string) {
     return this.portfolioLinkService.listForProfileId(id);
   }
 
+  @PublicCache()
   @Get(':id/employment-expectation')
   async getProfileEmploymentExpectation(@Param('id') id: string) {
     return this.employmentExpectationService.getForProfileId(id);

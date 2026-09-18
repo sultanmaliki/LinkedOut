@@ -39,7 +39,6 @@ export function ComposeBox({ onPosted }: { onPosted: () => void }) {
   const [isAttaching, setIsAttaching] = useState(false);
   const [attachmentType, setAttachmentType] = useState<AttachmentType>('IMAGE');
   const [attachmentUrl, setAttachmentUrl] = useState('');
-  const [attachmentSizeKb, setAttachmentSizeKb] = useState('');
 
   useEffect(() => {
     if (!accessToken) return;
@@ -71,9 +70,10 @@ export function ComposeBox({ onPosted }: { onPosted: () => void }) {
             fileName: fileNameFromUrl(attachmentUrl),
             fileUrl: attachmentUrl.trim(),
             mimeType: MIME_TYPE_BY_ATTACHMENT_TYPE[attachmentType],
-            fileSize: attachmentSizeKb
-              ? Math.max(1, Math.round(Number(attachmentSizeKb) * 1024))
-              : 1,
+            // We don't upload the file ourselves — just the URL the user
+            // pasted — so there's no real size to report. See fileSize on
+            // CreateAttachmentDto.
+            fileSize: 1,
           },
         });
       }
@@ -81,7 +81,6 @@ export function ComposeBox({ onPosted }: { onPosted: () => void }) {
       setContent('');
       setIsAttaching(false);
       setAttachmentUrl('');
-      setAttachmentSizeKb('');
       onPosted();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to publish post');
@@ -116,20 +115,11 @@ export function ComposeBox({ onPosted }: { onPosted: () => void }) {
                     </option>
                   ))}
                 </Select>
-                <Input
-                  type="number"
-                  min={1}
-                  value={attachmentSizeKb}
-                  onChange={(e) => setAttachmentSizeKb(e.target.value)}
-                  placeholder="Size (KB)"
-                  className="w-28"
-                />
                 <button
                   type="button"
                   onClick={() => {
                     setIsAttaching(false);
                     setAttachmentUrl('');
-                    setAttachmentSizeKb('');
                   }}
                   className="ml-auto rounded-full p-1.5 text-fg-faint hover:text-rose-600"
                   aria-label="Remove attachment"

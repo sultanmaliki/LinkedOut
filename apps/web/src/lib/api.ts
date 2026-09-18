@@ -12,10 +12,14 @@ export class ApiError extends Error {
   }
 }
 
+const DEFAULT_TIMEOUT_MS = 15_000;
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
   token?: string | null;
+  /** Aborts the request if it hasn't completed within this many ms. Defaults to 15s. */
+  timeoutMs?: number;
   /** Internal: set to skip the refresh-and-retry step (used for the retry itself). */
   _isRetry?: boolean;
 }
@@ -49,7 +53,7 @@ async function rawFetch<T>(
   options: RequestOptions,
   token?: string | null,
 ): Promise<T> {
-  const { method = 'GET', body } = options;
+  const { method = 'GET', body, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
 
   const headers: Record<string, string> = {};
 
@@ -61,12 +65,31 @@ async function rawFetch<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    cache: 'no-store',
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      // Authenticated/mutating requests must never be cached. Anonymous GETs
+      // (public listings/detail pages) are left at the browser's default
+      // cache behavior, which honors the API's own Cache-Control header
+      // (see PublicCache on the relevant controllers) — no caching happens
+      // unless the API explicitly opted that route in.
+      cache: token || method !== 'GET' ? 'no-store' : 'default',
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new ApiError(0, 'Request timed out. Please try again.', null);
+    }
+    throw new ApiError(0, 'Network error. Please check your connection and try again.', null);
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const contentType = response.headers.get('content-type') ?? '';
   const data = contentType.includes('application/json') ? await response.json() : null;

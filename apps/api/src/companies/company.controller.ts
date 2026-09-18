@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
+import { PublicCache } from '../common/decorators/public-cache.decorator';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -17,6 +18,7 @@ export class CompanyController {
     return this.companyService.createCompany(user.id, dto);
   }
 
+  @PublicCache()
   @Get()
   async listCompanies(@Query() query: ListCompaniesDto) {
     return this.companyService.listCompanies(query.limit ?? 20, query.offset ?? 0, query.q);
@@ -28,6 +30,7 @@ export class CompanyController {
     return this.companyService.listMine(user.id);
   }
 
+  @PublicCache()
   @Get(':id')
   async getCompany(@Param('id') id: string) {
     return this.companyService.getCompany(id);

@@ -1,20 +1,28 @@
 # Logging and Monitoring Strategy
 
-> **Status: Deferred, not implemented.** The API uses NestJS's default console logger. There is no Pino, no Prometheus/Grafana, no Sentry, and no health-check endpoint today. This is a design sketch for a future production deployment, kept for reference — see [deployment.md](deployment.md), which is in the same state.
+> **Status: partially implemented.** Structured Pino logging and a health-check endpoint exist (see below). Prometheus/Grafana and Sentry are still not implemented — see [deployment.md](deployment.md), which is in the same state.
 
 ## Logging Strategy
 
-- Use Pino for structured JSON logs
-- Include correlation IDs on every request
-- Log business events at the application boundary and security-sensitive operations in audit logs
-- Avoid logging secrets, personal data, or tokens
+- `apps/api` uses [nestjs-pino](https://github.com/iamolegga/nestjs-pino)
+  (wired in `app.module.ts` / `main.ts`) — structured JSON logs in
+  production, pretty-printed in dev. Set `LOG_LEVEL` to control verbosity.
+- Every request gets a correlation ID (`req.id`, pino-http's default) that
+  appears on every log line for that request — grep by it to trace one
+  request end to end.
+- `Authorization`/`Cookie` headers and `password`/`token`/`refreshToken`/
+  `accessToken` body fields are redacted (`[redacted]`) before logging —
+  never logged in plaintext.
+- Business events at the application boundary and audit logs: not yet done —
+  still open.
 
 ## Metrics and Monitoring
 
-- Prometheus for metrics collection
-- Grafana for dashboards and alerting
-- Sentry for error tracking and exception grouping
-- Health checks for web, API, and dependency services
+- `GET /health` (`apps/api/src/health`) checks Postgres connectivity — see
+  [operational-runbook.md](operational-runbook.md).
+- Prometheus, Grafana, and Sentry: not implemented. Sentry in particular
+  needs a Sentry account/DSN, which is a decision for whoever owns that
+  account — the app has no error-tracking SDK wired in yet.
 
 ## Alerting Priorities
 

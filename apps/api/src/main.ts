@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { PostgresExceptionFilter } from './common/filters/postgres-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // bufferLogs holds Nest's own startup log lines until the Pino logger
+  // below is ready, so nothing is lost or falls back to the console logger.
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new PostgresExceptionFilter());
   app.enableCors({

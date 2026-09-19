@@ -64,12 +64,19 @@ This file is the source of truth for "what's actually built." Update it in the s
 
 - Public contact form (`POST /contact`, `/contact` page, floating contact button on every page) — persists to `contact_messages`. No admin inbox UI exists yet to view submissions; query the table directly.
 
+### Database connections
+
+- `DATABASE_URL` points at Supabase's **transaction-mode pooler** (port 6543), not session mode (5432) — session mode hard-rejects past its own `pool_size` (15 on the free tier) instead of queuing, and the feed page alone (2 queries per visible post, fired in parallel) was enough to exceed that under normal browsing, producing real `500`s and a client-side crash. Transaction mode multiplexes many app-side connections over far fewer real Postgres backends. Requires `prepare: false` on the `postgres.js` client (transaction-mode pooling doesn't support prepared-statement caching across queries) — see `packages/database/src/client.ts`.
+- `DIRECT_DATABASE_URL` (session-mode pooler or a direct connection) is used only by `drizzle-kit push/generate/migrate` (`drizzle.config.ts`), since transaction-mode pooling can break the advisory locks and multi-statement DDL migrations rely on. Falls back to `DATABASE_URL` when unset.
+- Local dev/`.env` already uses this setup. **Production's Railway `DATABASE_URL` has not been switched yet** — see Known gaps.
+
 ### Site chrome / UX polish
 
 - Dark mode toggle (persisted to `localStorage`, no-flash on load), mobile nav, skip-to-content link, scroll progress bar, back-to-top button
 - Confirmation modals on destructive actions (delete post, portfolio link, company location, attachment) — a shared `useConfirmDialog` hook
 - Password visibility toggle on the auth form, copy-link buttons on professional/company profile pages
 - Print stylesheet (hides chrome, forces light mode on paper), a real 404 page, route-transition loading skeleton
+- Login-prompt toast (`components/login-prompt.tsx`, `useLoginPrompt()`): liking a post, commenting, or replying while logged out previously either silently no-op'd (the like button) or hid the control entirely (comments) — both read as broken to a first-time visitor. Now shows a small dismissible bottom-left toast naming the action and a button straight to `/auth`, auto-dismissing after 6s.
 
 ### Security (see [docs/security.md](docs/security.md) for the full posture and a completed red-team review)
 
@@ -102,6 +109,7 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 - `apps/api` and `apps/web`'s `lint` scripts are placeholders (`echo`); `apps/api`'s `test` script is real
 - CI applies schema via `drizzle-kit push --force`, not replayed migrations — migrations in `packages/database/drizzle/` aren't exercised by CI. (Until now, CI ran plain `drizzle-kit push` with no TTY, which prints "Interactive prompts require a TTY", never applies anything, and exits `0` anyway — the "Push database schema" step reported success while every CI run's database stayed completely empty. Every real-DB test — `auth.e2e-spec.ts`, `auth.service.spec.ts`, `auth.guard.spec.ts`, `contact.e2e-spec.ts` — was failing in CI for this reason alone; `--force` fixes it. See `.github/workflows/ci.yml`'s comment on the push step and the CHANGELOG.)
 - `apps/api/dist/**` and `tsconfig.tsbuildinfo` files are committed to git despite a later `.gitignore` rule — never retroactively cleaned up
+- **Production's `DATABASE_URL` on Railway still needs to be switched to Supabase's transaction-mode pooler (port 6543)** to get the fix below — this can only be done in Railway's dashboard, not from a commit. Until then, production is still exposed to the connection-exhaustion bug just fixed for local dev.
 
 ---
 

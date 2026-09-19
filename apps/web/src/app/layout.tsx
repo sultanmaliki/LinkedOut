@@ -6,6 +6,7 @@ import { BackToTopButton } from '@/components/back-to-top-button';
 import { FloatingContactButton } from '@/components/floating-contact-button';
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
+import { LoginPromptProvider } from '@/components/login-prompt';
 import { ScrollProgressBar } from '@/components/scroll-progress-bar';
 import { VerifyEmailBanner } from '@/components/verify-email-banner';
 import { AuthProvider } from '@/lib/auth-context';
@@ -77,15 +78,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Skip to content
         </a>
         <AuthProvider>
-          <Header />
-          <VerifyEmailBanner />
-          <ScrollProgressBar />
-          <div id="main-content" className="flex-1">
-            {children}
-          </div>
-          <Footer />
-          <BackToTopButton />
-          <FloatingContactButton />
+          <LoginPromptProvider>
+            <Header />
+            <VerifyEmailBanner />
+            <ScrollProgressBar />
+            <div id="main-content" className="flex-1">
+              {children}
+            </div>
+            <Footer />
+            <BackToTopButton />
+            <FloatingContactButton />
+          </LoginPromptProvider>
         </AuthProvider>
       </body>
     </html>

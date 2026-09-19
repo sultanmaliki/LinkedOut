@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/cn';
 import type { Attachment, Post } from '@/lib/types';
 import { AuthorBadge } from '@/components/author-badge';
+import { useLoginPrompt } from '@/components/login-prompt';
 import { PostAttachments } from '@/components/post-attachments';
 import { ReportButton } from '@/components/report-button';
 import { Card } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { CommentThread } from './comment-thread';
 
 export function PostCard({ post }: { post: Post }) {
   const { accessToken } = useAuth();
+  const promptLogin = useLoginPrompt();
   const [likeCount, setLikeCount] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -31,7 +33,10 @@ export function PostCard({ post }: { post: Post }) {
   }, [post.id]);
 
   async function toggleLike() {
-    if (!accessToken) return;
+    if (!accessToken) {
+      promptLogin('Log in to like posts.');
+      return;
+    }
     const res = await apiFetch<{ liked: boolean }>(`/posts/${post.id}/like`, {
       method: 'POST',
       token: accessToken,
@@ -73,7 +78,6 @@ export function PostCard({ post }: { post: Post }) {
       <div className="mt-3 flex items-center gap-4 border-t border-line pt-3">
         <button
           onClick={toggleLike}
-          disabled={!accessToken}
           className={cn(
             'inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors',
             liked ? 'text-rose-600 dark:text-rose-500' : 'text-fg-muted hover:text-fg',

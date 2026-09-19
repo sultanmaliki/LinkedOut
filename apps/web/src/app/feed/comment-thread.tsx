@@ -7,11 +7,13 @@ import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import type { Comment } from '@/lib/types';
 import { AuthorBadge } from '@/components/author-badge';
+import { useLoginPrompt } from '@/components/login-prompt';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export function CommentThread({ postId }: { postId: string }) {
   const { user, accessToken } = useAuth();
+  const promptLogin = useLoginPrompt();
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [replyTo, setReplyTo] = useState<string | null>(null);
 
@@ -39,14 +41,16 @@ export function CommentThread({ postId }: { postId: string }) {
               <CommentRow comment={reply} />
             </div>
           ))}
-          {user && (
-            <button
-              onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
-              className="ml-6 text-[12px] font-medium text-fg-faint hover:text-fg"
-            >
-              Reply
-            </button>
-          )}
+          <button
+            onClick={() =>
+              user
+                ? setReplyTo(replyTo === comment.id ? null : comment.id)
+                : promptLogin('Log in to reply to comments.')
+            }
+            className="ml-6 text-[12px] font-medium text-fg-faint hover:text-fg"
+          >
+            Reply
+          </button>
           {replyTo === comment.id && (
             <div className="ml-6">
               <CommentForm
@@ -63,7 +67,20 @@ export function CommentThread({ postId }: { postId: string }) {
         </div>
       ))}
 
-      {user && <CommentForm postId={postId} token={accessToken!} onPosted={load} />}
+      {user ? (
+        <CommentForm postId={postId} token={accessToken!} onPosted={load} />
+      ) : (
+        <Input
+          readOnly
+          onFocus={(e) => {
+            e.target.blur();
+            promptLogin('Log in to comment.');
+          }}
+          onClick={() => promptLogin('Log in to comment.')}
+          placeholder="Write a comment…"
+          className="cursor-pointer py-1.5 text-[13.5px]"
+        />
+      )}
     </div>
   );
 }

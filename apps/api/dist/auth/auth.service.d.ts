@@ -2,6 +2,9 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { MailerService } from './mailer.service';
 import { UserRepository } from './user.repository';
 export declare class AuthService {
@@ -22,11 +25,48 @@ export declare class AuthService {
         };
     }>;
     verifyEmail(dto: VerifyEmailDto): Promise<{
-        verified: true;
+        devVerificationToken?: string | undefined;
+        accessToken: string;
+        refreshToken: string;
+        user: {
+            id: string;
+            email: string;
+            name: string;
+            role: string;
+            emailVerified: boolean;
+        };
     }>;
     resendVerification(userId: string): Promise<{
         devVerificationToken?: string | undefined;
         sent: boolean;
+    }>;
+    forgotPassword(dto: ForgotPasswordDto): Promise<{
+        devResetToken?: string | undefined;
+        sent: boolean;
+    }>;
+    resetPassword(dto: ResetPasswordDto): Promise<{
+        devVerificationToken?: string | undefined;
+        accessToken: string;
+        refreshToken: string;
+        user: {
+            id: string;
+            email: string;
+            name: string;
+            role: string;
+            emailVerified: boolean;
+        };
+    }>;
+    changePassword(userId: string, dto: ChangePasswordDto): Promise<{
+        devVerificationToken?: string | undefined;
+        accessToken: string;
+        refreshToken: string;
+        user: {
+            id: string;
+            email: string;
+            name: string;
+            role: string;
+            emailVerified: boolean;
+        };
     }>;
     login(dto: LoginDto): Promise<{
         devVerificationToken?: string | undefined;
@@ -56,5 +96,6 @@ export declare class AuthService {
     private ensureAccountActive;
     private buildAuthResponse;
     private issueEmailVerificationToken;
+    private issuePasswordResetToken;
     private issueTokens;
 }

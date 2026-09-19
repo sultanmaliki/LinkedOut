@@ -27,6 +27,7 @@ describe('ResponsivenessController', () => {
     id: 'user-1',
     email: 'ada@example.com',
     role: 'PROFESSIONAL',
+    emailVerified: true,
   };
 
   beforeEach(async () => {

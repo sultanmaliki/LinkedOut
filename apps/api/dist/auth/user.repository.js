@@ -14,6 +14,7 @@ class UserRepository {
             status: database_1.users.status,
             emailVerified: database_1.users.emailVerified,
             activeRefreshTokenId: database_1.users.activeRefreshTokenId,
+            passwordResetTokenId: database_1.users.passwordResetTokenId,
             name: database_1.professionalProfiles.fullName,
         })
             .from(database_1.users)
@@ -32,6 +33,7 @@ class UserRepository {
             status: user.status,
             emailVerified: user.emailVerified,
             activeRefreshTokenId: user.activeRefreshTokenId,
+            passwordResetTokenId: user.passwordResetTokenId,
             name,
         };
     }
@@ -45,6 +47,7 @@ class UserRepository {
             status: database_1.users.status,
             emailVerified: database_1.users.emailVerified,
             activeRefreshTokenId: database_1.users.activeRefreshTokenId,
+            passwordResetTokenId: database_1.users.passwordResetTokenId,
             name: database_1.professionalProfiles.fullName,
         })
             .from(database_1.users)
@@ -63,6 +66,7 @@ class UserRepository {
             status: user.status,
             emailVerified: user.emailVerified,
             activeRefreshTokenId: user.activeRefreshTokenId,
+            passwordResetTokenId: user.passwordResetTokenId,
             name,
         };
     }
@@ -73,7 +77,7 @@ class UserRepository {
      */
     async findStatusById(id) {
         const [user] = await database_1.db
-            .select({ status: database_1.users.status })
+            .select({ status: database_1.users.status, emailVerified: database_1.users.emailVerified })
             .from(database_1.users)
             .where((0, drizzle_orm_1.eq)(database_1.users.id, id))
             .limit(1);
@@ -104,6 +108,22 @@ class UserRepository {
             .set({ emailVerified: true, updatedAt: new Date() })
             .where((0, drizzle_orm_1.eq)(database_1.users.id, id));
     }
+    async setPasswordResetTokenId(id, tokenId) {
+        await database_1.db
+            .update(database_1.users)
+            .set({ passwordResetTokenId: tokenId, updatedAt: new Date() })
+            .where((0, drizzle_orm_1.eq)(database_1.users.id, id));
+    }
+    // Also clears passwordResetTokenId, whether or not a reset was actually
+    // in flight -- a password change through any path invalidates any
+    // outstanding reset link for the account, since the old link's whole
+    // purpose (setting a new password) has already been achieved.
+    async updatePassword(id, passwordHash) {
+        await database_1.db
+            .update(database_1.users)
+            .set({ passwordHash, passwordResetTokenId: null, updatedAt: new Date() })
+            .where((0, drizzle_orm_1.eq)(database_1.users.id, id));
+    }
     async create(data) {
         return database_1.db.transaction(async (tx) => {
             const [user] = await tx
@@ -123,6 +143,7 @@ class UserRepository {
                 status: database_1.users.status,
                 emailVerified: database_1.users.emailVerified,
                 activeRefreshTokenId: database_1.users.activeRefreshTokenId,
+                passwordResetTokenId: database_1.users.passwordResetTokenId,
             });
             if (!user) {
                 throw new Error('Failed to create user');

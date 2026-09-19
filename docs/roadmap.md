@@ -13,11 +13,12 @@ This roadmap reflects the actual intended product direction, not a generic enter
 - Moderation (cases, actions, trust flags, audit logs) and admin role management
 - A completed security audit + red-team review, with every HIGH/MEDIUM finding fixed and regression-tested
 - Hiring pipeline v2 — two-tier ghosting detection (soft flag, then automatic resolution) and private responsiveness scoring for both sides, computed at read time with no new scheduler infrastructure — see [architecture/hiring-pipeline-v2.md](architecture/hiring-pipeline-v2.md) and decision [D-021](decisions.md)
+- Real email provider for verification emails (Resend, falls back to a dev-mode console link when `RESEND_API_KEY` is unset), with posting/applying/reviewing gated on `emailVerified` via `VerifiedEmailGuard`
+- Forgot-password (emailed link, auto-login on reset) and in-profile change-password; all-whitespace passwords rejected at register/reset/change
 
 ## Now — Pre-launch hardening
 
 - Close the known-gaps list in [PROJECT_STATUS.md](../PROJECT_STATUS.md): database indexes, real `lint`/`test` scripts across all packages, migration-based CI instead of `drizzle-kit push`
-- Real email provider (currently dev-mode-only verification tokens)
 - Rate limiting on authentication and public write endpoints (identified gap, not yet demonstrated as exploited)
 
 ## Next — Trust & polish

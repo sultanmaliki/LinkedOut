@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../../auth/guards/verified-email.guard';
 import { RespondToOfferDto } from './dto/respond-to-offer.dto';
 import { RespondToOpportunityDto } from './dto/respond-to-opportunity.dto';
 import { OpportunityService } from './opportunity.service';
@@ -17,6 +18,7 @@ export class MyOpportunityController {
   }
 
   @Post(':opportunityId/respond')
+  @UseGuards(VerifiedEmailGuard)
   async respond(
     @Param('opportunityId') opportunityId: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -34,6 +36,7 @@ export class MyOpportunityController {
   }
 
   @Post(':opportunityId/respond-to-offer')
+  @UseGuards(VerifiedEmailGuard)
   async respondToOffer(
     @Param('opportunityId') opportunityId: string,
     @CurrentUser() user: AuthenticatedUser,

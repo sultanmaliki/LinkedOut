@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
-import { ApiError, apiFetch } from '@/lib/api';
+import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { buttonStyles } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Card, CardBody } from '@/components/ui/card';
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const { markEmailVerified } = useAuth();
+  const { verifyEmail } = useAuth();
 
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +25,8 @@ function VerifyEmailContent() {
       return;
     }
 
-    apiFetch('/auth/verify-email', { method: 'POST', body: { token } })
+    verifyEmail(token)
       .then(() => {
-        markEmailVerified();
         setStatus('success');
       })
       .catch((err) => {

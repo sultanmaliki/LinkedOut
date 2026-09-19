@@ -8,6 +8,7 @@ export interface UserRecord {
     status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
     emailVerified: boolean;
     activeRefreshTokenId: string | null;
+    passwordResetTokenId: string | null;
 }
 export interface SafeUserRecord {
     id: string;
@@ -31,9 +32,12 @@ export declare class UserRepository {
      */
     findStatusById(id: string): Promise<{
         status: UserRecord['status'];
+        emailVerified: boolean;
     } | undefined>;
     setActiveRefreshTokenId(id: string, tokenId: string | null): Promise<void>;
     updateRole(id: string, role: (typeof userRoleEnum.enumValues)[number]): Promise<SafeUserRecord | undefined>;
     markEmailVerified(id: string): Promise<void>;
+    setPasswordResetTokenId(id: string, tokenId: string | null): Promise<void>;
+    updatePassword(id: string, passwordHash: string): Promise<void>;
     create(data: CreateUserData): Promise<UserRecord>;
 }

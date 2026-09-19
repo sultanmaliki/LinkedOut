@@ -105,6 +105,21 @@ describe('Auth HTTP (e2e)', () => {
     );
   });
 
+  it('POST /auth/register returns 400 for a whitespace-only password', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Space Case',
+        email: `e2e-space-${Date.now()}@example.com`,
+        password: '        ',
+      })
+      .expect(400);
+
+    expect(response.body.message).toEqual(
+      expect.arrayContaining([expect.stringContaining('whitespace')]),
+    );
+  });
+
   it('POST /auth/refresh returns 400 when refreshToken is missing', async () => {
     await request(app.getHttpServer()).post('/auth/refresh').send({}).expect(400);
   });
@@ -139,10 +154,16 @@ describe('Auth HTTP (e2e)', () => {
       })
       .expect(201);
 
-    await request(app.getHttpServer())
+    const verifyResponse = await request(app.getHttpServer())
       .post('/auth/verify-email')
       .send({ token: registerResponse.body.devVerificationToken })
       .expect(201);
+
+    // Verifying returns a fresh session (like login/register), so clicking
+    // the link logs the user in even on a device that never registered.
+    expect(verifyResponse.body.user.emailVerified).toBe(true);
+    expect(verifyResponse.body.accessToken).toBeTruthy();
+    expect(verifyResponse.body.refreshToken).toBeTruthy();
 
     const loginResponse = await request(app.getHttpServer())
       .post('/auth/login')
@@ -212,6 +233,120 @@ describe('Auth HTTP (e2e)', () => {
 
     await db.delete(users).where(eq(users.email, email));
   });
+
+  it('forgot-password → reset-password logs the user in with the new password', async () => {
+    const email = `e2e-forgot-${Date.now()}@example.com`;
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Forgot User', email, password: 'supersecret1' })
+      .expect(201);
+
+    const forgotResponse = await request(app.getHttpServer())
+      .post('/auth/forgot-password')
+      .send({ email })
+      .expect(201);
+
+    expect(forgotResponse.body.sent).toBe(true);
+    expect(forgotResponse.body.devResetToken).toBeTruthy();
+
+    const resetResponse = await request(app.getHttpServer())
+      .post('/auth/reset-password')
+      .send({ token: forgotResponse.body.devResetToken, newPassword: 'brandnewpass1' })
+      .expect(201);
+
+    expect(resetResponse.body.user.email).toBe(email);
+    expect(resetResponse.body.accessToken).toBeTruthy();
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password: 'supersecret1' })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password: 'brandnewpass1' })
+      .expect(201);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('POST /auth/forgot-password returns 201 with the same body for an unregistered email', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/forgot-password')
+      .send({ email: 'never-registered-e2e@example.com' })
+      .expect(201);
+
+    expect(response.body).toEqual({ sent: true });
+  });
+
+  it('POST /auth/reset-password returns 400 for a whitespace-only new password', async () => {
+    const email = `e2e-reset-space-${Date.now()}@example.com`;
+
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Reset Space', email, password: 'supersecret1' })
+      .expect(201);
+
+    const forgotResponse = await request(app.getHttpServer())
+      .post('/auth/forgot-password')
+      .send({ email })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/auth/reset-password')
+      .send({ token: forgotResponse.body.devResetToken, newPassword: '        ' })
+      .expect(400);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('PATCH /auth/password changes the password for the authenticated user', async () => {
+    const email = `e2e-change-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Change User', email, password: 'supersecret1' })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch('/auth/password')
+      .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+      .send({ currentPassword: 'supersecret1', newPassword: 'brandnewpass1' })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password: 'brandnewpass1' })
+      .expect(201);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('PATCH /auth/password returns 401 for an incorrect current password', async () => {
+    const email = `e2e-change-wrong-${Date.now()}@example.com`;
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Change Wrong', email, password: 'supersecret1' })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch('/auth/password')
+      .set('Authorization', `Bearer ${registerResponse.body.accessToken}`)
+      .send({ currentPassword: 'notmypassword', newPassword: 'brandnewpass1' })
+      .expect(401);
+
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('PATCH /auth/password returns 401 without an access token', async () => {
+    await request(app.getHttpServer())
+      .patch('/auth/password')
+      .send({ currentPassword: 'a', newPassword: 'brandnewpass1' })
+      .expect(401);
+  });
+
   it('GET /professionals/me returns the authenticated professional profile', async () => {
     const email = `e2e-profile-${Date.now()}@example.com`;
 

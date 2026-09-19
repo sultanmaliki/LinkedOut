@@ -11,6 +11,7 @@ const tabs = [
   { href: '/me/skills', label: 'Skills & career' },
   { href: '/me/posts', label: 'My posts' },
   { href: '/me/reviews/new', label: 'Write a review' },
+  { href: '/me/security', label: 'Security' },
 ];
 
 export function ProfileNav() {

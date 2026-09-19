@@ -11,6 +11,7 @@ export interface UserRecord {
   status: 'ACTIVE' | 'DEACTIVATED' | 'SUSPENDED' | 'BANNED';
   emailVerified: boolean;
   activeRefreshTokenId: string | null;
+  passwordResetTokenId: string | null;
 }
 
 export interface SafeUserRecord {
@@ -38,6 +39,7 @@ export class UserRepository {
         status: users.status,
         emailVerified: users.emailVerified,
         activeRefreshTokenId: users.activeRefreshTokenId,
+        passwordResetTokenId: users.passwordResetTokenId,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -59,6 +61,7 @@ export class UserRepository {
       status: user.status,
       emailVerified: user.emailVerified,
       activeRefreshTokenId: user.activeRefreshTokenId,
+      passwordResetTokenId: user.passwordResetTokenId,
       name,
     };
   }
@@ -73,6 +76,7 @@ export class UserRepository {
         status: users.status,
         emailVerified: users.emailVerified,
         activeRefreshTokenId: users.activeRefreshTokenId,
+        passwordResetTokenId: users.passwordResetTokenId,
         name: professionalProfiles.fullName,
       })
       .from(users)
@@ -94,6 +98,7 @@ export class UserRepository {
       status: user.status,
       emailVerified: user.emailVerified,
       activeRefreshTokenId: user.activeRefreshTokenId,
+      passwordResetTokenId: user.passwordResetTokenId,
       name,
     };
   }
@@ -103,9 +108,11 @@ export class UserRepository {
    * request. Deliberately avoids the professionalProfiles join and
    * passwordHash column that findById/findByEmail carry.
    */
-  async findStatusById(id: string): Promise<{ status: UserRecord['status'] } | undefined> {
+  async findStatusById(
+    id: string,
+  ): Promise<{ status: UserRecord['status']; emailVerified: boolean } | undefined> {
     const [user] = await db
-      .select({ status: users.status })
+      .select({ status: users.status, emailVerified: users.emailVerified })
       .from(users)
       .where(eq(users.id, id))
       .limit(1);
@@ -145,6 +152,24 @@ export class UserRepository {
       .where(eq(users.id, id));
   }
 
+  async setPasswordResetTokenId(id: string, tokenId: string | null): Promise<void> {
+    await db
+      .update(users)
+      .set({ passwordResetTokenId: tokenId, updatedAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  // Also clears passwordResetTokenId, whether or not a reset was actually
+  // in flight -- a password change through any path invalidates any
+  // outstanding reset link for the account, since the old link's whole
+  // purpose (setting a new password) has already been achieved.
+  async updatePassword(id: string, passwordHash: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ passwordHash, passwordResetTokenId: null, updatedAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
   async create(data: CreateUserData): Promise<UserRecord> {
     return db.transaction(async (tx) => {
       const [user] = await tx
@@ -164,6 +189,7 @@ export class UserRepository {
           status: users.status,
           emailVerified: users.emailVerified,
           activeRefreshTokenId: users.activeRefreshTokenId,
+          passwordResetTokenId: users.passwordResetTokenId,
         });
 
       if (!user) {

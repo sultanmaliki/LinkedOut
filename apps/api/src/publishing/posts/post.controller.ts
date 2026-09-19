@@ -14,6 +14,7 @@ import {
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../../auth/guards/verified-email.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ListPostsDto } from './dto/list-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -24,7 +25,7 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createPost(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreatePostDto) {
     return this.postService.createPost(user.id, dto);
   }

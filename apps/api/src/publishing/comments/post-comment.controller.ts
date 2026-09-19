@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../../auth/guards/verified-email.guard';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
@@ -15,7 +16,7 @@ export class PostCommentController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createComment(
     @Param('postId') postId: string,
     @CurrentUser() user: AuthenticatedUser,

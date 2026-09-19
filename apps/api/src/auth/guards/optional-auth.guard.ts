@@ -66,6 +66,7 @@ export class OptionalAuthGuard implements CanActivate {
       id: payload.sub,
       email: payload.email,
       role: payload.role,
+      emailVerified: user.emailVerified,
     };
 
     return true;

@@ -24,6 +24,12 @@ export const users = pgTable('users', {
   // token whose jti doesn't match this value has already been used/revoked.
   activeRefreshTokenId: text('active_refresh_token_id'),
 
+  // Holds the jti of the single currently-valid password-reset token for
+  // this user, mirroring activeRefreshTokenId above. Set when a reset is
+  // requested, cleared once used -- a reset token whose jti doesn't match
+  // this value has already been used or superseded by a newer request.
+  passwordResetTokenId: text('password_reset_token_id'),
+
   createdAt: timestamp('created_at', {
     withTimezone: true,
   })

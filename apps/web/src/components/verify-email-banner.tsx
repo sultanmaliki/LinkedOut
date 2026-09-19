@@ -29,7 +29,7 @@ export function VerifyEmailBanner() {
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-2.5">
         <MailWarning className="h-4 w-4 shrink-0 text-gold-600 dark:text-gold-400" />
         <p className="flex-1 text-[13px] text-fg-muted">
-          Verify your email address to secure your account.
+          Verify your email address to unlock posting, applying, and reviews.
         </p>
         <button
           type="button"
@@ -40,7 +40,7 @@ export function VerifyEmailBanner() {
           {status === 'sending'
             ? 'Sending…'
             : status === 'sent'
-              ? 'Sent — check the logs'
+              ? 'Sent — check your email'
               : 'Resend link'}
         </button>
         {status === 'error' && (

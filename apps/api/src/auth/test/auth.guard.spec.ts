@@ -22,6 +22,7 @@ describe('AuthGuard', () => {
         id: string;
         email: string;
         role: string;
+        emailVerified: boolean;
       };
     } = {
       headers: {
@@ -52,7 +53,7 @@ describe('AuthGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    findStatusById.mockResolvedValue({ status: 'ACTIVE' });
+    findStatusById.mockResolvedValue({ status: 'ACTIVE', emailVerified: false });
   });
 
   it('accepts a valid access token for an active user', async () => {
@@ -64,7 +65,17 @@ describe('AuthGuard', () => {
       id: 'user-1',
       email: 'ada@example.com',
       role: 'PROFESSIONAL',
+      emailVerified: false,
     });
+  });
+
+  it('carries emailVerified: true through onto request.user for a verified account', async () => {
+    findStatusById.mockResolvedValue({ status: 'ACTIVE', emailVerified: true });
+
+    const { context, request } = createContext(`Bearer ${signAccessToken()}`);
+
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+    expect(request.user?.emailVerified).toBe(true);
   });
 
   it('rejects a missing authorization header', async () => {
@@ -155,7 +166,7 @@ describe('AuthGuard', () => {
   });
 
   it('rejects a token for a user that is no longer active', async () => {
-    findStatusById.mockResolvedValue({ status: 'SUSPENDED' });
+    findStatusById.mockResolvedValue({ status: 'SUSPENDED', emailVerified: false });
 
     const { context } = createContext(`Bearer ${signAccessToken()}`);
 

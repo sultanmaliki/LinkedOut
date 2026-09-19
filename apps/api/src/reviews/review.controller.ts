@@ -13,6 +13,7 @@ import {
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../auth/guards/verified-email.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './review.service';
@@ -22,7 +23,7 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createReview(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateReviewDto) {
     return this.reviewService.createReview(user.id, dto);
   }

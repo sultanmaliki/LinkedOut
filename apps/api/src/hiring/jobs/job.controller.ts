@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/co
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../../auth/guards/verified-email.guard';
 import { PublicCache } from '../../common/decorators/public-cache.decorator';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
@@ -18,7 +19,7 @@ export class JobController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createJob(
     @Param('companyId') companyId: string,
     @CurrentUser() user: AuthenticatedUser,

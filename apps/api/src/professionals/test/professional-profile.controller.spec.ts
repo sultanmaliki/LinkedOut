@@ -63,6 +63,7 @@ describe('ProfessionalProfileController', () => {
       id: 'user-1',
       email: 'ada@example.com',
       role: 'PROFESSIONAL',
+      emailVerified: true,
     };
 
     const profile = {
@@ -83,6 +84,7 @@ describe('ProfessionalProfileController', () => {
       id: 'user-1',
       email: 'ada@example.com',
       role: 'PROFESSIONAL',
+      emailVerified: true,
     };
 
     const dto: UpdateProfessionalProfileDto = {
@@ -117,6 +119,7 @@ describe('ProfessionalProfileController', () => {
       id: 'user-42',
       email: 'ada@example.com',
       role: 'PROFESSIONAL',
+      emailVerified: true,
     };
 
     const dto: UpdateProfessionalProfileDto = {

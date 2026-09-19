@@ -12,6 +12,9 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { getJwtSecret } from './jwt-secret';
 import { MailerService } from './mailer.service';
 import { UserRepository, UserRecord } from './user.repository';
@@ -20,6 +23,12 @@ interface EmailVerificationPayload {
   sub: string;
   email: string;
   type: 'email-verification';
+}
+
+interface PasswordResetPayload {
+  sub: string;
+  type: 'password-reset';
+  jti: string;
 }
 
 interface RefreshTokenPayload {
@@ -56,12 +65,12 @@ export class AuthService {
     });
 
     const verificationToken = this.issueEmailVerificationToken(user.id, user.email);
-    this.mailerService.sendVerificationEmail(user.email, verificationToken);
+    await this.mailerService.sendVerificationEmail(user.email, verificationToken);
 
     return this.buildAuthResponse(user, verificationToken);
   }
 
-  async verifyEmail(dto: VerifyEmailDto): Promise<{ verified: true }> {
+  async verifyEmail(dto: VerifyEmailDto) {
     let payload: EmailVerificationPayload;
 
     try {
@@ -89,9 +98,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired verification link');
     }
 
+    this.ensureAccountActive(user);
+
     await this.userRepository.markEmailVerified(user.id);
 
-    return { verified: true };
+    // Clicking a valid link proves mailbox ownership -- treat it as a login
+    // (fresh access + refresh tokens) so verifying on a different
+    // device/browser than the one that registered doesn't strand the user
+    // on a "verified!" page they still have to separately log in from.
+    return this.buildAuthResponse({ ...user, emailVerified: true });
   }
 
   async resendVerification(userId: string) {
@@ -106,12 +121,84 @@ export class AuthService {
     }
 
     const verificationToken = this.issueEmailVerificationToken(user.id, user.email);
-    this.mailerService.sendVerificationEmail(user.email, verificationToken);
+    await this.mailerService.sendVerificationEmail(user.email, verificationToken);
 
     return {
       sent: true,
       ...(process.env.NODE_ENV !== 'production' ? { devVerificationToken: verificationToken } : {}),
     };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.userRepository.findByEmail(dto.email);
+
+    // Identical response whether or not the account exists (or is active),
+    // so this endpoint can't be used to test which emails are registered.
+    if (!user || user.status !== 'ACTIVE') {
+      return { sent: true };
+    }
+
+    const resetToken = await this.issuePasswordResetToken(user.id);
+    await this.mailerService.sendPasswordResetEmail(user.email, resetToken);
+
+    return {
+      sent: true,
+      ...(process.env.NODE_ENV !== 'production' ? { devResetToken: resetToken } : {}),
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    let payload: PasswordResetPayload;
+
+    try {
+      payload = jwt.verify(dto.token, this.jwtSecret) as PasswordResetPayload;
+    } catch {
+      throw new UnauthorizedException('Invalid or expired reset link');
+    }
+
+    if (payload.type !== 'password-reset') {
+      throw new UnauthorizedException('Invalid or expired reset link');
+    }
+
+    const user = await this.userRepository.findById(payload.sub);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset link');
+    }
+
+    // Single-use and supersedes-on-reissue, mirroring the refresh-token
+    // rotation pattern: only the most recently issued reset token for this
+    // account is accepted, so a used or superseded link is rejected.
+    if (!payload.jti || payload.jti !== user.passwordResetTokenId) {
+      throw new UnauthorizedException('Invalid or expired reset link');
+    }
+
+    this.ensureAccountActive(user);
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepository.updatePassword(user.id, passwordHash);
+
+    // Resetting the password rotates the refresh token too (via
+    // buildAuthResponse), invalidating every other existing session -- a
+    // stolen session shouldn't survive the password reset it likely caused.
+    return this.buildAuthResponse({ ...user, passwordHash });
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!(await bcrypt.compare(dto.currentPassword, user.passwordHash))) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepository.updatePassword(user.id, passwordHash);
+
+    return this.buildAuthResponse({ ...user, passwordHash });
   }
 
   async login(dto: LoginDto) {
@@ -201,6 +288,29 @@ export class AuthService {
         expiresIn: '24h',
       },
     );
+  }
+
+  private async issuePasswordResetToken(userId: string): Promise<string> {
+    const tokenId = crypto.randomUUID();
+
+    const token = jwt.sign(
+      {
+        sub: userId,
+        type: 'password-reset',
+        jti: tokenId,
+      },
+      this.jwtSecret,
+      {
+        expiresIn: '1h',
+      },
+    );
+
+    // Rotating this on every request supersedes any earlier unused reset
+    // link for the account, mirroring activeRefreshTokenId's rotate-on-issue
+    // pattern for refresh tokens.
+    await this.userRepository.setPasswordResetTokenId(userId, tokenId);
+
+    return token;
   }
 
   private async issueTokens(userId: string, email: string, role: string) {

@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   id: string;
   email: string;
   role: string;
+  emailVerified: boolean;
 }
 
 interface AccessTokenPayload {
@@ -86,6 +87,7 @@ export class AuthGuard implements CanActivate {
       id: payload.sub,
       email: payload.email,
       role: payload.role,
+      emailVerified: user.emailVerified,
     };
 
     return true;

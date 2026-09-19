@@ -4,7 +4,7 @@ Status legend: **Built** = implemented and tested. **Planned** = intended, not s
 
 ## Built
 
-- Auth: register, login, refresh (rotating, single-use), logout, email verification (dev-mode token)
+- Auth: register, login, refresh (rotating, single-use), logout, email verification (real send via Resend when `RESEND_API_KEY` is set, dev-mode console link otherwise) gating posting/applying/reviewing until verified, forgot-password (email link, same-response regardless of whether the email is registered) and an in-profile change-password form — both log the user in with a fresh session on success and reject all-whitespace passwords
 - Professional profiles: employment history + verification, expectations, skills, portfolio links, "actively looking" toggle
 - Search across professionals (name/headline) and companies (name), via direct Postgres queries — a `/search` page plus a header search box; no post/review search yet
 - Company profiles: locations, benefits, admin claim, verification, job postings
@@ -20,7 +20,6 @@ Status legend: **Built** = implemented and tested. **Planned** = intended, not s
 
 - Reputation/trust scoring built on the existing trust-flag and moderation data
 - Rate limiting on authentication and public write endpoints
-- Real email provider (currently dev-mode-only)
 - Database indexes beyond primary keys/one unique constraint
 
 ## Deferred (not roadmapped)

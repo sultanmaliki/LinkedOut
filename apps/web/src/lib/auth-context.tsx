@@ -26,7 +26,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  markEmailVerified: () => void;
+  verifyEmail: (token: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 interface StoredSession {
@@ -121,25 +123,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persist],
   );
 
-  const markEmailVerified = useCallback(() => {
-    setUser((prevUser) => {
-      if (!prevUser || prevUser.emailVerified) return prevUser;
+  const verifyEmail = useCallback(
+    async (token: string) => {
+      // Clicking a valid link proves mailbox ownership, so the API returns a
+      // fresh session the same way login/register do -- this establishes a
+      // session even when the link is opened on a different device/browser
+      // than the one that registered, not just when one already exists here.
+      const session = await apiFetch<AuthResponse>('/auth/verify-email', {
+        method: 'POST',
+        body: { token },
+      });
+      persist(session);
+    },
+    [persist],
+  );
 
-      const updated = { ...prevUser, emailVerified: true };
+  const resetPassword = useCallback(
+    async (token: string, newPassword: string) => {
+      // Same reasoning as verifyEmail: a valid reset link is itself proof of
+      // mailbox ownership, so the API logs the user in with a fresh session
+      // rather than making them separately sign in with the new password.
+      const session = await apiFetch<AuthResponse>('/auth/reset-password', {
+        method: 'POST',
+        body: { token, newPassword },
+      });
+      persist(session);
+    },
+    [persist],
+  );
 
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as StoredSession;
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, user: updated }));
-        }
-      } catch {
-        // ignore storage failures; in-memory state is still updated
-      }
-
-      return updated;
-    });
-  }, []);
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      const session = await apiFetch<AuthResponse>('/auth/password', {
+        method: 'PATCH',
+        token: accessToken,
+        body: { currentPassword, newPassword },
+      });
+      persist(session);
+    },
+    [accessToken, persist],
+  );
 
   const value = useMemo(
     () => ({
@@ -149,9 +172,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout: clearSession,
-      markEmailVerified,
+      verifyEmail,
+      resetPassword,
+      changePassword,
     }),
-    [user, accessToken, isLoading, login, register, clearSession, markEmailVerified],
+    [
+      user,
+      accessToken,
+      isLoading,
+      login,
+      register,
+      clearSession,
+      verifyEmail,
+      resetPassword,
+      changePassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

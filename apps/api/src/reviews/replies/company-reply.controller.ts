@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/comm
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../../auth/guards/verified-email.guard';
 import { SubmitCompanyReplyDto } from './dto/submit-company-reply.dto';
 import { CompanyReplyService } from './company-reply.service';
 
@@ -15,7 +16,7 @@ export class CompanyReplyController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createReply(
     @Param('reviewId') reviewId: string,
     @CurrentUser() user: AuthenticatedUser,

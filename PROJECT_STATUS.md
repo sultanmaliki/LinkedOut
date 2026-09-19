@@ -13,7 +13,8 @@ This file is the source of truth for "what's actually built." Update it in the s
 ### Auth & accounts
 
 - Register / login / refresh / logout — JWT access tokens (15m) + rotating single-use refresh tokens (7d)
-- Email verification (dev-mode: verification link/token returned in the API response instead of sent by a real provider — no email provider is wired up yet)
+- Email verification — a real email is sent via Resend (`RESEND_API_KEY`); when that's unset (local dev/test default) the link is logged to the console and also returned directly in the response as `devVerificationToken`. Registration/login stay unblocked either way — an unverified account can sign in immediately — but `VerifiedEmailGuard` rejects (403) the account's attempts to create a post/comment, publish a review or company reply, post a job, create a job opportunity, or respond to an opportunity/offer until `emailVerified` is true. Clicking the link logs the user in automatically (`POST /auth/verify-email` returns a fresh access/refresh pair, same as login/register) — works even on a device that never registered, since opening a valid link is itself treated as proof of mailbox ownership.
+- Forgot password (`POST /auth/forgot-password` → emailed link → `POST /auth/reset-password`) and in-profile change password (`PATCH /auth/password`, at `/me/security`). Both return a fresh session on success — resetting/changing a password logs the user in rather than requiring a separate sign-in — and both reject an all-whitespace password (`@Matches(/\S/)` alongside `MinLength(8)` on every password field, including register; `MinLength` alone is satisfied by a string of spaces). `forgot-password` always responds `{ sent: true }` whether or not the email is registered, so it can't be used to enumerate accounts. Reset tokens are single-use and rotating (`users.passwordResetTokenId`), mirroring refresh tokens.
 - Account status (`ACTIVE` / `SUSPENDED` / `DEACTIVATED` / `BANNED`) enforced on every authenticated request, not just at login
 - Roles: `PROFESSIONAL`, `COMPANY_ADMIN`, `MODERATOR`, `ADMIN` — admin role management UI included
 
@@ -101,7 +102,6 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 - `apps/api` and `apps/web`'s `lint` scripts are placeholders (`echo`); `apps/api`'s `test` script is real
 - CI applies schema via `drizzle-kit push --force`, not replayed migrations — migrations in `packages/database/drizzle/` aren't exercised by CI. (Until now, CI ran plain `drizzle-kit push` with no TTY, which prints "Interactive prompts require a TTY", never applies anything, and exits `0` anyway — the "Push database schema" step reported success while every CI run's database stayed completely empty. Every real-DB test — `auth.e2e-spec.ts`, `auth.service.spec.ts`, `auth.guard.spec.ts`, `contact.e2e-spec.ts` — was failing in CI for this reason alone; `--force` fixes it. See `.github/workflows/ci.yml`'s comment on the push step and the CHANGELOG.)
 - `apps/api/dist/**` and `tsconfig.tsbuildinfo` files are committed to git despite a later `.gitignore` rule — never retroactively cleaned up
-- No real email provider — verification links are returned directly in dev-mode API responses
 
 ---
 
@@ -115,6 +115,6 @@ These are **deliberately out of scope**, not forgotten — see [docs/vision.md](
 
 ## Next up
 
-See [docs/roadmap.md](docs/roadmap.md). Immediate candidates: closing the known-gaps list above (indexes, real lint scripts, a real migration-based CI flow), then a real email provider.
+See [docs/roadmap.md](docs/roadmap.md). Immediate candidates: closing the known-gaps list above (indexes, real lint scripts, a real migration-based CI flow).
 
 **Hiring pipeline v2** (ghosting prevention + private responsiveness scoring) is complete end-to-end — see Hiring flow above and [docs/architecture/hiring-pipeline-v2.md](docs/architecture/hiring-pipeline-v2.md).

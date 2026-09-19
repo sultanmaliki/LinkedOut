@@ -18,6 +18,7 @@ describe('VerificationReviewController', () => {
     id: 'moderator-1',
     email: 'mod@example.com',
     role: 'MODERATOR',
+    emailVerified: true,
   };
 
   beforeEach(async () => {

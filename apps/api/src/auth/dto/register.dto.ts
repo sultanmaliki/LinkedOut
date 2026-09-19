@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -14,5 +14,8 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8)
+  // MinLength alone counts whitespace, so "        " (8 spaces) satisfies
+  // it -- require at least one non-whitespace character too.
+  @Matches(/\S/, { message: 'password must not be entirely whitespace' })
   password = '';
 }

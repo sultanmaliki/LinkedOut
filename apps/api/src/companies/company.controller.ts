@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthGuard, AuthenticatedUser } from '../auth/guards/auth.guard';
+import { VerifiedEmailGuard } from '../auth/guards/verified-email.guard';
 import { PublicCache } from '../common/decorators/public-cache.decorator';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
@@ -13,7 +14,7 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, VerifiedEmailGuard)
   async createCompany(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateCompanyDto) {
     return this.companyService.createCompany(user.id, dto);
   }

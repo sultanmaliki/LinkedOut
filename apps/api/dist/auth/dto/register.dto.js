@@ -32,6 +32,10 @@ __decorate([
 ], RegisterDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(8),
+    (0, class_validator_1.MinLength)(8)
+    // MinLength alone counts whitespace, so "        " (8 spaces) satisfies
+    // it -- require at least one non-whitespace character too.
+    ,
+    (0, class_validator_1.Matches)(/\S/, { message: 'password must not be entirely whitespace' }),
     __metadata("design:type", Object)
 ], RegisterDto.prototype, "password", void 0);

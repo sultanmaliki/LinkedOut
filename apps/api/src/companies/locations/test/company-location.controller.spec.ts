@@ -18,6 +18,7 @@ describe('CompanyLocationController', () => {
     id: 'user-1',
     email: 'admin@example.com',
     role: 'PROFESSIONAL',
+    emailVerified: true,
   };
 
   beforeEach(async () => {

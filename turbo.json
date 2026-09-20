@@ -10,7 +10,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["DATABASE_URL", "JWT_SECRET"]
+      "env": ["DATABASE_URL", "JWT_SECRET", "ALLOW_DEV_AUTH_TOKENS"]
     },
     "typecheck": {
       "dependsOn": ["^build"]

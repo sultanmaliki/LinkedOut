@@ -13,16 +13,19 @@ import { MailerService } from '../mailer.service';
 describe('MailerService', () => {
   const originalApiKey = process.env.RESEND_API_KEY;
   const originalWebOrigin = process.env.WEB_ORIGIN;
+  const originalDevTokens = process.env.ALLOW_DEV_AUTH_TOKENS;
 
   afterEach(() => {
     process.env.RESEND_API_KEY = originalApiKey;
     process.env.WEB_ORIGIN = originalWebOrigin;
+    process.env.ALLOW_DEV_AUTH_TOKENS = originalDevTokens;
     sendMock.mockReset();
   });
 
-  it('logs the verification link instead of sending when RESEND_API_KEY is unset', async () => {
+  it('logs the verification link when RESEND_API_KEY is unset and ALLOW_DEV_AUTH_TOKENS is set', async () => {
     delete process.env.RESEND_API_KEY;
     process.env.WEB_ORIGIN = 'http://localhost:3000';
+    process.env.ALLOW_DEV_AUTH_TOKENS = 'true';
 
     const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
 
@@ -35,6 +38,28 @@ describe('MailerService', () => {
     expect(sendMock).not.toHaveBeenCalled();
 
     logSpy.mockRestore();
+  });
+
+  it('does not log the email/token when RESEND_API_KEY is unset and ALLOW_DEV_AUTH_TOKENS is not set', async () => {
+    delete process.env.RESEND_API_KEY;
+    delete process.env.ALLOW_DEV_AUTH_TOKENS;
+
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+    const service = new MailerService();
+    await service.sendVerificationEmail('ada@example.com', 'tok123');
+
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('not sent'));
+    // The warning must never contain the token or the recipient email.
+    const warnMessage = warnSpy.mock.calls[0]?.[0] as string;
+    expect(warnMessage).not.toContain('tok123');
+    expect(warnMessage).not.toContain('ada@example.com');
+    expect(sendMock).not.toHaveBeenCalled();
+
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   it('sends via Resend when RESEND_API_KEY is set', async () => {

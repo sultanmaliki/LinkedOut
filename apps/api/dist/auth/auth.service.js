@@ -54,6 +54,15 @@ let AuthService = class AuthService {
     userRepository;
     mailerService;
     jwtSecret = (0, jwt_secret_1.getJwtSecret)();
+    // Fail-safe, not fail-open: dev tokens (devVerificationToken,
+    // devResetToken) require an explicit opt-in rather than being gated on
+    // `NODE_ENV !== 'production'`. NODE_ENV is operator-set and nothing in
+    // this repo's Dockerfile/docker-compose pins it to 'production', so
+    // relying on it alone meant an unset/misconfigured NODE_ENV in any real
+    // deployment would leak a live password-reset token (full account
+    // takeover with only the victim's email) to any unauthenticated caller.
+    // This must default to off.
+    devAuthTokensEnabled = process.env.ALLOW_DEV_AUTH_TOKENS === 'true';
     constructor(userRepository, mailerService) {
         this.userRepository = userRepository;
         this.mailerService = mailerService;
@@ -117,7 +126,7 @@ let AuthService = class AuthService {
         await this.mailerService.sendVerificationEmail(user.email, verificationToken);
         return {
             sent: true,
-            ...(process.env.NODE_ENV !== 'production' ? { devVerificationToken: verificationToken } : {}),
+            ...(this.devAuthTokensEnabled ? { devVerificationToken: verificationToken } : {}),
         };
     }
     async forgotPassword(dto) {
@@ -131,7 +140,7 @@ let AuthService = class AuthService {
         await this.mailerService.sendPasswordResetEmail(user.email, resetToken);
         return {
             sent: true,
-            ...(process.env.NODE_ENV !== 'production' ? { devResetToken: resetToken } : {}),
+            ...(this.devAuthTokensEnabled ? { devResetToken: resetToken } : {}),
         };
     }
     async resetPassword(dto) {
@@ -227,12 +236,9 @@ let AuthService = class AuthService {
                 emailVerified: user.emailVerified,
             },
             ...tokens,
-            // Dev-only convenience since no real mailer is wired up yet: lets the
-            // frontend/tester verify without digging through server logs. Never
-            // included in production.
-            ...(devVerificationToken && process.env.NODE_ENV !== 'production'
-                ? { devVerificationToken }
-                : {}),
+            // Dev-only convenience for testing without a real mailer -- see
+            // devAuthTokensEnabled above for why this isn't gated on NODE_ENV.
+            ...(devVerificationToken && this.devAuthTokensEnabled ? { devVerificationToken } : {}),
         };
     }
     issueEmailVerificationToken(userId, email) {

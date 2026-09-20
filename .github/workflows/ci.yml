@@ -29,6 +29,10 @@ jobs:
       # CI-only value. The app refuses to start without JWT_SECRET set;
       # never reuse this value outside of CI.
       JWT_SECRET: ci-test-secret-not-for-reuse
+      # Required for tests asserting devVerificationToken/devResetToken in
+      # auth responses -- see .env.example for why this isn't NODE_ENV-gated.
+      # Safe here: CI's database is a fresh, disposable container.
+      ALLOW_DEV_AUTH_TOKENS: 'true'
 
     steps:
       - uses: actions/checkout@v4

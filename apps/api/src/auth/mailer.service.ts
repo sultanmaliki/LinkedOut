@@ -18,6 +18,13 @@ export class MailerService {
     ? new Resend(process.env.RESEND_API_KEY)
     : undefined;
 
+  // Same fail-safe reasoning as AuthService.devAuthTokensEnabled: the
+  // link contains a live, valid auth token, so logging it in plaintext is
+  // only acceptable in the same explicitly-opted-into dev/test mode that
+  // exposes devVerificationToken/devResetToken -- never as an implicit
+  // fallback just because no mailer happens to be configured.
+  private readonly devAuthTokensEnabled = process.env.ALLOW_DEV_AUTH_TOKENS === 'true';
+
   async sendVerificationEmail(email: string, token: string): Promise<void> {
     const link = `${this.webOrigin}/verify-email?token=${token}`;
 
@@ -46,7 +53,18 @@ export class MailerService {
     content: { subject: string; html: string; text: string; logLink: string },
   ): Promise<void> {
     if (!this.resend) {
-      this.logger.log(`${kind[0]!.toUpperCase()}${kind.slice(1)} for ${email}: ${content.logLink}`);
+      if (this.devAuthTokensEnabled) {
+        this.logger.log(
+          `${kind[0]!.toUpperCase()}${kind.slice(1)} for ${email}: ${content.logLink}`,
+        );
+      } else {
+        // Don't log the email/token pair by default -- the link carries a
+        // live auth token, so an operator who forgot to configure a real
+        // mailer shouldn't have it leak into server logs as a side effect.
+        this.logger.warn(
+          `${kind[0]!.toUpperCase()}${kind.slice(1)} not sent: no mailer configured (RESEND_API_KEY unset) and ALLOW_DEV_AUTH_TOKENS is not enabled, so the link was not logged.`,
+        );
+      }
       return;
     }
 

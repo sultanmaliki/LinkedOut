@@ -10,6 +10,7 @@ import { LoginPromptProvider } from '@/components/login-prompt';
 import { ScrollProgressBar } from '@/components/scroll-progress-bar';
 import { VerifyEmailBanner } from '@/components/verify-email-banner';
 import { AuthProvider } from '@/lib/auth-context';
+import { toJsonLd } from '@/lib/json-ld';
 
 import './globals.css';
 
@@ -67,7 +68,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+          dangerouslySetInnerHTML={{ __html: toJsonLd(websiteSchema) }}
         />
       </head>
       <body className="flex min-h-screen flex-col">

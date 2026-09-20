@@ -11,6 +11,7 @@ export declare class AuthService {
     private readonly userRepository;
     private readonly mailerService;
     private readonly jwtSecret;
+    private readonly devAuthTokensEnabled;
     constructor(userRepository: UserRepository, mailerService: MailerService);
     register(dto: RegisterDto): Promise<{
         devVerificationToken?: string | undefined;

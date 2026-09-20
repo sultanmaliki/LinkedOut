@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { toJsonLd } from '@/lib/json-ld';
 import type { Company, CompanyBenefit, CompanyLocation, CompanyReply, Review } from '@/lib/types';
 import { CompanyReplyPanel } from '@/components/company-reply-panel';
 import { CopyLinkButton } from '@/components/copy-link-button';
@@ -121,7 +122,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     <main className="mx-auto max-w-4xl px-6 py-12">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(orgSchema) }}
       />
       <Link
         href="/companies"

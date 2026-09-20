@@ -29,6 +29,8 @@ import { ReviewModule } from './reviews/review.module';
             'req.headers.authorization',
             'req.headers.cookie',
             'req.body.password',
+            'req.body.newPassword',
+            'req.body.currentPassword',
             'req.body.token',
             'req.body.refreshToken',
             'req.body.accessToken',

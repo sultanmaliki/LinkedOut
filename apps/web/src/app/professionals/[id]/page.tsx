@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Globe, MapPin } from 'lucide-react';
 
 import { ApiError, apiFetch } from '@/lib/api';
+import { toJsonLd } from '@/lib/json-ld';
 import type {
   EmploymentExpectation,
   PortfolioLink,
@@ -82,7 +83,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     <main className="mx-auto max-w-2xl px-6 py-12">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(personSchema) }}
       />
       <Link
         href="/feed"

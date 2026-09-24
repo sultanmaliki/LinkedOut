@@ -14,14 +14,16 @@ jobs:
     name: pg_dump and upload
     runs-on: ubuntu-latest
     steps:
-      - name: Install postgresql-client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
+      # Dump via the official postgres:17 image rather than apt's
+      # postgresql-client (Ubuntu's noble repo only has v16) -- pg_dump
+      # refuses to run against a server on a newer major version than
+      # itself, and Supabase runs Postgres 17.
       - name: Dump database
         run: |
           mkdir -p backup
-          pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges \
-            --file="backup/linkedout-$(date -u +%Y%m%dT%H%M%SZ).dump"
+          docker run --rm -v "$PWD/backup:/backup" postgres:17 \
+            pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges \
+            --file="/backup/linkedout-$(date -u +%Y%m%dT%H%M%SZ).dump"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 

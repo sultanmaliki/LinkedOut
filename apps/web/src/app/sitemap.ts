@@ -5,6 +5,12 @@ import type { Company, ProfessionalProfile } from '@/lib/types';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
+// Deterministic IDs the database seed script assigns (see SEED_IDS in
+// packages/database/src/seed/index.ts) so dev/load-test data is recognizable
+// and never mistaken for a real row. Keep them out of the public sitemap.
+const SEED_ID_PREFIX = '00000000-0000-4000-8000-';
+const isSeedId = (id: string) => id.startsWith(SEED_ID_PREFIX);
+
 // The API caps `limit` at 100 per page, so a flat single fetch silently
 // missed everything once there were more than 100 rows (it 400'd, and the
 // catch below swallowed it). Page through instead so the sitemap keeps
@@ -29,12 +35,14 @@ async function fetchAllPages<T>(path: string): Promise<T[]> {
 async function companyEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const companies = await fetchAllPages<Company>('/companies');
-    return companies.map((company) => ({
-      url: `${SITE_URL}/companies/${company.id}`,
-      lastModified: company.updatedAt,
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }));
+    return companies
+      .filter((company) => !isSeedId(company.id))
+      .map((company) => ({
+        url: `${SITE_URL}/companies/${company.id}`,
+        lastModified: company.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      }));
   } catch {
     // The API being unreachable shouldn't take the whole sitemap down —
     // crawlers still get the static routes below.
@@ -45,12 +53,14 @@ async function companyEntries(): Promise<MetadataRoute.Sitemap> {
 async function professionalEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const profiles = await fetchAllPages<ProfessionalProfile>('/professionals');
-    return profiles.map((profile) => ({
-      url: `${SITE_URL}/professionals/${profile.id}`,
-      lastModified: profile.updatedAt,
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    }));
+    return profiles
+      .filter((profile) => !isSeedId(profile.id))
+      .map((profile) => ({
+        url: `${SITE_URL}/professionals/${profile.id}`,
+        lastModified: profile.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      }));
   } catch {
     return [];
   }
